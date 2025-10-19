@@ -101,12 +101,36 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 // 其他函数保持不变...
+// 模拟登录函数 - 用于静态网站
 async function loginUser(email, password) {
-    try {
-        console.log("发送登录请求:", email);
-        const response = await fetch("/api/auth/login", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
+    console.log("模拟登录:", email);
+    
+    // 模拟用户数据库
+    const users = [
+        { email: "jiaminpan4@gmail.com", password: "091103ka", name: "凌霜大王" },
+        { email: "jiaminpan@gmail.com", password: "123456", name: "测试用户" },
+        { email: "test@test.com", password: "123456", name: "测试用户2" }
+    ];
+    
+    // 模拟 API 延迟
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    const user = users.find(u => u.email === email && u.password === password);
+    
+    if (user) {
+        return {
+            success: true,
+            message: "登录成功",
+            token: "static-token-" + Date.now(),
+            user: {
+                name: user.name,
+                email: user.email
+            }
+        };
+    } else {
+        throw new Error("邮箱或密码错误");
+    }
+},
             body: JSON.stringify({ email: email, password: password })
         });
         
@@ -137,3 +161,5 @@ function checkLoginStatus() {
 }
 
 console.log(" 调试版本JavaScript加载完成");
+
+
