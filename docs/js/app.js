@@ -1,4 +1,32 @@
-﻿
+﻿// === 模拟登录系统（GitHub Pages 静态部署）===
+const mockUsers = [
+    { email: "jiaminpan4@gmail.com", password: "091103ka", name: "凌霜大王" },
+    { email: "jiaminpan@gmail.com", password: "123456", name: "测试用户" }
+];
+
+// 替换原来的 loginUser 函数
+window.mockLogin = async function(email, password) {
+    console.log("模拟登录:", email);
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    const user = mockUsers.find(u => u.email === email && u.password === password);
+    if (user) {
+        localStorage.setItem("currentUser", JSON.stringify(user));
+        return { 
+            success: true, 
+            message: "登录成功",
+            user: { name: user.name, email: user.email }
+        };
+    }
+    throw new Error("邮箱或密码错误");
+};
+
+// 重定向到模拟登录
+if (typeof loginUser === 'undefined') {
+    var loginUser = window.mockLogin;
+}
+
+
 
 
 
@@ -145,6 +173,7 @@
     </script>
 </body>
 </html>
+
 
 
 
