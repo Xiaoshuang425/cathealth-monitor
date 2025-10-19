@@ -129,7 +129,7 @@
         // 注册 Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/./service-worker.js')
+                navigator.serviceWorker.register('/././service-worker.js')
                     .then(function(registration) {
                         console.log('ServiceWorker 注册成功: ', registration.scope);
                     })
@@ -141,6 +141,7 @@
     </script>
 </body>
 </html>
+
 
 
 
