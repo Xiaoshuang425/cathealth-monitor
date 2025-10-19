@@ -1,0 +1,20 @@
+﻿🐱 开发时缓存清除指南
+
+方法1：强制刷新
+- Windows: Ctrl + F5
+- Mac: Cmd + Shift + R
+
+方法2：禁用浏览器缓存
+1. 按 F12 打开开发者工具
+2. 点击 Network 标签
+3. 勾选 "Disable cache"
+4. 刷新页面
+
+方法3：清除浏览器数据
+1. 访问: chrome://settings/clearBrowserData
+2. 勾选"缓存的图片和文件"
+3. 点击"清除数据"
+
+方法4：使用无痕窗口
+- Ctrl + Shift + N (Chrome/Edge)
+- 在无痕窗口中访问 http://localhost:3003

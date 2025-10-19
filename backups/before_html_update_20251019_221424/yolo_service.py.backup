@@ -1,0 +1,351 @@
+﻿from ultralytics import YOLO
+import os
+import base64
+from PIL import Image
+import io
+import cv2
+import numpy as np
+import sys
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+import logging
+
+# 添加当前目录到Python路径
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+# 设置日志
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+app = Flask(__name__)
+CORS(app)
+
+class YOLODetector:
+    def __init__(self, model_path=None):
+        if model_path is None:
+            model_path = os.path.join(os.path.dirname(__file__), 'best.pt')
+        
+        self.model_path = model_path
+        self.model = None
+        self.load_model()
+    
+    def load_model(self):
+        try:
+            if os.path.exists(self.model_path):
+                print(f" 加载YOLO模型: {self.model_path}")
+                self.model = YOLO(self.model_path)
+                print(" YOLO模型加载成功")
+                print(f" 模型类别: {self.model.names}")
+            else:
+                print(f" 模型文件不存在: {self.model_path}")
+                self.model = None
+        except Exception as e:
+            print(f" 模型加载失败: {e}")
+            self.model = None
+    
+    def base64_to_image(self, base64_string):
+        try:
+            print(f" 开始解码图片数据，数据长度: {len(base64_string)}")
+            
+            # 移除data:image/jpeg;base64,前缀
+            if ',' in base64_string:
+                base64_string = base64_string.split(',')[1]
+                print(f" 移除前缀后数据长度: {len(base64_string)}")
+            
+            # 解码base64
+            image_data = base64.b64decode(base64_string)
+            print(f" 解码后图片数据大小: {len(image_data)} bytes")
+            
+            # 使用PIL打开图片
+            image = Image.open(io.BytesIO(image_data))
+            print(f" 图片格式: {image.format}, 尺寸: {image.size}, 模式: {image.mode}")
+            
+            # 转换为RGB模式（确保兼容性）
+            if image.mode != 'RGB':
+                image = image.convert('RGB')
+                print(f" 转换后图片模式: {image.mode}")
+            
+            # 转换为OpenCV格式 (BGR)
+            opencv_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
+            print(" 图片解码成功")
+            
+            return opencv_image
+            
+        except Exception as e:
+            print(f" 图像解码失败: {e}")
+            # 尝试使用cv2直接解码
+            try:
+                print(" 尝试使用OpenCV直接解码...")
+                if ',' in base64_string:
+                    base64_string = base64_string.split(',')[1]
+                
+                image_data = base64.b64decode(base64_string)
+                nparr = np.frombuffer(image_data, np.uint8)
+                opencv_image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+                
+                if opencv_image is not None:
+                    print(f" OpenCV解码成功，图片尺寸: {opencv_image.shape}")
+                    return opencv_image
+                else:
+                    print(" OpenCV解码也失败")
+                    return None
+                    
+            except Exception as e2:
+                print(f" OpenCV解码也失败: {e2}")
+                return None
+    
+    def detect_stool_features(self, image):
+        if self.model is None:
+            print(" 模型未加载，使用模拟分析")
+            return self._mock_detection()
+        
+        try:
+            print(" 开始YOLO分析...")
+            results = self.model(image)
+            print(f" YOLO分析完成，检测到 {len(results)} 个结果")
+            
+            if len(results) == 0:
+                print(" 未检测到任何对象")
+                return self._get_default_result()
+            
+            result = results[0]
+            detection_info = self._analyze_detection(result, image)
+            return detection_info
+            
+        except Exception as e:
+            print(f" YOLO检测失败: {e}")
+            return self._get_default_result()
+    
+    def _analyze_detection(self, result, image):
+        try:
+            boxes = result.boxes
+            if boxes is None or len(boxes) == 0:
+                print(" 未检测到边界框")
+                return self._get_default_result()
+            
+            confidences = boxes.conf.cpu().numpy()
+            class_ids = boxes.cls.cpu().numpy()
+            
+            if len(confidences) == 0:
+                print(" 未检测到置信度数据")
+                return self._get_default_result()
+            
+            max_confidence_idx = np.argmax(confidences)
+            max_confidence = confidences[max_confidence_idx]
+            class_id = class_ids[max_confidence_idx]
+            
+            # 获取实际的类别名称
+            class_name = self.model.names[int(class_id)] if hasattr(self.model, 'names') else "unknown"
+            print(f" 检测到类别: {class_name} (ID: {class_id}), 置信度: {max_confidence:.2f}")
+            
+            features = self._get_features_by_class(class_id, class_name, max_confidence, image)
+            return features
+            
+        except Exception as e:
+            print(f" 分析检测结果失败: {e}")
+            return self._get_default_result()
+    
+    def _get_features_by_class(self, class_id, class_name, confidence, image):
+        # 根据您的实际模型类别进行映射
+        class_mapping = {
+            "normal": {
+                "color": "棕色",
+                "texture": "成形",
+                "shape": "长条状",
+                "risk_level": "normal",
+                "message": "健康状况良好",
+                "description": "排泄物特征正常"
+            },
+            "Lightweight and portable": {
+                "color": "黄色",
+                "texture": "软便", 
+                "shape": "糊状",
+                "risk_level": "warning",
+                "message": "轻微消化不良",
+                "description": "检测到轻微软便"
+            },
+            "watery diarrhoea": {
+                "color": "黄色",
+                "texture": "稀水",
+                "shape": "液体状",
+                "risk_level": "danger", 
+                "message": "严重腹泻",
+                "description": "检测到水样腹泻"
+            },
+            "constipation": {
+                "color": "深棕色",
+                "texture": "干硬", 
+                "shape": "颗粒状",
+                "risk_level": "warning",
+                "message": "便秘症状",
+                "description": "检测到便秘特征"
+            },
+            "parasitic infection": {
+                "color": "异常色",
+                "texture": "异常", 
+                "shape": "不规则",
+                "risk_level": "danger",
+                "message": "寄生虫感染",
+                "description": "检测到可能的寄生虫感染"
+            }
+        }
+        
+        # 使用类别名称进行映射
+        features = class_mapping.get(class_name, class_mapping["normal"])
+        
+        return {
+            "success": True,
+            "detection": {
+                "color": features["color"],
+                "texture": features["texture"],
+                "shape": features["shape"],
+                "class_id": int(class_id),
+                "class_name": class_name,
+                "confidence": float(confidence)
+            },
+            "health_analysis": {
+                "risk_level": features["risk_level"],
+                "message": features["message"],
+                "description": features["description"],
+                "confidence": float(confidence),
+                "recommendation": self._get_recommendation(features["risk_level"])
+            }
+        }
+    
+    def _get_recommendation(self, risk_level):
+        recommendations = {
+            "normal": "请保持当前的喂养习惯，继续观察猫咪的健康状况。",
+            "warning": "建议调整饮食，增加水分摄入，观察1-2天。如症状持续请咨询兽医。",
+            "danger": "立即联系兽医进行检查，这可能是严重健康问题的征兆。"
+        }
+        return recommendations.get(risk_level, "请咨询专业兽医。")
+    
+    def _get_default_result(self):
+        return {
+            "success": True,
+            "detection": {
+                "color": "未检测",
+                "texture": "未检测",
+                "shape": "未检测",
+                "class_name": "unknown",
+                "confidence": 0.0
+            },
+            "health_analysis": {
+                "risk_level": "unknown",
+                "message": "分析失败",
+                "description": "无法识别排泄物特征",
+                "confidence": 0.0,
+                "recommendation": "请重新拍摄清晰的图片或联系技术支持。"
+            }
+        }
+    
+    def _mock_detection(self):
+        print(" 使用模拟检测结果")
+        analyses = [
+            {
+                "success": True,
+                "detection": {
+                    "color": "棕色",
+                    "texture": "成形",
+                    "shape": "长条状",
+                    "class_name": "normal",
+                    "confidence": 0.92
+                },
+                "health_analysis": {
+                    "risk_level": "normal",
+                    "message": "健康状况良好",
+                    "description": "排泄物颜色、质地、形状均在正常范围内",
+                    "confidence": 0.92,
+                    "recommendation": "请保持当前的喂养习惯，继续观察猫咪的健康状况。"
+                }
+            },
+            {
+                "success": True,
+                "detection": {
+                    "color": "黄色", 
+                    "texture": "软便",
+                    "shape": "糊状",
+                    "class_name": "Lightweight and portable",
+                    "confidence": 0.87
+                },
+                "health_analysis": {
+                    "risk_level": "warning",
+                    "message": "轻微消化不良", 
+                    "description": "检测到轻微软便",
+                    "confidence": 0.87,
+                    "recommendation": "建议调整饮食，避免喂食过多零食，观察1-2天。"
+                }
+            }
+        ]
+        import random
+        return random.choice(analyses)
+
+# 全局YOLO检测器实例
+yolo_detector = None
+
+@app.route('/health', methods=['GET'])
+def health_check():
+    model_loaded = yolo_detector is not None and yolo_detector.model is not None
+    model_classes = yolo_detector.model.names if model_loaded else {}
+    
+    return jsonify({
+        'status': 'healthy', 
+        'model_loaded': model_loaded,
+        'model_classes': model_classes,
+        'timestamp': str(np.datetime64('now'))
+    })
+
+@app.route('/analyze', methods=['POST'])
+def analyze_image():
+    try:
+        data = request.get_json()
+        if not data or 'image' not in data:
+            logger.info("未提供图片数据")
+            return jsonify({
+                'success': False, 
+                'error': '未提供图片数据'
+            })
+        
+        logger.info("收到图片分析请求")
+        
+        image = yolo_detector.base64_to_image(data['image'])
+        if image is None:
+            logger.info("图片解码失败")
+            return jsonify({
+                'success': False,
+                'error': '图片解码失败，请上传有效的JPG或PNG图片'
+            })
+        
+        result = yolo_detector.detect_stool_features(image)
+        result['analyzed_at'] = str(np.datetime64('now'))
+        
+        logger.info(f"分析完成: {result['health_analysis']['message']}")
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        logger.error(f"API错误: {e}")
+        return jsonify({
+            'success': False, 
+            'error': str(e)
+        })
+
+def start_yolo_service(model_path='best.pt', port=5000):
+    global yolo_detector
+    try:
+        yolo_detector = YOLODetector(model_path)
+        
+        if yolo_detector.model is None:
+            logger.warning("YOLO模型未加载，将使用模拟模式")
+        else:
+            logger.info("YOLO模型加载成功，使用真实AI分析")
+            logger.info(f"模型类别: {yolo_detector.model.names}")
+            
+        logger.info(f"YOLO健康分析服务启动在端口 {port}")
+        app.run(host='0.0.0.0', port=port, debug=False)
+        
+    except Exception as e:
+        logger.error(f"服务启动失败: {e}")
+
+if __name__ == '__main__':
+    start_yolo_service('best.pt')

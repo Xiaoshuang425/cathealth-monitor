@@ -1,0 +1,311 @@
+﻿const express = require('express');
+const path = require('path');
+const cors = require('cors');
+const multer = require('multer');
+const { spawn } = require('child_process');
+const fs = require('fs');
+const sqlite3 = require('sqlite3').verbose();
+
+const app = express();
+const PORT = process.env.PORT || 3005;
+
+// 中间件
+app.use(cors());
+app.use(express.json());
+app.use(express.static('.'));
+
+// 配置multer用于文件上传
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        const uploadDir = './uploads';
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir);
+        }
+        cb(null, uploadDir);
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + '-' + file.originalname);
+    }
+});
+
+const upload = multer({ 
+    storage: storage,
+    limits: {
+        fileSize: 5 * 1024 * 1024 // 5MB
+    },
+    fileFilter: function (req, file, cb) {
+        if (file.mimetype.startsWith('image/')) {
+            cb(null, true);
+        } else {
+            cb(new Error('只支持图片文件！'), false);
+        }
+    }
+});
+
+// 初始化SQLite数据库
+const db = new sqlite3.Database('./cathealth.db', (err) => {
+    if (err) {
+        console.error('数据库连接失败:', err.message);
+    } else {
+        console.log('成功连接到SQLite数据库');
+        initDatabase();
+    }
+});
+
+function initDatabase() {
+    // 创建用户表
+    db.run("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, email TEXT UNIQUE NOT NULL, password TEXT NOT NULL, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)");
+
+    // 创建猫咪档案表
+    db.run("CREATE TABLE IF NOT EXISTS cats (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, name TEXT NOT NULL, breed TEXT, age INTEGER, weight REAL, gender TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (user_id) REFERENCES users (id))");
+
+    // 创建健康记录表
+    db.run("CREATE TABLE IF NOT EXISTS health_records (id INTEGER PRIMARY KEY AUTOINCREMENT, cat_id INTEGER, analysis_type TEXT, health_score INTEGER, status TEXT, image_path TEXT, analysis_result TEXT, confidence REAL, created_at DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (cat_id) REFERENCES cats (id))");
+}
+
+// 模拟用户数据
+let users = [
+    {
+        id: 1,
+        name: '测试用户',
+        email: 'test@example.com',
+        password: '123456'
+    }
+];
+
+// 认证路由
+app.post('/api/auth/login', (req, res) => {
+    const { email, password } = req.body;
+    console.log('登录请求:', email, password);
+    
+    const user = users.find(u => u.email === email && u.password === password);
+    
+    if (user) {
+        res.json({
+            success: true,
+            message: '登录成功',
+            token: 'mock-jwt-token-' + Date.now(),
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email
+            }
+        });
+    } else {
+        res.status(401).json({
+            success: false,
+            error: '邮箱或密码错误'
+        });
+    }
+});
+
+app.post('/api/auth/register', (req, res) => {
+    const { name, email, password } = req.body;
+    console.log('注册请求:', name, email);
+    
+    // 检查用户是否已存在
+    const existingUser = users.find(u => u.email === email);
+    if (existingUser) {
+        return res.status(400).json({
+            success: false,
+            error: '该邮箱已被注册'
+        });
+    }
+    
+    // 创建新用户
+    const newUser = {
+        id: users.length + 1,
+        name,
+        email,
+        password
+    };
+    users.push(newUser);
+    
+    res.json({
+        success: true,
+        message: '注册成功',
+        user: {
+            id: newUser.id,
+            name: newUser.name,
+            email: newUser.email
+        }
+    });
+});
+
+// 健康分析路由 - 集成YOLO
+app.post('/api/health/analyze', upload.single('image'), (req, res) => {
+    console.log('收到健康分析请求');
+    
+    if (!req.file) {
+        return res.status(400).json({
+            success: false,
+            error: '请上传图片文件'
+        });
+    }
+
+    const imagePath = req.file.path;
+    console.log('分析图片:', imagePath);
+
+    // 调用Python YOLO服务进行分析
+    const pythonProcess = spawn('python', ['yolo_service.py', imagePath]);
+
+    let resultData = '';
+    let errorData = '';
+
+    pythonProcess.stdout.on('data', (data) => {
+        resultData += data.toString();
+        console.log('Python输出:', data.toString());
+    });
+
+    pythonProcess.stderr.on('data', (data) => {
+        errorData += data.toString();
+        console.error('Python错误:', data.toString());
+    });
+
+    pythonProcess.on('close', (code) => {
+        console.log('Python进程退出，代码: ' + code);
+        
+        // 清理上传的文件
+        try {
+            fs.unlinkSync(imagePath);
+        } catch (e) {
+            console.warn('清理文件失败:', e);
+        }
+
+        if (code !== 0) {
+            console.error('Python脚本执行失败:', errorData);
+            return res.status(500).json({
+                success: false,
+                error: 'AI分析服务暂时不可用'
+            });
+        }
+
+        try {
+            // 解析Python脚本的输出
+            const lines = resultData.split('\n');
+            let jsonOutput = '';
+            let inJson = false;
+            
+            for (const line of lines) {
+                if (line.trim().startsWith('{')) {
+                    inJson = true;
+                }
+                if (inJson) {
+                    jsonOutput += line;
+                }
+                if (line.trim().startsWith('}')) {
+                    break;
+                }
+            }
+            
+            if (!jsonOutput) {
+                throw new Error('未找到有效的JSON输出');
+            }
+            
+            const result = JSON.parse(jsonOutput);
+            console.log('YOLO分析结果:', result);
+            
+            // 转换结果为前端格式
+            const healthAnalysis = result.health_analysis;
+            const detection = result.detection;
+            
+            res.json({
+                success: true,
+                result: {
+                    health_status: healthAnalysis.risk_level,
+                    health_score: healthAnalysis.health_score,
+                    detection_type: getDetectionTypeText(healthAnalysis.detected_class),
+                    confidence: Math.round(healthAnalysis.confidence * 100),
+                    timestamp: new Date().toISOString(),
+                    details: result,
+                    features: detection.features
+                },
+                message: healthAnalysis.message
+            });
+            
+        } catch (parseError) {
+            console.error('解析Python脚本输出失败:', parseError);
+            console.error('原始输出:', resultData);
+            res.status(500).json({
+                success: false,
+                error: '分析结果解析失败'
+            });
+        }
+    });
+});
+
+// 辅助函数：获取检测类型文本
+function getDetectionTypeText(detectedClass) {
+    const typeMap = {
+        'normal': '正常排泄物',
+        'Lightweight and portable': '轻微消化不良',
+        'watery diarrhoea': '水样腹泻',
+        'constipation': '便秘',
+        'parasitic infection': '寄生虫感染',
+        'unknown': '无法识别'
+    };
+    return typeMap[detectedClass] || '未知类型';
+}
+
+// 猫咪档案API
+app.get('/api/cats', (req, res) => {
+    // 模拟猫咪数据
+    const cats = [
+        {
+            id: 1,
+            name: '咪咪',
+            breed: '中华田园猫',
+            age: 2,
+            weight: 4.2,
+            gender: 'female'
+        }
+    ];
+    res.json({ success: true, cats });
+});
+
+app.post('/api/cats', (req, res) => {
+    const { name, breed, age, weight, gender } = req.body;
+    // 这里应该保存到数据库
+    res.json({ 
+        success: true, 
+        message: '猫咪档案创建成功',
+        cat: { id: Date.now(), name, breed, age, weight, gender }
+    });
+});
+
+// 健康记录API
+app.get('/api/health-records', (req, res) => {
+    // 模拟健康记录
+    const records = [
+        {
+            id: 1,
+            analysis_type: '排泄物分析',
+            health_score: 85,
+            status: 'healthy',
+            created_at: new Date().toISOString()
+        }
+    ];
+    res.json({ success: true, records });
+});
+
+// 提供前端页面
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+app.get('/dashboard.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'dashboard.html'));
+});
+
+app.get('/health-analysis.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'health-analysis.html'));
+});
+
+// 启动服务器
+app.listen(PORT, () => {
+    console.log('🐱 CatHealth Monitor 服务器启动成功！');
+    console.log('📍 访问地址: http://localhost:' + PORT);
+    console.log('⏰ 启动时间:', new Date().toLocaleString());
+    console.log('🤖 YOLO AI分析功能已集成');
+    console.log('🔌 使用端口: ' + PORT);
+});

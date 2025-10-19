@@ -1,0 +1,9 @@
+﻿// 在server.js的静态文件服务部分添加这个：
+app.use(express.static(path.join(__dirname, 'backend', 'public'), {
+    setHeaders: (res, path) => {
+        // 开发环境禁用缓存
+        if (path.endsWith('.css') || path.endsWith('.js')) {
+            res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        }
+    }
+}));

@@ -1,0 +1,106 @@
+﻿<!-- 替换dashboard.html中的健康分析页面部分 -->
+<div id="health-analysis" class="content-section">
+    <div class="content-header">
+        <h1><i class="fas fa-camera"></i> AI健康分析</h1>
+        <p>上传猫咪排泄物照片，使用YOLO模型进行智能健康分析</p>
+    </div>
+
+    <div class="app-card">
+        <div class="card-header">
+            <h2>上传照片</h2>
+            <p>请选择清晰的猫咪排泄物照片进行分析</p>
+        </div>
+        <div class="card-body">
+            <div class="upload-container">
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <h3>点击或拖拽上传照片</h3>
+                    <p>支持 JPG、PNG 格式，最大 5MB</p>
+                    <input type="file" id="imageInput" accept="image/*" hidden>
+                    <button class="btn btn-primary" onclick="document.getElementById('imageInput').click()">
+                        选择图片
+                    </button>
+                </div>
+                
+                <div class="image-preview hidden" id="imagePreview">
+                    <div class="preview-header">
+                        <h4>图片预览</h4>
+                        <button class="btn-remove" onclick="removeImage()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="preview-image">
+                        <img id="previewImg" src="" alt="预览图片">
+                    </div>
+                    <button class="btn btn-primary" id="analyzeBtn" onclick="analyzeImage()">
+                        <i class="fas fa-robot"></i> 开始AI分析
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-card hidden" id="resultCard">
+        <div class="card-header">
+            <h2>分析结果</h2>
+            <p>基于YOLO模型的智能分析报告</p>
+        </div>
+        <div class="card-body">
+            <div class="result-content">
+                <div class="result-overview">
+                    <div class="risk-level" id="riskLevel">
+                        <div class="risk-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="risk-info">
+                            <h4 id="riskTitle">健康状况良好</h4>
+                            <p id="riskDescription">未检测到明显异常</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="result-details">
+                    <div class="detail-group">
+                        <h4>检测特征</h4>
+                        <div class="detail-list">
+                            <div class="detail-item">
+                                <span class="detail-label">颜色分析</span>
+                                <span class="detail-value" id="colorResult">-</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">质地分析</span>
+                                <span class="detail-value" id="textureResult">-</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">形状分析</span>
+                                <span class="detail-value" id="shapeResult">-</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">置信度</span>
+                                <span class="detail-value" id="confidenceResult">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="recommendation-group">
+                        <h4>健康建议</h4>
+                        <div class="recommendation-content" id="recommendationContent">
+                            <p>请保持当前的喂养习惯，继续观察猫咪的健康状况。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="result-actions">
+                    <button class="btn btn-primary" onclick="saveAnalysis()">
+                        <i class="fas fa-save"></i> 保存记录
+                    </button>
+                    <button class="btn" onclick="newAnalysis()">
+                        <i class="fas fa-plus"></i> 新的分析
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

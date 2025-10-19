@@ -1,0 +1,3 @@
+﻿# YOLO模型配置文件
+nc: 5  # 类别数
+names: ["normal", "Lightweight and portable", "watery diarrhoea", "constipation", "parasitic infection"]

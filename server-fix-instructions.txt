@@ -1,0 +1,6 @@
+﻿// 在server.js中找到根路径路由，应该类似：
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'backend', 'public', 'index.html'));
+});
+
+// 而不是指向dashboard.html
