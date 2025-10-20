@@ -3,20 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CatHealth Monitor</title>
-    <link rel="stylesheet" href="./css/style.css">
-    <link rel="stylesheet" href="./css/mobile.css">
+    <title>🐱 CatHealth Monitor - 猫咪健康监测系统</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/mobile.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#667eea">
 </head>
 <body>
     <div class="container">
         <div class="login-header">
-            <h1>🐱 CatHealth Monitor</h1>
+            <h1><i class="fas fa-paw"></i> CatHealth Monitor</h1>
             <p>猫咪健康监测系统</p>
         </div>
-        <div class="login-form">
-            <p style="text-align:center;color:green;font-weight:bold;"> CSS 加载成功！</p>
-            <p style="text-align:center;">如果看到这个绿色提示，说明 CSS 工作正常</p>
+        
+        <form class="login-form" id="loginForm">
+            <div class="form-group">
+                <label for="email"><i class="fas fa-envelope"></i> 邮箱地址</label>
+                <input type="email" id="email" placeholder="请输入您的邮箱" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password"><i class="fas fa-lock"></i> 密码</label>
+                <input type="password" id="password" placeholder="请输入密码" required>
+            </div>
+            
+            <button type="submit" class="login-btn">
+                <i class="fas fa-sign-in-alt"></i> 登录
+            </button>
+        </form>
+        
+        <div class="login-footer">
+            <p>还没有账号？ <a href="#" style="color:#667eea;">立即注册</a></p>
+        </div>
+        
+        <div class="test-accounts">
+            <strong>测试账号:</strong><br>
+            jiaminpan4@gmail.com / 091103ka<br>
+            jiaminpan@gmail.com / 123456
         </div>
     </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            alert('登录功能测试 - 邮箱: ' + email);
+        });
+
+        // 自动填充测试账号
+        document.getElementById('email').value = 'jiaminpan4@gmail.com';
+        document.getElementById('password').value = '091103ka';
+    </script>
 </body>
 </html>
