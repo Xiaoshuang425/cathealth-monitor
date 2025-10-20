@@ -1,37 +1,46 @@
-﻿const express = require('express');
-const path = require('path');
-const cors = require('cors');
-
+﻿const express = require("express");
+const cors = require("cors");
+const path = require("path");
 const app = express();
-const PORT = process.env.PORT || 3000;
 
 // 中间件
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+
+// 静态文件服务 - 用于 Vercel
+app.use(express.static(path.join(__dirname, "..", "..", "docs")));
 
 // 模拟用户数据
-let users = [
-    {
-        id: 1,
-        name: '测试用户',
-        email: 'test@example.com',
-        password: '123456'
-    }
+const users = [
+    { email: "jiaminpan4@gmail.com", password: "091103ka", name: "凌霜大王", id: 1 },
+    { email: "jiaminpan@gmail.com", password: "123456", name: "测试用户", id: 2 },
+    { email: "test@test.com", password: "123456", name: "测试用户2", id: 3 }
 ];
 
-// 认证路由
-app.post('/api/auth/login', (req, res) => {
+// 健康检查
+app.get("/api/health", (req, res) => {
+    res.json({ status: "OK", message: "CatHealth API 运行正常" });
+});
+
+// 登录 API
+app.post("/api/auth/login", (req, res) => {
+    console.log("登录请求:", req.body);
     const { email, password } = req.body;
-    console.log('登录请求:', email, password);
+    
+    if (!email || !password) {
+        return res.status(400).json({
+            success: false,
+            error: "邮箱和密码不能为空"
+        });
+    }
     
     const user = users.find(u => u.email === email && u.password === password);
     
     if (user) {
         res.json({
             success: true,
-            message: '登录成功',
-            token: 'mock-jwt-token-' + Date.now(),
+            message: "登录成功",
+            token: "jwt-token-" + Date.now(),
             user: {
                 id: user.id,
                 name: user.name,
@@ -41,36 +50,42 @@ app.post('/api/auth/login', (req, res) => {
     } else {
         res.status(401).json({
             success: false,
-            error: '邮箱或密码错误'
+            error: "邮箱或密码错误"
         });
     }
 });
 
-app.post('/api/auth/register', (req, res) => {
-    const { name, email, password } = req.body;
-    console.log('注册请求:', name, email);
+// 注册 API
+app.post("/api/auth/register", (req, res) => {
+    console.log("注册请求:", req.body);
+    const { email, password, name } = req.body;
     
-    // 检查用户是否已存在
-    const existingUser = users.find(u => u.email === email);
-    if (existingUser) {
+    if (!email || !password) {
         return res.status(400).json({
             success: false,
-            error: '该邮箱已被注册'
+            error: "邮箱和密码不能为空"
         });
     }
     
-    // 创建新用户
+    if (users.find(u => u.email === email)) {
+        return res.status(409).json({
+            success: false,
+            error: "邮箱已存在"
+        });
+    }
+    
     const newUser = {
         id: users.length + 1,
-        name,
         email,
-        password
+        password,
+        name: name || "新用户"
     };
+    
     users.push(newUser);
     
     res.json({
         success: true,
-        message: '注册成功',
+        message: "注册成功",
         user: {
             id: newUser.id,
             name: newUser.name,
@@ -79,55 +94,13 @@ app.post('/api/auth/register', (req, res) => {
     });
 });
 
-// 健康分析路由
-app.post('/api/health/analyze', (req, res) => {
-    console.log('收到健康分析请求');
-    
-    // 模拟分析结果
-    const healthStatuses = ['healthy', 'warning', 'critical', 'unknown'];
-    const detectionTypes = ['正常排泄物', '轻微异常', '明显异常', '无法识别'];
-    
-    const randomStatus = healthStatuses[Math.floor(Math.random() * healthStatuses.length)];
-    const randomType = detectionTypes[Math.floor(Math.random() * detectionTypes.length)];
-    
-    let healthScore;
-    switch (randomStatus) {
-        case 'healthy':
-            healthScore = Math.floor(Math.random() * 20) + 80;
-            break;
-        case 'warning':
-            healthScore = Math.floor(Math.random() * 20) + 60;
-            break;
-        case 'critical':
-            healthScore = Math.floor(Math.random() * 30) + 30;
-            break;
-        default:
-            healthScore = Math.floor(Math.random() * 40) + 40;
-    }
-    
-    setTimeout(() => {
-        res.json({
-            success: true,
-            result: {
-                health_status: randomStatus,
-                health_score: healthScore,
-                detection_type: randomType,
-                confidence: Math.floor(Math.random() * 20) + 80,
-                timestamp: new Date().toISOString()
-            },
-            message: '分析完成'
-        });
-    }, 2000);
+// 调试接口
+app.get("/api/debug/users", (req, res) => {
+    res.json({
+        success: true,
+        users: users.map(u => ({ ...u, password: "***" }))
+    });
 });
 
-// 提供前端页面
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-// 启动服务器
-app.listen(PORT, () => {
-    console.log('🐱 CatHealth Monitor 服务器启动成功！');
-    console.log('📍 访问地址: http://localhost:' + PORT);
-    console.log('⏰ 启动时间:', new Date().toLocaleString());
-});
+// Vercel 需要导出 app
+module.exports = app;
