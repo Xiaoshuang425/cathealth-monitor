@@ -1,98 +1,55 @@
-﻿const express = require("express");
-const cors = require("cors");
-const app = express();
+﻿console.log("🚀 开始启动 CatHealth 后端...");
 
-// 中间件
-app.use(cors());
-app.use(express.json());
+// 检查环境变量
+console.log("环境变量:");
+console.log("PORT:", process.env.PORT);
+console.log("NODE_ENV:", process.env.NODE_ENV);
+console.log("PWD:", process.env.PWD);
 
-// 模拟用户数据
-const users = [
-    { email: "jiaminpan4@gmail.com", password: "091103ka", name: "凌霜大王", id: 1 },
-    { email: "jiaminpan@gmail.com", password: "123456", name: "测试用户", id: 2 },
-    { email: "test@test.com", password: "123456", name: "测试用户2", id: 3 }
-];
-
-// 健康检查
-app.get("/api/health", (req, res) => {
-    res.json({ 
-        status: "OK", 
-        message: "CatHealth API 运行正常",
-        timestamp: new Date().toISOString()
-    });
-});
-
-// 登录 API
-app.post("/api/auth/login", (req, res) => {
-    console.log("登录请求:", req.body);
-    const { email, password } = req.body;
+try {
+    const express = require("express");
+    const cors = require("cors");
+    console.log("✅ Express 和 CORS 加载成功");
     
-    if (!email || !password) {
-        return res.status(400).json({
-            success: false,
-            error: "邮箱和密码不能为空"
+    const app = express();
+    console.log(" Express 应用创建成功");
+    
+    // 中间件
+    app.use(cors());
+    app.use(express.json());
+    console.log(" 中间件配置成功");
+    
+    // 健康检查
+    app.get("/api/health", (req, res) => {
+        console.log(" 健康检查被调用");
+        res.json({ 
+            status: "OK", 
+            message: "CatHealth API 运行正常",
+            timestamp: new Date().toISOString()
         });
-    }
+    });
     
-    const user = users.find(u => u.email === email && u.password === password);
-    
-    if (user) {
+    // 根路径
+    app.get("/", (req, res) => {
         res.json({
-            success: true,
-            message: "登录成功",
-            token: "jwt-token-" + Date.now(),
-            user: {
-                id: user.id,
-                name: user.name,
-                email: user.email
-            }
+            message: "CatHealth 后端服务运行中",
+            status: "success"
         });
-    } else {
-        res.status(401).json({
-            success: false,
-            error: "邮箱或密码错误"
-        });
-    }
-});
-
-// 根路径
-app.get("/", (req, res) => {
-    res.json({
-        message: "CatHealth 后端服务运行中",
-        endpoints: {
-            health: "/api/health",
-            login: "/api/auth/login",
-            debug: "/api/debug/users"
-        }
     });
-});
-
-// 调试接口
-app.get("/api/debug/users", (req, res) => {
-    res.json({
-        success: true,
-        users: users.map(u => ({ ...u, password: "***" }))
+    
+    // 启动服务器
+    const PORT = process.env.PORT || 3001;
+    console.log(\` 尝试在端口 \${PORT} 启动...\`);
+    
+    app.listen(PORT, "0.0.0.0", () => {
+        console.log(\` 服务器成功启动在端口 \${PORT}\`);
+        console.log(\` 服务地址: http://0.0.0.0:\${PORT}\`);
+    }).on('error', (err) => {
+        console.error(' 服务器启动失败:', err);
+        process.exit(1);
     });
-});
-
-// 错误处理
-app.use((err, req, res, next) => {
-    console.error("服务器错误:", err);
-    res.status(500).json({
-        success: false,
-        error: "内部服务器错误"
-    });
-});
-
-// 启动服务器
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, "0.0.0.0", () => {
-    console.log(\` 后端服务运行在端口 \${PORT}\`);
-    console.log(\` 本地访问: http://localhost:\${PORT}\`);
-    console.log(\` 健康检查: http://localhost:\${PORT}/api/health\`);
-}).on('error', (err) => {
-    console.error('服务器启动失败:', err);
+    
+} catch (error) {
+    console.error(' 初始化失败:', error);
     process.exit(1);
-});
-
-module.exports = app;
+}
