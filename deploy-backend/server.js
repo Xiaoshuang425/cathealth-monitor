@@ -1,14 +1,10 @@
 ﻿const express = require("express");
 const cors = require("cors");
-const path = require("path");
 const app = express();
 
 // 中间件
 app.use(cors());
 app.use(express.json());
-
-// 静态文件服务 - 用于 Vercel
-app.use(express.static(path.join(__dirname, "..", "..", "docs")));
 
 // 模拟用户数据
 const users = [
@@ -19,7 +15,11 @@ const users = [
 
 // 健康检查
 app.get("/api/health", (req, res) => {
-    res.json({ status: "OK", message: "CatHealth API 运行正常" });
+    res.json({ 
+        status: "OK", 
+        message: "CatHealth API 运行正常",
+        timestamp: new Date().toISOString()
+    });
 });
 
 // 登录 API
@@ -55,41 +55,14 @@ app.post("/api/auth/login", (req, res) => {
     }
 });
 
-// 注册 API
-app.post("/api/auth/register", (req, res) => {
-    console.log("注册请求:", req.body);
-    const { email, password, name } = req.body;
-    
-    if (!email || !password) {
-        return res.status(400).json({
-            success: false,
-            error: "邮箱和密码不能为空"
-        });
-    }
-    
-    if (users.find(u => u.email === email)) {
-        return res.status(409).json({
-            success: false,
-            error: "邮箱已存在"
-        });
-    }
-    
-    const newUser = {
-        id: users.length + 1,
-        email,
-        password,
-        name: name || "新用户"
-    };
-    
-    users.push(newUser);
-    
+// 根路径
+app.get("/", (req, res) => {
     res.json({
-        success: true,
-        message: "注册成功",
-        user: {
-            id: newUser.id,
-            name: newUser.name,
-            email: newUser.email
+        message: "CatHealth 后端服务运行中",
+        endpoints: {
+            health: "/api/health",
+            login: "/api/auth/login",
+            debug: "/api/debug/users"
         }
     });
 });
@@ -102,5 +75,24 @@ app.get("/api/debug/users", (req, res) => {
     });
 });
 
-// Vercel 需要导出 app
+// 错误处理
+app.use((err, req, res, next) => {
+    console.error("服务器错误:", err);
+    res.status(500).json({
+        success: false,
+        error: "内部服务器错误"
+    });
+});
+
+// 启动服务器
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, "0.0.0.0", () => {
+    console.log(\` 后端服务运行在端口 \${PORT}\`);
+    console.log(\` 本地访问: http://localhost:\${PORT}\`);
+    console.log(\` 健康检查: http://localhost:\${PORT}/api/health\`);
+}).on('error', (err) => {
+    console.error('服务器启动失败:', err);
+    process.exit(1);
+});
+
 module.exports = app;
