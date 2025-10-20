@@ -126,21 +126,66 @@
     <script src="/js/pwa-install.js?v=20241019"></script>
     
     <script>
-        // 注册 Service Worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/service-worker.js')
-                    .then(function(registration) {
-                        console.log('ServiceWorker 注册成功: ', registration.scope);
-                    })
-                    .catch(function(error) {
-                        console.log('ServiceWorker 注册失败: ', error);
-                    });
-            });
-        }
+        console.log('登录页面加载完成');
+        
+        // 自动填充测试账号
+        document.addEventListener('DOMContentLoaded', function() {
+            const emailInput = document.getElementById('login-email');
+            const passwordInput = document.getElementById('login-password');
+            
+            if (emailInput && passwordInput) {
+                emailInput.value = 'jiaminpan4@gmail.com';
+                passwordInput.value = '091103ka';
+                console.log('测试账号已自动填充');
+            }
+        });
+
+        // 登录表单提交处理 - 简化版本
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            console.log('登录按钮点击');
+            
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            // 显示加载状态
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 登录中...';
+            submitBtn.disabled = true;
+            
+            // 简单验证，直接跳转
+            setTimeout(() => {
+                if (email && password) {
+                    console.log('登录成功，准备跳转');
+                    localStorage.setItem('currentUser', JSON.stringify({
+                        name: '凌霜大王',
+                        email: email
+                    }));
+                    alert('登录成功！');
+                    window.location.href = 'dashboard.html';
+                } else {
+                    alert('请输入邮箱和密码');
+                }
+                
+                // 恢复按钮状态
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }, 1000);
+        });
+
+        // 密码显示/隐藏切换
+        document.getElementById('login-toggle-password').addEventListener('click', function() {
+            const passwordInput = document.getElementById('login-password');
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            this.classList.toggle('fa-eye');
+            this.classList.toggle('fa-eye-slash');
+        });
     </script>
 </body>
 </html>
+
 
 
 
