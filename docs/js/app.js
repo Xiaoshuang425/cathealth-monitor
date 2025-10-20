@@ -1,5 +1,5 @@
-﻿// CatHealth Monitor - 连接后端版本
-console.log('前端加载成功，后端地址: https://cathealth-backend1.onrender.com');
+﻿// CatHealth Monitor - 修复跳转版本
+console.log('前端加载成功');
 
 const CONFIG = {
     backendUrl: 'https://cathealth-backend1.onrender.com'
@@ -7,7 +7,7 @@ const CONFIG = {
 
 // 登录函数
 async function loginUser(email, password) {
-    console.log('发送登录请求到后端...');
+    console.log('发送登录请求...');
     
     try {
         const response = await fetch(\\/api/auth/login\, {
@@ -30,12 +30,11 @@ async function loginUser(email, password) {
         }
     } catch (error) {
         console.log('后端连接失败，使用模拟登录:', error);
-        // 备用模拟登录
         return await mockLogin(email, password);
     }
 }
 
-// 模拟登录备用
+// 模拟登录
 async function mockLogin(email, password) {
     return new Promise((resolve, reject) => {
         setTimeout(() => {
@@ -64,22 +63,9 @@ async function mockLogin(email, password) {
     });
 }
 
-// 检查后端状态
-async function checkBackendStatus() {
-    try {
-        const response = await fetch(\\/api/health\);
-        const data = await response.json();
-        console.log(' 后端状态正常:', data);
-        return { ok: true, data: data };
-    } catch (error) {
-        console.log(' 后端连接失败:', error);
-        return { ok: false, error: error.message };
-    }
-}
-
 // 初始化应用
 function initializeApp() {
-    console.log('初始化 CatHealth 应用...');
+    console.log('初始化应用...');
     
     const loginForm = document.getElementById('loginForm');
     const emailInput = document.getElementById('email');
@@ -108,25 +94,23 @@ function initializeApp() {
                 alert(result.message);
                 
                 if (result.success) {
-                    // 登录成功，跳转到仪表板
-                    window.location.href = 'dashboard.html';
+                    console.log('登录成功，准备跳转...');
+                    // 延迟一下让用户看到成功消息
+                    setTimeout(() => {
+                        console.log('跳转到仪表板...');
+                        window.location.href = 'dashboard.html';
+                    }, 1000);
                 }
             } catch (error) {
                 alert('登录失败: ' + error.message);
+                console.error('登录错误:', error);
             } finally {
                 submitBtn.innerHTML = originalText;
                 submitBtn.disabled = false;
             }
         });
     }
-    
-    // 检查后端状态
-    checkBackendStatus();
 }
 
 // 页面加载完成后初始化
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeApp);
-} else {
-    initializeApp();
-}
+document.addEventListener('DOMContentLoaded', initializeApp);
