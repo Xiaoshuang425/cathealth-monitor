@@ -1,4 +1,4 @@
-﻿* {
+﻿{
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -259,95 +259,6 @@ body {
     .btn {
         padding: 10px 20px;
         font-size: 0.9rem;
-    }
-}
-
-/* 仪表盘移动端样式 */
-@media (max-width: 768px) {
-    .dashboard-layout {
-        flex-direction: column;
-        min-height: auto;
-    }
-    
-    .sidebar {
-        width: 100%;
-        position: relative;
-        border-right: none;
-        border-bottom: 1px solid #E8D0B3;
-    }
-    
-    .sidebar-footer {
-        position: relative;
-        width: 100%;
-    }
-    
-    .main-content {
-        padding: 15px;
-    }
-    
-    .stats-grid {
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-    }
-    
-    .stat-card {
-        padding: 15px;
-    }
-    
-    .stat-icon {
-        width: 40px;
-        height: 40px;
-    }
-    
-    .stat-icon i {
-        font-size: 1.1rem;
-    }
-    
-    .stat-value {
-        font-size: 1.2rem;
-    }
-    
-    .actions-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .action-card {
-        padding: 20px;
-    }
-}
-
-/* 健康分析页面移动端样式 */
-@media (max-width: 968px) {
-    .analysis-layout {
-        grid-template-columns: 1fr;
-        gap: 20px;
-    }
-    
-    .analysis-container {
-        padding: 10px;
-    }
-    
-    .image-section,
-    .result-section {
-        padding: 20px;
-    }
-    
-    .upload-area {
-        padding: 40px 15px;
-        min-height: 250px;
-    }
-    
-    .upload-icon {
-        font-size: 3rem;
-    }
-    
-    .metrics-grid {
-        grid-template-columns: 1fr;
-        gap: 10px;
-    }
-    
-    .features-grid {
-        grid-template-columns: repeat(2, 1fr);
     }
 }
 
