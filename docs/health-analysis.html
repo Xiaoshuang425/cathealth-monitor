@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI健康分析 - CatHealth Monitor</title>
-    <link rel="stylesheet" href="./css/style.css">
+    <link rel="stylesheet" href="./docs/css/style.css">
     <!-- PWA配置 -->
     <meta name="theme-color" content="#8b7355">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -16,13 +16,13 @@
     <meta name="msapplication-config" content="browserconfig.xml">
     
     <!-- 图标链接 -->
-    <link rel="icon" type="image/png" href="./images/icons/icon-72x72.png">
-    <link rel="apple-touch-icon" href="./images/icons/icon-152x152.png">
-    <link rel="apple-touch-startup-image" href="./images/icons/icon-512x512.png">
+    <link rel="icon" type="image/png" href="images/icons/icon-72x72.png">
+    <link rel="apple-touch-icon" href="images/icons/icon-152x152.png">
+    <link rel="apple-touch-startup-image" href="images/icons/icon-512x512.png">
     
     <!-- Manifest -->
-    <link rel="manifest" href="./manifest.json">
-    <link rel="stylesheet" href="./https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .analysis-container {
             max-width: 1400px;
@@ -342,10 +342,10 @@
         </header>
 
         <nav style="text-align: center; margin-bottom: 30px;">
-            <a href="./dashboard.html" class="btn" style="background: #A8C8B8; margin-right: 10px;">
+            <a href="dashboard.html" class="btn" style="background: #A8C8B8; margin-right: 10px;">
                 <i class="fas fa-arrow-left"></i> 返回仪表盘
             </a>
-            <a href="./#" class="btn" style="background: #D4A574;" onclick="logout()">
+            <a href="#" class="btn" style="background: #D4A574;" onclick="logout()">
                 <i class="fas fa-sign-out-alt"></i> 退出登录
             </a>
         </nav>
@@ -367,7 +367,7 @@
                                 <p>支持 JPG、PNG 格式的图片</p>
                             </div>
                         </div>
-                        <img id="imagePreview" class="image-preview" src="./" alt="预览图片">
+                        <img id="imagePreview" class="image-preview" src="" alt="预览图片">
                     </div>
                     
                     <input type="file" id="fileInput" class="file-input" accept="image/*">
@@ -669,17 +669,9 @@
             }
         });
     </script>
-<script src="././js/pwa-install.js"></script>
+<script src="./js/pwa-install.js"></script>
 </body>
 </html>
-
-
-
-
-
-
-
-
 
 
 

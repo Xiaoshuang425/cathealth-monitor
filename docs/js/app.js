@@ -1,193 +1,139 @@
-﻿// === 模拟登录系统（GitHub Pages 静态部署）===
-const mockUsers = [
-    { email: "jiaminpan4@gmail.com", password: "091103ka", name: "凌霜大王" },
-    { email: "jiaminpan@gmail.com", password: "123456", name: "测试用户" }
-];
+﻿// CatHealth Monitor 前端JavaScript - 调试版本
+console.log("CatHealth Monitor 前端加载完成 - 调试版本");
 
-// 替换原来的 loginUser 函数
-window.mockLogin = async function(email, password) {
-    console.log("模拟登录:", email);
-    await new Promise(resolve => setTimeout(resolve, 500));
+// 调试函数：显示所有ID
+function debugAllIds() {
+    console.log("=== 所有ID调试 ===");
+    const allElements = document.querySelectorAll('[id]');
+    console.log("有ID的元素数量:", allElements.length);
     
-    const user = mockUsers.find(u => u.email === email && u.password === password);
-    if (user) {
-        localStorage.setItem("currentUser", JSON.stringify(user));
-        return { 
-            success: true, 
-            message: "登录成功",
-            user: { name: user.name, email: user.email }
-        };
-    }
-    throw new Error("邮箱或密码错误");
-};
-
-// 重定向到模拟登录
-if (typeof loginUser === 'undefined') {
-    var loginUser = window.mockLogin;
+    allElements.forEach(element => {
+        console.log(`ID: "${element.id}", 标签: <${element.tagName.toLowerCase()}>`);
+    });
 }
 
-
-
-
-
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CatHealth Monitor - 猫咪健康监测</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+document.addEventListener("DOMContentLoaded", function() {
+    console.log("DOM 加载完成");
     
-    <!-- PWA配置 -->
-    <meta name="theme-color" content="#8b7355">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="CatHealth">
-    <meta name="description" content="基于AI的猫咪健康分析与监测系统">
-    <link rel="manifest" href="./manifest.json">
-    <link rel="apple-touch-icon" href="./images/icons/icon-192x192.png">
-    <link rel="stylesheet" href="css/mobile.css">
-</head>
-<body>
-    <div class="container">
-        <div class="app-header">
-            <h1><i class="fas fa-cat"></i> CatHealth Monitor</h1>
-            <p>通过AI分析猫咪排泄物特征，实时监测健康风险</p>
-        </div>
-
-        <!-- 登录表单 -->
-        <div class="app-card" id="login-card">
-            <div class="card-header">
-                <h2>用户登录</h2>
-                <p>欢迎回到CatHealth Monitor</p>
-            </div>
-            <div class="card-body">
-                <form id="login-form">
-                    <div class="form-group">
-                        <label for="login-email">邮箱地址</label>
-                        <div class="input-with-icon">
-                            <i class="fas fa-envelope"></i>
-                            <input type="email" id="login-email" placeholder="请输入您的邮箱" required>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="login-password">密码</label>
-                        <div class="input-with-icon">
-                            <i class="fas fa-lock"></i>
-                            <input type="password" id="login-password" placeholder="请输入您的密码" required>
-                            <i class="fas fa-eye password-toggle" id="login-toggle-password"></i>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-primary">登录</button>
-                </form>
-                
-                <div class="switch-form">
-                    <p>还没有账号？<a href="./#" id="show-register">立即注册</a></p>
-                </div>
-            </div>
-        </div>
-
-        <!-- 注册表单 -->
-        <div class="app-card hidden" id="register-card">
-            <div class="card-header">
-                <h2>用户注册</h2>
-                <p>加入CatHealth Monitor，守护猫咪健康</p>
-            </div>
-            <div class="card-body">
-                <form id="register-form">
-                    <div class="form-group">
-                        <label for="register-name">姓名</label>
-                        <div class="input-with-icon">
-                            <i class="fas fa-user"></i>
-                            <input type="text" id="register-name" placeholder="请输入您的姓名" required>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="register-email">邮箱地址</label>
-                        <div class="input-with-icon">
-                            <i class="fas fa-envelope"></i>
-                            <input type="email" id="register-email" placeholder="请输入您的邮箱" required>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="register-password">密码</label>
-                        <div class="input-with-icon">
-                            <i class="fas fa-lock"></i>
-                            <input type="password" id="register-password" placeholder="请设置密码（至少6位）" required>
-                            <i class="fas fa-eye password-toggle" id="register-toggle-password"></i>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="register-confirm-password">确认密码</label>
-                        <div class="input-with-icon">
-                            <i class="fas fa-lock"></i>
-                            <input type="password" id="register-confirm-password" placeholder="请再次输入密码" required>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-primary">注册</button>
-                </form>
-                
-                <div class="switch-form">
-                    <p>已有账号？<a href="./#" id="show-login">立即登录</a></p>
-                </div>
-            </div>
-        </div>
-
-        <div class="features">
-            <div class="feature">
-                <i class="fas fa-camera"></i>
-                <h3>AI排泄物分析</h3>
-                <p>使用YOLO模型自动分析猫咪排泄物特征</p>
-            </div>
-            <div class="feature">
-                <i class="fas fa-map-marker-alt"></i>
-                <h3>GPS定位追踪</h3>
-                <p>实时追踪猫咪位置，设置安全区域</p>
-            </div>
-            <div class="feature">
-                <i class="fas fa-heartbeat"></i>
-                <h3>健康档案管理</h3>
-                <p>记录猫咪健康数据，生成健康报告</p>
-            </div>
-        </div>
-    </div>
-
-    <script src=".//js/app.js?v=20241019"></script>
-    <script src=".//js/pwa-install.js?v=20241019"></script>
+    // 运行调试
+    debugAllIds();
     
-    <script>
-        // 注册 Service Worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/././service-worker.js')
-                    .then(function(registration) {
-                        console.log('ServiceWorker 注册成功: ', registration.scope);
-                    })
-                    .catch(function(error) {
-                        console.log('ServiceWorker 注册失败: ', error);
-                    });
-            });
+    // 特别检查登录相关元素
+    console.log("=== 登录相关元素检查 ===");
+    const loginIds = ['login-form', 'login-email', 'login-password', 'username', 'password'];
+    loginIds.forEach(id => {
+        const element = document.getElementById(id);
+        console.log(`${id}:`, element ? " 找到" : " 未找到");
+    });
+    
+    // 登录功能（带备用方案）
+    const loginForm = document.getElementById("login-form") || 
+                     document.querySelector('form');
+    
+    if (loginForm) {
+        console.log("找到表单，绑定提交事件");
+        loginForm.addEventListener("submit", async function(e) {
+            e.preventDefault();
+            console.log("表单提交事件触发");
+            
+            // 尝试多种方式获取邮箱和密码
+            let email, password;
+            
+            // 方式1：通过ID
+            email = document.getElementById("login-email")?.value;
+            password = document.getElementById("login-password")?.value;
+            
+            // 方式2：通过类型
+            if (!email || !password) {
+                const emailInputs = document.querySelectorAll('input[type="email"]');
+                const passwordInputs = document.querySelectorAll('input[type="password"]');
+                if (emailInputs.length > 0) email = emailInputs[0].value;
+                if (passwordInputs.length > 0) password = passwordInputs[0].value;
+            }
+            
+            // 方式3：通过placeholder
+            if (!email || !password) {
+                const allInputs = document.querySelectorAll('input');
+                allInputs.forEach(input => {
+                    if (input.placeholder?.includes('邮箱') || input.placeholder?.includes('email')) {
+                        email = input.value;
+                    }
+                    if (input.placeholder?.includes('密码') || input.placeholder?.includes('password')) {
+                        password = input.value;
+                    }
+                });
+            }
+            
+            console.log("最终获取的值:", { email, password });
+            
+            if (!email || !password) {
+                alert("请填写邮箱和密码");
+                return;
+            }
+            
+            await loginUser(email, password);
+        });
+    } else {
+        console.error(" 找不到任何表单");
+    }
+    
+    // 其他功能保持不变...
+    const showRegister = document.getElementById("show-register");
+    const showLogin = document.getElementById("show-login");
+    
+    if (showRegister) {
+        showRegister.addEventListener("click", function(e) {
+            e.preventDefault();
+            document.getElementById("login-card").classList.add("hidden");
+            document.getElementById("register-card").classList.remove("hidden");
+        });
+    }
+    
+    if (showLogin) {
+        showLogin.addEventListener("click", function(e) {
+            e.preventDefault();
+            document.getElementById("register-card").classList.add("hidden");
+            document.getElementById("login-card").classList.remove("hidden");
+        });
+    }
+    
+    checkLoginStatus();
+});
+
+// 其他函数保持不变...
+async function loginUser(email, password) {
+    try {
+        console.log("发送登录请求:", email);
+        const response = await fetch("/api/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: email, password: password })
+        });
+        
+        const data = await response.json();
+        console.log("登录响应:", data);
+        
+        if (data.success) {
+            localStorage.setItem("token", data.token);
+            localStorage.setItem("user", JSON.stringify(data.user));
+            alert("登录成功！");
+            window.location.href = "/dashboard.html";
+        } else {
+            alert("登录失败: " + (data.error || "未知错误"));
         }
-    </script>
-</body>
-</html>
+    } catch (error) {
+        console.error("登录错误:", error);
+        alert("网络错误，请稍后重试");
+    }
+}
 
+// 注册和其他函数...
+async function registerUser(name, email, password) {
+    // 简化版本...
+}
 
+function checkLoginStatus() {
+    // 简化版本...
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+console.log(" 调试版本JavaScript加载完成");
