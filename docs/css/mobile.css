@@ -1,14 +1,14 @@
 ﻿/* 移动端样式补充 */
 @media (max-width: 480px) {
-    .login-header {
-        padding: 30px 20px;
+    .app-header h1 {
+        font-size: 2rem;
     }
     
-    .login-header h1 {
-        font-size: 24px;
+    .app-header p {
+        font-size: 1rem;
     }
     
-    .form-group input {
-        padding: 12px;
+    .card-body {
+        padding: 20px;
     }
 }

@@ -1,0 +1,9 @@
+﻿{
+  "name": "CatHealth Monitor",
+  "short_name": "CatHealth",
+  "description": "猫咪健康监测PWA应用",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#FDF8F0",
+  "theme_color": "#D4A574"
+}
