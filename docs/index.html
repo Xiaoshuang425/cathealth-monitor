@@ -1,12 +1,150 @@
 ﻿<!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-    <title>CatHealth Monitor</title>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CatHealth Monitor - 猫咪健康监测</title>
+    <link rel="stylesheet" href="./docs/css/style.css?v=20241019">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- PWA配置 -->
+    <meta name="theme-color" content="#8b7355">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="CatHealth">
+    <meta name="description" content="基于AI的猫咪健康分析与监测系统">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="images/icons/icon-192x192.png">
+    <link rel="stylesheet" href="./docs/css/mobile.css?v=20241019">
 </head>
 <body>
-    <h1> 猫咪健康监测系统</h1>
-    <p>网站正在加载中...</p>
-    <a href="login.html">点击登录</a>
+    <div class="container">
+        <div class="app-header">
+            <h1><i class="fas fa-cat"></i> CatHealth Monitor</h1>
+            <p>通过AI分析猫咪排泄物特征，实时监测健康风险</p>
+        </div>
+
+        <!-- 登录表单 -->
+        <div class="app-card" id="login-card">
+            <div class="card-header">
+                <h2>用户登录</h2>
+                <p>欢迎回到CatHealth Monitor</p>
+            </div>
+            <div class="card-body">
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="login-email">邮箱地址</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-envelope"></i>
+                            <input type="email" id="login-email" placeholder="请输入您的邮箱" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">密码</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="login-password" placeholder="请输入您的密码" required>
+                            <i class="fas fa-eye password-toggle" id="login-toggle-password"></i>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">登录</button>
+                </form>
+                
+                <div class="switch-form">
+                    <p>还没有账号？<a href="#" id="show-register">立即注册</a></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 注册表单 -->
+        <div class="app-card hidden" id="register-card">
+            <div class="card-header">
+                <h2>用户注册</h2>
+                <p>加入CatHealth Monitor，守护猫咪健康</p>
+            </div>
+            <div class="card-body">
+                <form id="register-form">
+                    <div class="form-group">
+                        <label for="register-name">姓名</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-user"></i>
+                            <input type="text" id="register-name" placeholder="请输入您的姓名" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-email">邮箱地址</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-envelope"></i>
+                            <input type="email" id="register-email" placeholder="请输入您的邮箱" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-password">密码</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="register-password" placeholder="请设置密码（至少6位）" required>
+                            <i class="fas fa-eye password-toggle" id="register-toggle-password"></i>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-confirm-password">确认密码</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="register-confirm-password" placeholder="请再次输入密码" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">注册</button>
+                </form>
+                
+                <div class="switch-form">
+                    <p>已有账号？<a href="#" id="show-login">立即登录</a></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="features">
+            <div class="feature">
+                <i class="fas fa-camera"></i>
+                <h3>AI排泄物分析</h3>
+                <p>使用YOLO模型自动分析猫咪排泄物特征</p>
+            </div>
+            <div class="feature">
+                <i class="fas fa-map-marker-alt"></i>
+                <h3>GPS定位追踪</h3>
+                <p>实时追踪猫咪位置，设置安全区域</p>
+            </div>
+            <div class="feature">
+                <i class="fas fa-heartbeat"></i>
+                <h3>健康档案管理</h3>
+                <p>记录猫咪健康数据，生成健康报告</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/app.js?v=20241019"></script>
+    <script src="/js/pwa-install.js?v=20241019"></script>
+    
+    <script>
+        // 注册 Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(function(registration) {
+                        console.log('ServiceWorker 注册成功: ', registration.scope);
+                    })
+                    .catch(function(error) {
+                        console.log('ServiceWorker 注册失败: ', error);
+                    });
+            });
+        }
+    </script>
 </body>
 </html>
+
+
+
+
+
+
+
