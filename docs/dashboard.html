@@ -623,8 +623,194 @@
             }
         });
     </script>
-</body>
+<script>
+        // 显示用户信息
+        try {
+            const userData = localStorage.getItem('currentUser');
+            if (userData) {
+                const user = JSON.parse(userData);
+                document.getElementById('user-name').textContent = user.name;
+                document.getElementById('user-email').textContent = user.email;
+            } else {
+                window.location.href = 'index.html';
+            }
+        } catch (error) {
+            console.log('用户信息加载失败:', error);
+            window.location.href = 'index.html';
+        }
+
+        // 侧边栏导航功能
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // 移除所有active类
+                document.querySelectorAll('.nav-item').forEach(nav => {
+                    nav.classList.remove('active');
+                });
+                
+                // 添加active类到当前项
+                this.classList.add('active');
+                
+                // 根据点击的菜单项显示不同内容
+                const navText = this.textContent.trim();
+                switch(navText) {
+                    case '控制面板':
+                        showDashboard();
+                        break;
+                    case '猫咪档案':
+                        showPetProfiles();
+                        break;
+                    case 'AI排泄物分析':
+                        showAIAnalysis();
+                        break;
+                    case '健康监测':
+                        showHealthMonitor();
+                        break;
+                    default:
+                        showDashboard();
+                }
+            });
+        });
+
+        // 显示控制面板
+        function showDashboard() {
+            document.querySelector('.content-area').innerHTML = `
+                <div class="welcome-banner">
+                    <h2>欢迎回来！</h2>
+                    <p>今天也要好好照顾您的猫咪哦 </p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-heartbeat"></i></div>
+                        <div class="stat-value">98%</div>
+                        <div class="stat-label">整体健康指数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-utensils"></i></div>
+                        <div class="stat-value">正常</div>
+                        <div class="stat-label">饮食状态</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-running"></i></div>
+                        <div class="stat-value">85%</div>
+                        <div class="stat-label">活动水平</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-weight"></i></div>
+                        <div class="stat-value">4.2kg</div>
+                        <div class="stat-label">平均体重</div>
+                    </div>
+                </div>
+
+                <h3 style="margin-bottom: 20px; color: var(--dark);">我的猫咪</h3>
+                <div class="pets-grid">
+                    <div class="pet-card">
+                        <div class="pet-header">
+                            <div class="pet-avatar">
+                                <i class="fas fa-cat"></i>
+                            </div>
+                            <h3>咪咪</h3>
+                            <p>英国短毛猫  3岁</p>
+                        </div>
+                        <div class="pet-body">
+                            <div class="pet-info">
+                                <div class="info-item">
+                                    <div class="info-label">体重</div>
+                                    <div class="info-value">4.2kg</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">体温</div>
+                                    <div class="info-value">38.2C</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">健康指数</div>
+                                    <div class="info-value" style="color: #28a745;">98%</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">活动量</div>
+                                    <div class="info-value">85%</div>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary" style="width: 100%;" onclick="showPetDetail('咪咪')">
+                                <i class="fas fa-chart-line"></i> 查看详细报告
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 显示猫咪档案
+        function showPetProfiles() {
+            document.querySelector('.content-area').innerHTML = `
+                <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 30px;">
+                    <h2>猫咪档案管理</h2>
+                    <button class="btn btn-primary">
+                        <i class="fas fa-plus"></i> 添加新猫咪
+                    </button>
+                </div>
+                
+                <div class="pets-grid">
+                    <!-- 猫咪档案卡片会在这里动态生成 -->
+                </div>
+            `;
+        }
+
+        // 显示AI分析页面
+        function showAIAnalysis() {
+            document.querySelector('.content-area').innerHTML = `
+                <div class="welcome-banner">
+                    <h2><i class="fas fa-robot"></i> AI智能分析</h2>
+                    <p>基于YOLOv8模型的排泄物健康分析系统</p>
+                </div>
+                
+                <div style="background: white; padding: 30px; border-radius: 10px; margin-bottom: 20px;">
+                    <h3 style="margin-bottom: 20px;">上传排泄物图片</h3>
+                    <div style="border: 2px dashed #ccc; padding: 40px; text-align: center; border-radius: 10px; cursor: pointer;">
+                        <i class="fas fa-cloud-upload-alt" style="font-size: 3rem; color: var(--primary); margin-bottom: 15px;"></i>
+                        <h4>点击上传图片或拖拽到此区域</h4>
+                        <p>支持 JPG、PNG 格式，最大 5MB</p>
+                        <input type="file" id="analysis-upload" accept="image/*" style="display: none;">
+                        <button class="btn btn-primary" onclick="document.getElementById('analysis-upload').click()" style="margin-top: 15px;">
+                            <i class="fas fa-upload"></i> 选择图片
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 显示健康监测
+        function showHealthMonitor() {
+            document.querySelector('.content-area').innerHTML = `
+                <div class="welcome-banner">
+                    <h2><i class="fas fa-heartbeat"></i> 健康监测中心</h2>
+                    <p>实时追踪猫咪健康数据与趋势分析</p>
+                </div>
+                
+                <div style="background: white; padding: 30px; border-radius: 10px;">
+                    <h3 style="margin-bottom: 20px;">健康数据趋势</h3>
+                    <div style="text-align: center; padding: 40px; color: var(--gray);">
+                        <i class="fas fa-chart-line" style="font-size: 4rem; margin-bottom: 20px;"></i>
+                        <p>健康图表加载中...</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 退出登录
+        document.querySelector('.user-info').addEventListener('click', function() {
+            if (confirm('确定要退出登录吗？')) {
+                localStorage.removeItem('currentUser');
+                window.location.href = 'index.html';
+            }
+        });
+
+        console.log('专业仪表板加载完成');
+    </script></body>
 </html>
+
 
 
 
