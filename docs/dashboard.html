@@ -175,6 +175,61 @@
             margin-bottom: 10px;
         }
 
+        .analysis-section {
+            background: var(--light);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border: 1px solid var(--primary-light);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--primary);
+            padding: 40px;
+            text-align: center;
+            border-radius: 10px;
+            margin: 20px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--light-bg);
+        }
+
+        .upload-area:hover {
+            border-color: var(--secondary);
+            background: var(--light);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+
+        .detection-results {
+            margin-top: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid var(--primary-light);
+        }
+
+        .result-item {
+            background: var(--light-bg);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid var(--secondary);
+        }
+
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -294,13 +349,14 @@
             background: var(--primary-light);
         }
 
-        .section-title {
-            font-size: 1.5rem;
-            margin-bottom: 20px;
+        .btn-analysis {
+            background: var(--secondary);
             color: var(--dark);
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn-analysis:hover {
+            background: #7DAE8B;
         }
 
         @media (max-width: 768px) {
@@ -334,6 +390,9 @@
                     <i class="fas fa-home"></i>控制面板
                 </a>
                 <a href="#" class="nav-item">
+                    <i class="fas fa-robot"></i>AI排泄物分析
+                </a>
+                <a href="#" class="nav-item">
                     <i class="fas fa-cat"></i>猫咪档案
                 </a>
                 <a href="#" class="nav-item">
@@ -343,9 +402,6 @@
             
             <div class="nav-section">
                 <div class="nav-title">智能分析</div>
-                <a href="#" class="nav-item">
-                    <i class="fas fa-robot"></i>AI排泄物分析
-                </a>
                 <a href="#" class="nav-item">
                     <i class="fas fa-chart-line"></i>健康趋势
                 </a>
@@ -387,9 +443,46 @@
         <div class="content-area">
             <div class="welcome-banner">
                 <h2>欢迎回来！ </h2>
-                <p>今天也要好好照顾您的猫咪哦～温暖的米色主题让管理更舒心</p>
+                <p>使用AI智能分析，全方位守护猫咪健康</p>
             </div>
 
+            <!-- 粪便检测功能区 - 放在首页顶部 -->
+            <div class="analysis-section">
+                <div class="section-title">
+                    <i class="fas fa-robot"></i> AI排泄物智能分析
+                </div>
+                <p style="margin-bottom: 20px; color: var(--gray);">上传猫咪排泄物照片，AI自动分析健康状态</p>
+                
+                <div class="upload-area" id="upload-area">
+                    <div class="upload-icon">
+                        <i class="fas fa-camera"></i>
+                    </div>
+                    <h3>点击上传排泄物图片</h3>
+                    <p>支持 JPG、PNG 格式，最大 5MB</p>
+                    <input type="file" id="image-upload" accept="image/*" style="display: none;">
+                    <button class="btn btn-analysis" onclick="document.getElementById('image-upload').click()">
+                        <i class="fas fa-upload"></i> 选择图片
+                    </button>
+                </div>
+                
+                <div class="detection-results" id="detection-results" style="display: none;">
+                    <h4><i class="fas fa-chart-bar"></i> 分析结果</h4>
+                    <div class="result-item">
+                        <strong>健康状态:</strong> <span style="color: #28a745;">正常</span>
+                    </div>
+                    <div class="result-item">
+                        <strong>检测到的特征:</strong> 正常排泄物形态，无异常
+                    </div>
+                    <div class="result-item">
+                        <strong>置信度:</strong> 92%
+                    </div>
+                    <div class="result-item">
+                        <strong>建议:</strong> 继续保持当前饮食和护理习惯
+                    </div>
+                </div>
+            </div>
+
+            <!-- 健康统计 -->
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-icon"><i class="fas fa-heartbeat"></i></div>
@@ -413,6 +506,7 @@
                 </div>
             </div>
 
+            <!-- 我的猫咪 - 放在粪便检测下面 -->
             <div class="section-title">
                 <i class="fas fa-paw"></i> 我的猫咪
             </div>
@@ -502,6 +596,44 @@
             window.location.href = 'index.html';
         }
 
+        // 图片上传功能
+        document.getElementById('image-upload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                console.log('选择图片:', file.name);
+                
+                // 显示加载状态
+                const uploadArea = document.getElementById('upload-area');
+                uploadArea.innerHTML = `
+                    <div class="upload-icon">
+                        <i class="fas fa-spinner fa-spin"></i>
+                    </div>
+                    <h3>分析中...</h3>
+                    <p>AI正在分析排泄物图片</p>
+                `;
+                
+                // 模拟分析过程
+                setTimeout(() => {
+                    // 显示分析结果
+                    document.getElementById('detection-results').style.display = 'block';
+                    
+                    // 恢复上传区域
+                    uploadArea.innerHTML = `
+                        <div class="upload-icon">
+                            <i class="fas fa-check-circle" style="color: #28a745;"></i>
+                        </div>
+                        <h3>分析完成！</h3>
+                        <p>点击可重新上传图片</p>
+                        <button class="btn btn-analysis" onclick="document.getElementById('image-upload').click()">
+                            <i class="fas fa-sync-alt"></i> 重新上传
+                        </button>
+                    `;
+                    
+                    alert('AI分析完成！猫咪健康状况良好。');
+                }, 2000);
+            }
+        });
+
         // 侧边栏导航功能
         document.querySelectorAll('.nav-item').forEach(item => {
             item.addEventListener('click', function(e) {
@@ -529,7 +661,7 @@
             }
         });
 
-        console.log('米色主题仪表板加载完成');
+        console.log('新版仪表板加载完成 - 粪便检测功能在首页');
     </script>
 </body>
 </html>
