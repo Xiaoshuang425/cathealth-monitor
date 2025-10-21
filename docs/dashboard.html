@@ -1027,15 +1027,63 @@
                     </p>
                 </div>
             </div>
+                        <!-- 猫咪档案页面 -->
             <div id="pets-page" class="page-content">
                 <div class="welcome-banner">
-                    <h2> 猫咪档案管理</h2>
-                    <p>管理您的爱猫信息，查看详细健康档案</p>
+                    <h2>🐱 猫咪档案管理</h2>
+                    <p>管理您的爱猫信息，支持多猫家庭</p>
                 </div>
-                <div style="text-align: center; padding: 50px;">
-                    <i class="fas fa-cat" style="font-size: 4rem; color: var(--primary); margin-bottom: 20px;"></i>
-                    <h3>猫咪档案功能开发中</h3>
-                    <p style="color: var(--gray);">即将推出，敬请期待！</p>
+
+                <!-- 添加猫咪按钮 -->
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <button class="btn btn-primary" onclick="showAddPetModal()" style="font-size: 1.1rem; padding: 12px 25px;">
+                        <i class="fas fa-plus"></i> 添加新猫咪
+                    </button>
+                </div>
+
+                <!-- 猫咪网格 -->
+                <div class="pets-grid" id="pets-container">
+                    <!-- 动态生成的猫咪卡片 -->
+                </div>
+            </div>
+
+            <!-- 健康详情页面（不在侧边栏显示） -->
+            <div id="health-detail-page" class="page-content">
+                <div class="welcome-banner">
+                    <h2> 健康详情</h2>
+                    <p>查看猫咪的详细健康信息</p>
+                </div>
+
+                <div class="analysis-section">
+                    <div class="section-title">
+                        <i class="fas fa-edit"></i> 编辑健康信息
+                    </div>
+                    
+                    <div style="max-width: 500px; margin: 0 auto;">
+                        <div class="form-group" style="margin-bottom: 20px;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--dark);">体重 (kg)</label>
+                            <input type="text" id="detail-weight" class="input-with-icon" placeholder="例如: 4.2" style="width: 100%; padding: 12px; border: 1px solid var(--primary-light); border-radius: 8px;">
+                        </div>
+                        
+                        <div class="form-group" style="margin-bottom: 20px;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--dark);">品种</label>
+                            <input type="text" id="detail-breed" class="input-with-icon" placeholder="例如: 英国短毛猫" style="width: 100%; padding: 12px; border: 1px solid var(--primary-light); border-radius: 8px;">
+                        </div>
+                        
+                        <div class="form-group" style="margin-bottom: 20px;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--dark);">年龄</label>
+                            <input type="text" id="detail-age" class="input-with-icon" placeholder="例如: 3岁" style="width: 100%; padding: 12px; border: 1px solid var(--primary-light); border-radius: 8px;">
+                        </div>
+                        
+                        <div class="form-group" style="margin-bottom: 30px;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--dark);">备注</label>
+                            <textarea id="detail-notes" class="input-with-icon" placeholder="特殊需求、病史等信息" style="width: 100%; padding: 12px; border: 1px solid var(--primary-light); border-radius: 8px; height: 100px; resize: vertical;"></textarea>
+                        </div>
+                        
+                        <button class="btn btn-primary" onclick="saveHealthDetail()" style="width: 100%; padding: 15px;">
+                            <i class="fas fa-save"></i> 保存健康信息
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -1500,9 +1548,153 @@ function updatePetDisplay() {
         });
 
         console.log('猫咪照片功能加载完成');
-    </script>
+    
+// ==================== 多猫管理功能 ====================
+let allPets = JSON.parse(localStorage.getItem(''allPets'') || ''[]'');
+
+// 渲染所有猫咪
+function renderPets() {
+    const container = document.getElementById(''pets-container'');
+    
+    if (allPets.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 50px; color: var(--gray);">
+                <i class="fas fa-cat" style="font-size: 4rem; margin-bottom: 20px;"></i>
+                <h3>还没有添加猫咪</h3>
+                <p>点击上方按钮添加您的第一只猫咪</p>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = allPets.map(pet => `
+        <div class="pet-card">
+            <button class="upload-pet-btn" onclick="editPetPhoto(''${pet.id}'')" title="更换照片">
+                <i class="fas fa-camera"></i>
+            </button>
+            <button class="delete-pet-btn" onclick="deletePet(''${pet.id}'')" title="删除猫咪">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="pet-header">
+                <div class="pet-avatar" style="background-image: url(''${pet.photo}'');" onclick="viewHealthDetail(''${pet.id}'')">
+                    <i class="fas fa-cat"></i>
+                </div>
+                <h3>${pet.name}</h3>
+                <p>${pet.breed || ''未设置品种''}  ${pet.age || ''未设置年龄''}</p>
+            </div>
+            <div class="pet-body">
+                <div class="pet-info">
+                    <div class="info-item">
+                        <div class="info-label">体重</div>
+                        <div class="info-value">${pet.weight || ''--''}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">品种</div>
+                        <div class="info-value">${pet.breed || ''--''}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">年龄</div>
+                        <div class="info-value">${pet.age || ''--''}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">状态</div>
+                        <div class="info-value" style="color: #28a745;">健康</div>
+                    </div>
+                </div>
+                ${pet.notes ? `<div style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin-top: 10px; font-size: 0.9rem; color: var(--gray);">${pet.notes}</div>` : ''}
+                <button class="btn btn-primary" style="width: 100%; margin-top: 15px;" onclick="viewHealthDetail(''${pet.id}'')">
+                    <i class="fas fa-chart-line"></i> 查看详细报告
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// 查看健康详情
+function viewHealthDetail(petId) {
+    const pet = allPets.find(p => p.id === petId);
+    if (pet) {
+        // 填充表单
+        document.getElementById(''detail-weight'').value = pet.weight || '''';
+        document.getElementById(''detail-breed'').value = pet.breed || '''';
+        document.getElementById(''detail-age'').value = pet.age || '''';
+        document.getElementById(''detail-notes'').value = pet.notes || '''';
+        
+        // 显示健康详情页面
+        showPage(''health-detail'');
+        window.currentEditingPetId = petId;
+    }
+}
+
+// 保存健康详情
+function saveHealthDetail() {
+    const petId = window.currentEditingPetId;
+    if (!petId) return;
+
+    const petIndex = allPets.findIndex(p => p.id === petId);
+    if (petIndex !== -1) {
+        allPets[petIndex] = {
+            ...allPets[petIndex],
+            weight: document.getElementById(''detail-weight'').value,
+            breed: document.getElementById(''detail-breed'').value,
+            age: document.getElementById(''detail-age'').value,
+            notes: document.getElementById(''detail-notes'').value
+        };
+        
+        localStorage.setItem(''allPets'', JSON.stringify(allPets));
+        renderPets();
+        alert('' 健康信息保存成功！'');
+        showPage(''pets''); // 返回猫咪档案页面
+    }
+}
+
+// 删除猫咪
+function deletePet(petId) {
+    if (confirm(''确定要删除这只猫咪吗？此操作无法撤销。'')) {
+        allPets = allPets.filter(p => p.id !== petId);
+        localStorage.setItem(''allPets'', JSON.stringify(allPets));
+        renderPets();
+    }
+}
+
+// 修改保存照片函数来支持多猫
+const originalSaveCatPhoto = saveCatPhoto;
+saveCatPhoto = function() {
+    const fileInput = document.getElementById(''cat-photo-upload'');
+    if (fileInput.files.length > 0) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const newPet = {
+                id: Date.now().toString(),
+                name: ''新猫咪'',
+                photo: e.target.result,
+                breed: '''',
+                age: '''',
+                weight: '''',
+                notes: '''',
+                createdAt: new Date().toISOString()
+            };
+
+            allPets.push(newPet);
+            localStorage.setItem(''allPets'', JSON.stringify(allPets));
+            
+            closeCatPhotoModal();
+            renderPets();
+            alert('' 猫咪添加成功！'');
+        };
+        reader.readAsDataURL(fileInput.files[0]);
+    } else {
+        alert(''请先选择照片！'');
+    }
+};
+
+// 页面加载时渲染猫咪
+document.addEventListener(''DOMContentLoaded'', function() {
+    renderPets();
+});</script>
 </body>
 </html>
+
 
 
 
