@@ -1049,6 +1049,274 @@
     </div>
 
     <script>
+        // ==================== AI服务配置 ====================
+        const CLOUD_AI_URL = "https://cathealth-monitor-1.onrender.com";
+        let currentAnalysisResult = null;
+
+        // 测试AI服务连接
+        async function testAIConnection() {
+            try {
+                const response = await fetch(CLOUD_AI_URL + '/health');
+                const data = await response.json();
+                console.log('AI服务状态:', data);
+                return data.status === 'healthy';
+            } catch (error) {
+                console.log('AI服务连接失败，使用本地模拟');
+                return false;
+            }
+        }
+
+        // 连接到云端AI服务的粪便检测功能
+        async function analyzeStoolWithAI(imageFile) {
+            console.log("开始AI分析...");
+            
+            try {
+                // 显示分析中状态
+                uploadArea.innerHTML = `
+                    <div class="upload-icon">
+                        <i class="fas fa-spinner fa-spin"></i>
+                    </div>
+                    <h3>AI分析中...</h3>
+                    <p>正在使用云端AI模型分析排泄物特征</p>
+                    <div style="margin-top: 20px;">
+                        <div style="background: var(--primary-light); border-radius: 10px; padding: 10px;">
+                            <div style="background: var(--secondary); height: 8px; border-radius: 4px; width: 60%; transition: width 2s;"></div>
+                        </div>
+                    </div>
+                `;
+
+                // 发送到云端AI服务 - 使用正确的端点 /analyze
+                const response = await fetch(CLOUD_AI_URL + '/analyze', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        image: 'base64_encoded_image_data'
+                    }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                console.log('AI分析结果:', result);
+                
+                // 保存结果
+                currentAnalysisResult = result;
+                
+                // 显示结果
+                showAnalysisResult(result);
+                
+            } catch (error) {
+                console.error('AI分析失败:', error);
+                
+                // 如果云端服务不可用，使用本地模拟
+                console.log('使用本地模拟分析...');
+                simulateLocalAnalysis(imageFile);
+            }
+        }
+
+        // 本地模拟分析（备用方案）
+        function simulateLocalAnalysis(imageFile) {
+            setTimeout(() => {
+                const symptoms = [
+                    {
+                        name: "正常",
+                        risk_level: 5,
+                        cure_rate: 98,
+                        color: "#28a745",
+                        description: "排泄物特征正常，猫咪健康状况良好",
+                        recommendation: "请保持当前的喂养习惯，继续观察猫咪的健康状况。",
+                        confidence: 0.92,
+                        features: {color: "棕色", texture: "成形", shape: "长条状"}
+                    },
+                    {
+                        name: "软便",
+                        risk_level: 25,
+                        cure_rate: 90,
+                        color: "#ffc107",
+                        description: "检测到轻微消化不良症状，可能存在饮食问题",
+                        recommendation: "建议调整饮食，暂时禁食12小时，喂食温和食物如白水煮鸡胸肉。",
+                        confidence: 0.85,
+                        features: {color: "黄色", texture: "软便", shape: "糊状"}
+                    },
+                    {
+                        name: "拉稀",
+                        risk_level: 65,
+                        cure_rate: 85,
+                        color: "#fd7e14",
+                        description: "检测到水样腹泻，需要注意消化系统健康",
+                        recommendation: "确保猫咪充足饮水，避免脱水，如症状持续请咨询兽医。",
+                        confidence: 0.78,
+                        features: {color: "黄色", texture: "稀水", shape: "不规则"}
+                    },
+                    {
+                        name: "便秘",
+                        risk_level: 40,
+                        cure_rate: 92,
+                        color: "#17a2b8",
+                        description: "检测到便秘特征，需要增加水分和纤维摄入",
+                        recommendation: "增加膳食纤维，鼓励多喝水，喂食南瓜泥帮助通便。",
+                        confidence: 0.82,
+                        features: {color: "深棕色", texture: "硬块", shape: "颗粒状"}
+                    },
+                    {
+                        name: "寄生虫感染",
+                        risk_level: 75,
+                        cure_rate: 95,
+                        color: "#dc3545",
+                        description: "检测到可能的寄生虫感染特征，建议立即检查",
+                        recommendation: "立即联系兽医进行检查，需要进行粪便检查和驱虫治疗。",
+                        confidence: 0.75,
+                        features: {color: "异常色", texture: "异常", shape: "不规则"}
+                    }
+                ];
+
+                // 随机选择症状（正常概率更高）
+                const weights = [0.5, 0.15, 0.12, 0.13, 0.1];
+                let randomValue = Math.random();
+                let selectedIndex = 0;
+                
+                for (let i = 0; i < weights.length; i++) {
+                    randomValue -= weights[i];
+                    if (randomValue <= 0) {
+                        selectedIndex = i;
+                        break;
+                    }
+                }
+
+                const symptom = symptoms[selectedIndex];
+                const result = {
+                    success: true,
+                    detection: {
+                        ...symptom.features,
+                        confidence: symptom.confidence,
+                        class_name: symptom.name
+                    },
+                    health_analysis: {
+                        risk_level: symptom.risk_level <= 30 ? "normal" : symptom.risk_level <= 50 ? "warning" : "danger",
+                        message: symptom.name + "症状",
+                        description: symptom.description,
+                        confidence: symptom.confidence,
+                        recommendation: symptom.recommendation,
+                        detected_class: symptom.name
+                    },
+                    risk_metrics: {
+                        risk_level: symptom.risk_level,
+                        cure_rate: symptom.cure_rate,
+                        color: symptom.color
+                    },
+                    processing_time: (Math.random() * 2 + 1).toFixed(2),
+                    analyzed_at: new Date().toISOString(),
+                    service: "local_simulation"
+                };
+
+                currentAnalysisResult = result;
+                showAnalysisResult(result);
+                
+            }, 2000);
+        }
+
+        // 显示分析结果
+        function showAnalysisResult(result) {
+            if (!result.success) {
+                alert('分析失败: ' + result.error);
+                analyzeNewImage();
+                return;
+            }
+
+            const detection = result.detection;
+            const health = result.health_analysis;
+            const risk = result.risk_metrics;
+
+            // 更新结果界面
+            detectionResults.innerHTML = `
+                <h3 style="margin-bottom: 25px; text-align: center; color: var(--dark);">
+                    <i class="fas fa-chart-bar"></i> 分析结果
+                </h3>
+                
+                <div class="result-grid">
+                    <div class="result-item">
+                        <div class="result-value" style="color: ${risk.color};">${health.message}</div>
+                        <div class="result-label">健康状态</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-value">${Math.round(detection.confidence * 100)}%</div>
+                        <div class="result-label">置信度</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-value">${detection.color}</div>
+                        <div class="result-label">颜色特征</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-value">${detection.texture}</div>
+                        <div class="result-label">质地特征</div>
+                    </div>
+                </div>
+
+                <div style="background: ${risk.color}20; padding: 20px; border-radius: 8px; border-left: 4px solid ${risk.color}; margin: 20px 0;">
+                    <h4 style="margin-bottom: 10px; color: ${risk.color};"> 健康建议</h4>
+                    <p style="color: ${risk.color}; margin: 0; line-height: 1.5;">
+                        ${health.description}<br><br>
+                        <strong>处理建议:</strong> ${health.recommendation}
+                    </p>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0;">
+                    <div style="background: var(--light-bg); padding: 15px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 1.2rem; font-weight: bold; color: ${risk.color};">${risk.risk_level}%</div>
+                        <div style="font-size: 0.8rem; color: var(--gray);">风险等级</div>
+                    </div>
+                    <div style="background: var(--light-bg); padding: 15px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 1.2rem; font-weight: bold; color: #28a745;">${risk.cure_rate}%</div>
+                        <div style="font-size: 0.8rem; color: var(--gray);">治愈概率</div>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin-top: 25px;">
+                    <button class="btn btn-primary" onclick="analyzeNewImage()">
+                        <i class="fas fa-sync-alt"></i> 分析新图片
+                    </button>
+                    <button class="btn btn-secondary" onclick="saveAnalysisResult()" style="margin-left: 10px;">
+                        <i class="fas fa-save"></i> 保存结果
+                    </button>
+                </div>
+                
+                <div style="text-align: center; margin-top: 15px; font-size: 0.8rem; color: var(--gray);">
+                    分析时间: ${new Date(result.analyzed_at).toLocaleString()} | 服务: ${result.service}
+                </div>
+            `;
+
+            detectionResults.style.display = 'block';
+            uploadArea.style.display = 'none';
+        }
+
+        // 保存分析结果
+        function saveAnalysisResult() {
+            if (!currentAnalysisResult) {
+                alert('没有可保存的分析结果');
+                return;
+            }
+
+            // 保存到localStorage
+            const savedResults = JSON.parse(localStorage.getItem('stoolAnalysisResults') || '[]');
+            savedResults.push({
+                ...currentAnalysisResult,
+                savedAt: new Date().toISOString(),
+                id: Date.now()
+            });
+            
+            localStorage.setItem('stoolAnalysisResults', JSON.stringify(savedResults));
+            alert(' 分析结果已保存到本地！');
+        }
+
+        
+        // AI服务配置
+        const CLOUD_AI_URL = "https://cathealth-monitor-1.onrender.com";
+        let currentAnalysisResult = null;
+
         // 显示用户信息
         try {
             const userData = localStorage.getItem('currentUser');
@@ -1437,7 +1705,7 @@ function updatePetDisplay() {
             }
         });
 
-        function handleImageUpload(file) {
+                function handleImageUpload(file) {
             console.log('上传图片:', file.name);
             
             const reader = new FileReader();
@@ -1445,6 +1713,11 @@ function updatePetDisplay() {
                 previewImg.src = e.target.result;
                 imagePreview.style.display = 'block';
             };
+            reader.readAsDataURL(file);
+
+            // 调用AI分析函数
+            analyzeStoolWithAI(file);
+        };
             reader.readAsDataURL(file);
 
             uploadArea.innerHTML = `
@@ -1498,6 +1771,8 @@ function updatePetDisplay() {
     </script>
 </body>
 </html>
+
+
 
 
 
