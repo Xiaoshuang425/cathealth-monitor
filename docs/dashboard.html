@@ -443,6 +443,29 @@
             font-style: italic;
         }
 
+                .edit-pet-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: var(--secondary);
+            color: var(--dark);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .edit-pet-btn:hover {
+            background: #7DAE8B;
+            transform: scale(1.1);
+        }
+
         .upload-pet-btn {
             position: absolute;
             top: 10px;
@@ -945,11 +968,211 @@
                 }, 1000);
             }
             
-            // 更新猫咪信息显示
+            
+// 编辑猫咪信息
+function editPetInfo() {
+    // 从localStorage加载已保存的数据
+    const savedInfo = JSON.parse(localStorage.getItem('petInfo') || '{}');
+    
+    // 填充表单
+    document.getElementById('edit-cat-name').value = savedInfo.name || '';
+    document.getElementById('edit-cat-breed').value = savedInfo.breed || '';
+    document.getElementById('edit-cat-age').value = savedInfo.age || '';
+    document.getElementById('edit-cat-weight').value = savedInfo.weight || '';
+    document.getElementById('edit-cat-gender').value = savedInfo.gender || '';
+    
+    // 显示模态框
+    document.getElementById('edit-pet-modal').classList.add('active');
+}
+
+// 关闭编辑模态框
+function closeEditModal() {
+    document.getElementById('edit-pet-modal').classList.remove('active');
+}
+
+// 保存猫咪信息
+function savePetInfo() {
+    const petInfo = {
+        name: document.getElementById('edit-cat-name').value || '我的猫咪',
+        breed: document.getElementById('edit-cat-breed').value,
+        age: document.getElementById('edit-cat-age').value,
+        weight: document.getElementById('edit-cat-weight').value,
+        gender: document.getElementById('edit-cat-gender').value
+    };
+    
+    // 保存到localStorage
+    localStorage.setItem('petInfo', JSON.stringify(petInfo));
+    
+    // 更新显示
+    updatePetDisplay();
+    
+    // 关闭模态框
+    closeEditModal();
+    
+    alert(' 猫咪信息保存成功！');
+}
+
+// 更新猫咪信息显示
+function updatePetDisplay() {
+    const petInfo = JSON.parse(localStorage.getItem('petInfo') || '{}');
+    const catPhoto = localStorage.getItem('catPhoto');
+    
+    // 更新基本信息
+    document.getElementById('cat-name').textContent = petInfo.name || '我的猫咪';
+    document.getElementById('cat-breed').textContent = petInfo.breed ? `${petInfo.breed}  ${petInfo.age || '年龄'}` : '品种  年龄';
+    
+    // 更新详细信息
+    document.getElementById('cat-breed-value').textContent = petInfo.breed || '--';
+    document.getElementById('cat-age-value').textContent = petInfo.age || '--';
+    document.getElementById('cat-weight-value').textContent = petInfo.weight || '--';
+    document.getElementById('cat-gender-value').textContent = petInfo.gender || '--';
+    
+    // 移除无数据样式
+    const infoValues = document.querySelectorAll('.info-value');
+    infoValues.forEach(el => {
+        if (el.textContent !== '--') {
+            el.classList.remove('no-data');
+        } else {
+            el.classList.add('no-data');
+        }
+    });
+    
+    // 更新头像（如果有照片）
+    const avatar = document.getElementById('main-cat-avatar');
+    if (catPhoto) {
+        avatar.style.backgroundImage = `url(${catPhoto})`;
+        avatar.classList.add('has-image');
+    } else {
+        avatar.style.backgroundImage = '';
+        avatar.classList.remove('has-image');
+    }
+    
+    // 如果有猫咪信息，显示模拟的健康数据
+    if (petInfo.name && petInfo.name !== '我的猫咪') {
+        document.getElementById('health-index').textContent = '98%';
+        document.getElementById('health-index').classList.remove('no-data');
+        document.getElementById('diet-status').textContent = '正常';
+        document.getElementById('diet-status').classList.remove('no-data');
+        document.getElementById('activity-level').textContent = '85%';
+        document.getElementById('activity-level').classList.remove('no-data');
+        document.getElementById('avg-weight').textContent = petInfo.weight || '4.2kg';
+        document.getElementById('avg-weight').classList.remove('no-data');
+    } else {
+        // 没有猫咪信息，显示横线
+        document.getElementById('health-index').textContent = '--';
+        document.getElementById('health-index').classList.add('no-data');
+        document.getElementById('diet-status').textContent = '--';
+        document.getElementById('diet-status').classList.add('no-data');
+        document.getElementById('activity-level').textContent = '--';
+        document.getElementById('activity-level').classList.add('no-data');
+        document.getElementById('avg-weight').textContent = '--';
+        document.getElementById('avg-weight').classList.add('no-data');
+    }
+}
             updateCatDisplay();
         }
 
-        // 更新猫咪信息显示
+        
+// 编辑猫咪信息
+function editPetInfo() {
+    // 从localStorage加载已保存的数据
+    const savedInfo = JSON.parse(localStorage.getItem('petInfo') || '{}');
+    
+    // 填充表单
+    document.getElementById('edit-cat-name').value = savedInfo.name || '';
+    document.getElementById('edit-cat-breed').value = savedInfo.breed || '';
+    document.getElementById('edit-cat-age').value = savedInfo.age || '';
+    document.getElementById('edit-cat-weight').value = savedInfo.weight || '';
+    document.getElementById('edit-cat-gender').value = savedInfo.gender || '';
+    
+    // 显示模态框
+    document.getElementById('edit-pet-modal').classList.add('active');
+}
+
+// 关闭编辑模态框
+function closeEditModal() {
+    document.getElementById('edit-pet-modal').classList.remove('active');
+}
+
+// 保存猫咪信息
+function savePetInfo() {
+    const petInfo = {
+        name: document.getElementById('edit-cat-name').value || '我的猫咪',
+        breed: document.getElementById('edit-cat-breed').value,
+        age: document.getElementById('edit-cat-age').value,
+        weight: document.getElementById('edit-cat-weight').value,
+        gender: document.getElementById('edit-cat-gender').value
+    };
+    
+    // 保存到localStorage
+    localStorage.setItem('petInfo', JSON.stringify(petInfo));
+    
+    // 更新显示
+    updatePetDisplay();
+    
+    // 关闭模态框
+    closeEditModal();
+    
+    alert(' 猫咪信息保存成功！');
+}
+
+// 更新猫咪信息显示
+function updatePetDisplay() {
+    const petInfo = JSON.parse(localStorage.getItem('petInfo') || '{}');
+    const catPhoto = localStorage.getItem('catPhoto');
+    
+    // 更新基本信息
+    document.getElementById('cat-name').textContent = petInfo.name || '我的猫咪';
+    document.getElementById('cat-breed').textContent = petInfo.breed ? `${petInfo.breed}  ${petInfo.age || '年龄'}` : '品种  年龄';
+    
+    // 更新详细信息
+    document.getElementById('cat-breed-value').textContent = petInfo.breed || '--';
+    document.getElementById('cat-age-value').textContent = petInfo.age || '--';
+    document.getElementById('cat-weight-value').textContent = petInfo.weight || '--';
+    document.getElementById('cat-gender-value').textContent = petInfo.gender || '--';
+    
+    // 移除无数据样式
+    const infoValues = document.querySelectorAll('.info-value');
+    infoValues.forEach(el => {
+        if (el.textContent !== '--') {
+            el.classList.remove('no-data');
+        } else {
+            el.classList.add('no-data');
+        }
+    });
+    
+    // 更新头像（如果有照片）
+    const avatar = document.getElementById('main-cat-avatar');
+    if (catPhoto) {
+        avatar.style.backgroundImage = `url(${catPhoto})`;
+        avatar.classList.add('has-image');
+    } else {
+        avatar.style.backgroundImage = '';
+        avatar.classList.remove('has-image');
+    }
+    
+    // 如果有猫咪信息，显示模拟的健康数据
+    if (petInfo.name && petInfo.name !== '我的猫咪') {
+        document.getElementById('health-index').textContent = '98%';
+        document.getElementById('health-index').classList.remove('no-data');
+        document.getElementById('diet-status').textContent = '正常';
+        document.getElementById('diet-status').classList.remove('no-data');
+        document.getElementById('activity-level').textContent = '85%';
+        document.getElementById('activity-level').classList.remove('no-data');
+        document.getElementById('avg-weight').textContent = petInfo.weight || '4.2kg';
+        document.getElementById('avg-weight').classList.remove('no-data');
+    } else {
+        // 没有猫咪信息，显示横线
+        document.getElementById('health-index').textContent = '--';
+        document.getElementById('health-index').classList.add('no-data');
+        document.getElementById('diet-status').textContent = '--';
+        document.getElementById('diet-status').classList.add('no-data');
+        document.getElementById('activity-level').textContent = '--';
+        document.getElementById('activity-level').classList.add('no-data');
+        document.getElementById('avg-weight').textContent = '--';
+        document.getElementById('avg-weight').classList.add('no-data');
+    }
+}
         function updateCatDisplay() {
             const catPhoto = localStorage.getItem('catPhoto');
             const catName = localStorage.getItem('catName') || '我的猫咪';
@@ -1159,6 +1382,7 @@
 
         // 初始化
         document.addEventListener('DOMContentLoaded', function() {
+    updatePetDisplay();
             checkFirstTime();
             updateCatDisplay();
         });
@@ -1167,6 +1391,7 @@
     </script>
 </body>
 </html>
+
 
 
 
