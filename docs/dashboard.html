@@ -1102,6 +1102,54 @@
     </div>
 
     <script>
+// 页面切换功能
+function showPage(pageId) {
+    // 隐藏所有页面
+    document.querySelectorAll(''.page-content'').forEach(page => {
+        page.classList.remove(''active'');
+    });
+    
+    // 显示目标页面
+    const targetPage = document.getElementById(pageId + ''-page'');
+    if (targetPage) {
+        targetPage.classList.add(''active'');
+    }
+    
+    // 更新导航激活状态
+    document.querySelectorAll(''.nav-item'').forEach(nav => {
+        nav.classList.remove(''active'');
+        if (nav.getAttribute(''data-page'') === pageId) {
+            nav.classList.add(''active'');
+        }
+    });
+    
+    // 更新页面标题
+    const pageTitles = {
+        ''dashboard'': ''控制面板'',
+        ''analysis'': ''AI排泄物分析'',
+        ''pets'': ''猫咪档案'',
+        ''hospital'': ''附近医院'',
+        ''health'': ''健康监测'',
+        ''trends'': ''健康趋势'',
+        ''location'': ''位置追踪'',
+        ''reminders'': ''提醒设置'',
+        ''records'': ''医疗记录'',
+        ''settings'': ''系统设置''
+    };
+    document.getElementById(''page-title'').textContent = pageTitles[pageId] || ''控制面板'';
+}
+
+// 为导航项添加点击事件
+document.addEventListener(''DOMContentLoaded'', function() {
+    document.querySelectorAll(''.nav-item[data-page]'').forEach(item => {
+        item.addEventListener(''click'', function(e) {
+            e.preventDefault();
+            const pageId = this.getAttribute(''data-page'');
+            showPage(pageId);
+        });
+    });
+});
+
         // 显示用户信息
         try {
             const userData = localStorage.getItem('currentUser');
@@ -1694,6 +1742,7 @@ document.addEventListener(''DOMContentLoaded'', function() {
 });</script>
 </body>
 </html>
+
 
 
 
