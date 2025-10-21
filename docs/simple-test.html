@@ -1,0 +1,29 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>CatHealth Test</title>
+    <style>
+        body { font-family: Arial; margin: 40px; }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1> CatHealth 测试页面</h1>
+    <p>如果看到这个页面，说明静态文件服务正常！</p>
+    <div id="status">检查服务状态...</div>
+    
+    <script>
+        fetch('/health')
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('status').innerHTML = 
+                    `<p class="success"> 后端服务正常: ${data.status}</p>`;
+            })
+            .catch(err => {
+                document.getElementById('status').innerHTML = 
+                    `<p class="error"> 后端服务异常: ${err}</p>`;
+            });
+    </script>
+</body>
+</html>
