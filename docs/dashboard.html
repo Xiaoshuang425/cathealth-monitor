@@ -4,23 +4,27 @@
 <script src="js/auth.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // 检查登录状态
-        if (typeof auth !== 'undefined' && !auth.requireLogin()) {
-            return;
-        }
-        
-        // 登录成功，显示页面内容
-        console.log('登录成功，显示dashboard');
-        
-        // 添加登出功能
-        const logoutBtn = document.getElementById('logoutBtn');
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', function() {
-                auth.logout();
-            });
-        }
+        // 非阻塞的登录检查
+        setTimeout(function() {
+            if (typeof auth !== 'undefined' && !auth.isLoggedIn) {
+                // 如果未登录，跳转到登录页
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // 已登录，确保登出按钮正常工作
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function() {
+                    if (typeof auth !== 'undefined') {
+                        auth.logout();
+                    }
+                });
+            }
+        }, 100);
     });
 </script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>仪表盘 - CatHealth Monitor</title>
@@ -645,6 +649,7 @@
     </script>
 </body>
 </html>
+
 
 
 
