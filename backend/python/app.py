@@ -5,7 +5,7 @@ from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
-# 手动处理CORS（不需要flask-cors）
+# 手动CORS处理
 @app.after_request
 def after_request(response):
     response.headers.add('Access-Control-Allow-Origin', '*')
@@ -13,7 +13,7 @@ def after_request(response):
     response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
     return response
 
-print(" CatHealth Ultra Simple Service Starting...")
+print(" CatHealth AI Cloud Service Starting...")
 
 # 症状数据库
 SYMPTOM_DATABASE = {
@@ -84,9 +84,10 @@ def home():
     return {
         "service": "CatHealth Ultra Simple API",
         "status": "running", 
-        "version": "1.0",
-        "ai_service": "Random Logic AI",
-        "dependencies": "Flask only"
+        "version": "2.0",
+        "ai_service": "Cloud AI Analysis",
+        "dependencies": "Flask only",
+        "endpoints": ["/health", "/analyze", "/analyze/stool", "/test"]
     }
 
 @app.route('/health', methods=['GET'])
@@ -94,13 +95,15 @@ def health_check():
     return {
         "status": "healthy",
         "service": "CatHealth AI Service",
-        "version": "Ultra Simple",
-        "symptoms": list(SYMPTOM_DATABASE.keys())
+        "version": "Cloud Version 2.0",
+        "symptoms_supported": list(SYMPTOM_DATABASE.keys())
     }
 
+# 修复端点路径 - 添加 /analyze 和 /analyze/stool
 @app.route('/analyze', methods=['POST'])
+@app.route('/analyze/stool', methods=['POST'])
 def analyze_stool():
-    """AI排泄物分析端点 - 极简版本"""
+    """AI排泄物分析端点 - 修复版本"""
     try:
         data = request.get_json()
         
@@ -141,7 +144,7 @@ def analyze_stool():
             },
             "processing_time": processing_time,
             "analyzed_at": datetime.now().isoformat(),
-            "service": "ultra_simple_ai"
+            "service": "cloud_ai_v2"
         }
         
         return result
@@ -178,7 +181,8 @@ def test_analysis():
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 10000))
-    print(f" 极简服务启动在端口 {port}")
-    print(f" 依赖: 仅Flask")
+    print(f" 云端AI服务启动在端口 {port}")
+    print(f" 服务模式: 云端AI分析")
     print(f" 支持5种症状检测")
+    print(f" 端点: /analyze 和 /analyze/stool")
     app.run(host='0.0.0.0', port=port, debug=False)
