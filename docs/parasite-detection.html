@@ -1,0 +1,108 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>猫咪健康监测 - 寄生虫感染检测</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .result-danger {
+            background: #dc3545;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .risk-bar {
+            background: #e9ecef;
+            height: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        .risk-fill {
+            background: #dc3545;
+            height: 100%;
+            width: 75%;
+            border-radius: 10px;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .recommendation {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1> 猫咪健康AI监测系统</h1>
+        <h2>排泄物分析结果</h2>
+        
+        <div class="result-danger">
+            <h3> 寄生虫感染检测阳性</h3>
+            <p>AI检测到明显的寄生虫感染特征</p>
+        </div>
+
+        <div class="risk-bar">
+            <div class="risk-fill"></div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-value">75%</div>
+                <div>感染风险</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">95%</div>
+                <div>治愈概率</div>
+            </div>
+        </div>
+
+        <div class="recommendation">
+            <h4> 紧急处理建议：</h4>
+            <ul>
+                <li>立即联系兽医进行专业诊断</li>
+                <li>进行粪便检查确认寄生虫类型</li>
+                <li>按照兽医建议进行驱虫治疗</li>
+                <li>隔离患病猫咪，防止传染其他宠物</li>
+                <li>彻底清洁猫砂盆和居住环境</li>
+            </ul>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <button onclick="location.reload()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                重新检测
+            </button>
+        </div>
+    </div>
+</body>
+</html>
