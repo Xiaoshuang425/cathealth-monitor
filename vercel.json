@@ -2,16 +2,22 @@
   "version": 2,
   "builds": [
     {
-      "src": "docs/**/*.html",
+      "src": "**/*.html", 
       "use": "@vercel/static"
     }
   ],
   "routes": [
     {
+      "src": "/",
+      "dest": "/docs/dashboard.html"
+    },
+    {
+      "src": "/dashboard",
+      "dest": "/docs/dashboard.html"
+    },
+    {
       "src": "/(.*)",
       "dest": "/docs/$1"
     }
-  ],
-  "cleanUrls": true,
-  "trailingSlash": false
+  ]
 }
