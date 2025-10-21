@@ -4,68 +4,68 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import base64
 
-# 添加src目录到Python路径
+# Render环境配置
+is_render = 'RENDER' in os.environ
+print(f"🚀 运行在 {'Render' if is_render else '本地'} 环境")
+
+# 添加路径
 current_dir = os.path.dirname(os.path.abspath(__file__))
-src_dir = os.path.join(current_dir, "src")
+if is_render:
+    # Render环境
+    src_dir = os.path.join(current_dir, "src")
+else:
+    # 本地环境
+    src_dir = os.path.join(current_dir, "src")
+
 sys.path.append(src_dir)
-
-print(f"当前目录: {current_dir}")
-print(f"添加路径: {src_dir}")
-print(f"Python路径: {sys.path}")
-
-try:
-    # 正确导入YOLODetector
-    from yolo.detector import YOLODetector
-    print(" 成功导入 YOLODetector")
-except ImportError as e:
-    print(f" 导入失败: {e}")
-    print("尝试直接导入...")
-    
-    # 尝试直接导入
-    import importlib.util
-    spec = importlib.util.spec_from_file_location("detector", os.path.join(src_dir, "yolo", "detector.py"))
-    detector_module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(detector_module)
-    YOLODetector = detector_module.YOLODetector
-    print(" 通过直接导入成功")
 
 app = Flask(__name__)
 CORS(app)
 
-# 初始化YOLO检测器 - 使用正确的模型路径
-model_path = os.path.join(current_dir, "models", "best.pt")
-print(f"模型路径: {model_path}")
+# 动态导入YOLO检测器
+yolo_detector = None
+try:
+    from yolo.detector import YOLODetector
+    print(" 导入YOLODetector成功")
+    
+    # 在Render上，模型可能需要从其他地方加载
+    if is_render:
+        model_path = os.path.join(current_dir, "models", "best.pt")
+        # 如果模型不存在，尝试其他方式
+        if not os.path.exists(model_path):
+            print(" 在Render上未找到本地模型文件")
+            print(" 建议: 将模型上传到云存储或使用较小的模型")
+    else:
+        model_path = os.path.join(current_dir, "models", "best.pt")
+    
+    yolo_detector = YOLODetector(model_path=model_path)
+    print(f" 模型加载状态: {yolo_detector.model is not None}")
+    
+except Exception as e:
+    print(f" YOLO初始化失败: {e}")
+    yolo_detector = None
 
-# 检查模型文件
-if os.path.exists(model_path):
-    print(f" 找到模型文件: {model_path}")
-    print(f"模型大小: {os.path.getsize(model_path)} bytes")
-else:
-    print(f" 模型文件不存在: {model_path}")
-    # 列出所有可能的模型位置
-    print("搜索模型文件...")
-    for root, dirs, files in os.walk(current_dir):
-        for file in files:
-            if file.endswith('.pt'):
-                print(f"找到模型文件: {os.path.join(root, file)}")
-
-yolo_detector = YOLODetector(model_path=model_path)
+@app.route('/')
+def home():
+    return jsonify({
+        "service": "CatHealth YOLOv8 API",
+        "status": "running",
+        "model_loaded": yolo_detector is not None and yolo_detector.model is not None,
+        "environment": "render" if is_render else "local"
+    })
 
 @app.route('/health', methods=['GET'])
 def health_check():
     return jsonify({
-        "status": "healthy", 
+        "status": "healthy",
         "service": "CatHealth YOLO Service",
-        "model_loaded": yolo_detector.model is not None,
-        "model_path": model_path,
-        "python_path": sys.path
+        "model_loaded": yolo_detector is not None and yolo_detector.model is not None,
+        "environment": "render" if is_render else "local"
     })
 
 @app.route('/analyze/stool', methods=['POST'])
 def analyze_stool():
-    """
-    分析猫咪排泄物图像
-    """
+    """分析猫咪排泄物图像"""
     try:
         data = request.get_json()
         
@@ -75,7 +75,25 @@ def analyze_stool():
                 "error": "没有提供图像数据"
             }), 400
         
-        print("收到分析请求")
+        print(" 收到分析请求")
+        
+        # 检查YOLO服务状态
+        if yolo_detector is None or yolo_detector.model is None:
+            return jsonify({
+                "success": True,
+                "detection": {
+                    "color": "模拟", "texture": "模拟", "shape": "模拟",
+                    "confidence": 0.90, "class_name": "normal"
+                },
+                "health_analysis": {
+                    "risk_level": "normal", "message": "模拟分析完成",
+                    "description": "YOLO服务暂不可用，使用模拟数据",
+                    "confidence": 0.90,
+                    "recommendation": "服务配置中，请稍后重试",
+                    "detected_class": "normal"
+                },
+                "simulation": True
+            })
         
         # 使用YOLO进行分析
         image = yolo_detector.base64_to_image(data['image'])
@@ -90,11 +108,12 @@ def analyze_stool():
         
         return jsonify({
             "success": True,
-            **analysis_result
+            **analysis_result,
+            "environment": "render" if is_render else "local"
         })
         
     except Exception as e:
-        print(f"分析失败: {str(e)}")
+        print(f" 分析失败: {str(e)}")
         import traceback
         traceback.print_exc()
         return jsonify({
@@ -102,25 +121,20 @@ def analyze_stool():
             "error": f"分析失败: {str(e)}"
         }), 500
 
-@app.route('/test/model', methods=['GET'])
-def test_model():
-    """测试模型加载状态"""
+@app.route('/test', methods=['GET'])
+def test_endpoint():
+    """测试端点"""
     return jsonify({
-        "model_loaded": yolo_detector.model is not None,
-        "model_path": yolo_detector.model_path,
-        "class_names": getattr(yolo_detector, 'class_names', []),
-        "current_dir": current_dir
+        "message": "YOLOv8 API 工作正常",
+        "model_loaded": yolo_detector is not None and yolo_detector.model is not None,
+        "environment": "render" if is_render else "local"
     })
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PYTHON_PORT', 3001))
-    print(f" YOLO分析服务启动在端口 {port}")
+    port = int(os.environ.get('PYTHON_PORT', 10000))
+    print(f" YOLOv8服务启动在端口 {port}")
     print(f" 工作目录: {current_dir}")
-    print(f" 模型加载状态: {yolo_detector.model is not None}")
+    print(f" 模型状态: {'已加载' if yolo_detector and yolo_detector.model else '未加载'}")
+    print(f" 环境: {'Render' if is_render else '本地'}")
     
-    if yolo_detector.model is None:
-        print(" 警告: 模型未正确加载，服务将以模拟模式运行")
-    else:
-        print(" 模型已正确加载，服务正常运行")
-    
-    app.run(host='0.0.0.0', port=port, debug=True)
+    app.run(host='0.0.0.0', port=port, debug=not is_render)
