@@ -11,7 +11,7 @@ CORS(app)
 is_render = 'RENDER' in os.environ
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
-print(f" 运行环境: {'Render' if is_render else '本地'}")
+print(f"🚀 运行环境: {'Render' if is_render else '本地'}")
 
 # YOLO服务状态
 yolo_available = False
