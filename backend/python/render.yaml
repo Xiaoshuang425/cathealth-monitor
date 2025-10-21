@@ -1,17 +1,12 @@
 ﻿version: "1"
 services:
-  yolo-service:
+  python-ai-service:
     type: web
-    name: cathealth-yolo
+    name: cathealth-monitor-1
     env: python
     plan: free
-    buildCommand: |
-      echo "安装Python依赖..."
-      pip install -r requirements.txt
-      echo "✅ 依赖安装完成"
-    startCommand: python app_render.py
+    buildCommand: pip install -r requirements.txt
+    startCommand: python app.py
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
-      - key: PORT
-        value: 10000
