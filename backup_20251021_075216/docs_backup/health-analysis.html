@@ -1,0 +1,354 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI排泄物分析 - CatHealth</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #D4A574;
+            --primary-light: #E8D0B3;
+            --secondary: #A8C8B8;
+            --accent: #8DB596;
+            --light: #F8F4E9;
+            --light-bg: #FDF8F0;
+            --dark: #5C4B37;
+            --gray: #8A7E6F;
+        }
+
+        body {
+            background: var(--light-bg);
+            color: var(--dark);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .analysis-card {
+            background: var(--light);
+            border-radius: 15px;
+            padding: 40px;
+            border: 1px solid var(--primary-light);
+            margin-bottom: 30px;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--primary);
+            padding: 60px 40px;
+            text-align: center;
+            border-radius: 10px;
+            margin: 20px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--light-bg);
+        }
+
+        .upload-area:hover {
+            border-color: var(--secondary);
+            background: var(--light);
+        }
+
+        .upload-area.dragover {
+            border-color: var(--secondary);
+            background: var(--primary-light);
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--dark);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-light);
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: var(--dark);
+            margin-left: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: #7DAE8B;
+        }
+
+        .detection-results {
+            margin-top: 30px;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            border: 1px solid var(--primary-light);
+            display: none;
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .result-item {
+            background: var(--light-bg);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border-left: 4px solid var(--secondary);
+        }
+
+        .result-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .result-label {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--light);
+            color: var(--dark);
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            border: 1px solid var(--primary-light);
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .back-btn:hover {
+            background: var(--primary-light);
+        }
+
+        .image-preview {
+            max-width: 400px;
+            margin: 20px auto;
+            border-radius: 10px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .image-preview img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="dashboard.html" class="back-btn">
+            <i class="fas fa-arrow-left"></i> 返回仪表板
+        </a>
+
+        <div class="header">
+            <h1><i class="fas fa-robot"></i> AI排泄物智能分析</h1>
+            <p>基于YOLOv8模型的智能识别系统，自动分析猫咪排泄物健康状况</p>
+        </div>
+
+        <div class="analysis-card">
+            <h2 style="margin-bottom: 20px; text-align: center;">上传排泄物图片</h2>
+            <p style="text-align: center; color: var(--gray); margin-bottom: 30px;">
+                上传猫咪排泄物照片，AI将自动分析健康状态并提供专业建议
+            </p>
+            
+            <div class="upload-area" id="upload-area">
+                <div class="upload-icon">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                </div>
+                <h3>点击上传或拖拽图片到此区域</h3>
+                <p>支持 JPG、PNG 格式，最大 5MB</p>
+                <input type="file" id="image-upload" accept="image/*" style="display: none;">
+                <button class="btn btn-primary" onclick="document.getElementById('image-upload').click()" style="margin-top: 20px;">
+                    <i class="fas fa-upload"></i> 选择图片
+                </button>
+            </div>
+
+            <div class="image-preview" id="image-preview">
+                <img id="preview-img" src="" alt="图片预览">
+            </div>
+
+            <div class="detection-results" id="detection-results">
+                <h3 style="margin-bottom: 25px; text-align: center; color: var(--dark);">
+                    <i class="fas fa-chart-bar"></i> 分析结果
+                </h3>
+                
+                <div class="result-grid">
+                    <div class="result-item">
+                        <div class="result-value" style="color: #28a745;">正常</div>
+                        <div class="result-label">健康状态</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-value">92%</div>
+                        <div class="result-label">置信度</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-value">无异常</div>
+                        <div class="result-label">检测特征</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-value">良好</div>
+                        <div class="result-label">消化状态</div>
+                    </div>
+                </div>
+
+                <div style="background: #e8f5e8; padding: 20px; border-radius: 8px; border-left: 4px solid #28a745;">
+                    <h4 style="margin-bottom: 10px; color: #155724;"> 健康建议</h4>
+                    <p style="color: #155724; margin: 0;">
+                        猫咪排泄物形态正常，颜色健康，表明消化系统工作良好。建议继续保持当前饮食和护理习惯，定期监测。
+                    </p>
+                </div>
+
+                <div style="text-align: center; margin-top: 25px;">
+                    <button class="btn btn-primary" onclick="analyzeNewImage()">
+                        <i class="fas fa-sync-alt"></i> 分析新图片
+                    </button>
+                    <button class="btn btn-secondary" onclick="saveReport()">
+                        <i class="fas fa-download"></i> 保存报告
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('upload-area');
+        const imageUpload = document.getElementById('image-upload');
+        const detectionResults = document.getElementById('detection-results');
+        const imagePreview = document.getElementById('image-preview');
+        const previewImg = document.getElementById('preview-img');
+
+        // 点击上传区域触发文件选择
+        uploadArea.addEventListener('click', function() {
+            imageUpload.click();
+        });
+
+        // 文件选择处理
+        imageUpload.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                handleImageUpload(file);
+            }
+        });
+
+        // 拖拽功能
+        uploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', function() {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                handleImageUpload(file);
+            }
+        });
+
+        function handleImageUpload(file) {
+            console.log('上传图片:', file.name);
+            
+            // 显示预览
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+                imagePreview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+
+            // 显示加载状态
+            uploadArea.innerHTML = `
+                <div class="upload-icon">
+                    <i class="fas fa-spinner fa-spin"></i>
+                </div>
+                <h3>AI分析中...</h3>
+                <p>正在使用YOLOv8模型分析排泄物特征</p>
+            `;
+
+            // 模拟分析过程
+            setTimeout(() => {
+                detectionResults.style.display = 'block';
+                uploadArea.style.display = 'none';
+                
+                alert(' AI分析完成！猫咪健康状况良好。');
+            }, 3000);
+        }
+
+        function analyzeNewImage() {
+            // 重置界面
+            detectionResults.style.display = 'none';
+            imagePreview.style.display = 'none';
+            uploadArea.style.display = 'block';
+            uploadArea.innerHTML = `
+                <div class="upload-icon">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                </div>
+                <h3>点击上传或拖拽图片到此区域</h3>
+                <p>支持 JPG、PNG 格式，最大 5MB</p>
+                <button class="btn btn-primary" onclick="document.getElementById('image-upload').click()" style="margin-top: 20px;">
+                    <i class="fas fa-upload"></i> 选择图片
+                </button>
+            `;
+            imageUpload.value = '';
+        }
+
+        function saveReport() {
+            alert(' 健康报告已保存！您可以在"医疗记录"中查看历史报告。');
+        }
+
+        console.log('粪便检测页面加载完成');
+    </script>
+</body>
+</html>

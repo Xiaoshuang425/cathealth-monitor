@@ -1,0 +1,52 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>导航 - CatHealth Monitor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Microsoft YaHei", "Segoe UI", sans-serif; }
+        :root { --primary: #D4A574; --primary-light: #E8D0B3; --secondary: #A8C8B8; --light: #F8F4E9; --light-bg: #FDF8F0; --dark: #5C4B37; }
+        body { background: var(--light-bg); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .nav-container { max-width: 800px; width: 100%; }
+        .nav-header { text-align: center; margin-bottom: 40px; color: var(--dark); }
+        .nav-header h1 { font-size: 2.5rem; margin-bottom: 10px; }
+        .nav-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .nav-card { background: var(--light); padding: 30px; border-radius: 15px; text-align: center; border: 1px solid var(--primary-light); text-decoration: none; color: var(--dark); transition: all 0.3s ease; }
+        .nav-card:hover { transform: translateY(-5px); border-color: var(--primary); }
+        .nav-icon { font-size: 3rem; color: var(--primary); margin-bottom: 15px; }
+        .nav-title { font-size: 1.5rem; margin-bottom: 10px; font-weight: 600; }
+        .nav-desc { color: var(--dark); opacity: 0.8; }
+    </style>
+</head>
+<body>
+    <div class="nav-container">
+        <div class="nav-header">
+            <h1><i class="fas fa-paw"></i> CatHealth Monitor</h1>
+            <p>选择要访问的功能模块</p>
+        </div>
+        
+        <div class="nav-grid">
+            <a href="index.html" class="nav-card">
+                <div class="nav-icon"><i class="fas fa-sign-in-alt"></i></div>
+                <div class="nav-title">用户登录</div>
+                <div class="nav-desc">登录到猫咪健康监测系统</div>
+            </a>
+            
+            <a href="dashboard.html" class="nav-card">
+                <div class="nav-icon"><i class="fas fa-tachometer-alt"></i></div>
+                <div class="nav-title">主仪表板</div>
+                <div class="nav-desc">查看健康数据和系统概览</div>
+            </a>
+            
+            <a href="health-analysis.html" class="nav-card">
+                <div class="nav-icon"><i class="fas fa-robot"></i></div>
+                <div class="nav-title">AI健康分析</div>
+                <div class="nav-desc">YOLOv8排泄物识别分析</div>
+            </a>
+        </div>
+    </div>
+</body>
+</html>
+
