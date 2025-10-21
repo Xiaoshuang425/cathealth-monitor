@@ -1049,6 +1049,24 @@
     </div>
 
     <script>
+        // AI服务配置 - 使用本地Node.js后端
+        const LOCAL_AI_URL = "/api/ai"; // 使用本地后端
+        let currentAnalysisResult = null;
+
+        // 测试AI服务连接
+        async function testAIConnection() {
+            try {
+                const response = await fetch(LOCAL_AI_URL + '/health');
+                const data = await response.json();
+                console.log('AI服务状态:', data);
+                return data.status === 'healthy';
+            } catch (error) {
+                console.log('AI服务连接失败');
+                return false;
+            }
+        }
+
+        
         // ==================== AI服务配置 ====================
         const CLOUD_AI_URL = "https://cathealth-monitor-1.onrender.com";
         let currentAnalysisResult = null;
@@ -1067,8 +1085,9 @@
         }
 
         // 连接到云端AI服务的粪便检测功能
+                // 连接到本地AI服务的粪便检测功能
         async function analyzeStoolWithAI(imageFile) {
-            console.log("开始AI分析...");
+            console.log("开始本地AI分析...");
             
             try {
                 // 显示分析中状态
@@ -1077,7 +1096,7 @@
                         <i class="fas fa-spinner fa-spin"></i>
                     </div>
                     <h3>AI分析中...</h3>
-                    <p>正在使用云端AI模型分析排泄物特征</p>
+                    <p>正在使用本地AI模型分析排泄物特征</p>
                     <div style="margin-top: 20px;">
                         <div style="background: var(--primary-light); border-radius: 10px; padding: 10px;">
                             <div style="background: var(--secondary); height: 8px; border-radius: 4px; width: 60%; transition: width 2s;"></div>
@@ -1085,8 +1104,8 @@
                     </div>
                 `;
 
-                // 发送到云端AI服务 - 使用正确的端点 /analyze
-                const response = await fetch(CLOUD_AI_URL + '/analyze', {
+                // 发送到本地AI服务
+                const response = await fetch(LOCAL_AI_URL + '/analyze', {
                     method: 'POST',
                     body: JSON.stringify({
                         image: 'base64_encoded_image_data'
@@ -1101,21 +1120,17 @@
                 }
 
                 const result = await response.json();
-                console.log('AI分析结果:', result);
+                console.log('本地AI分析结果:', result);
                 
-                // 保存结果
                 currentAnalysisResult = result;
-                
-                // 显示结果
                 showAnalysisResult(result);
                 
             } catch (error) {
-                console.error('AI分析失败:', error);
-                
-                // 如果云端服务不可用，使用本地模拟
-                console.log('使用本地模拟分析...');
+                console.error('本地AI分析失败:', error);
+                // 如果本地服务也失败，使用纯前端模拟
                 simulateLocalAnalysis(imageFile);
             }
+        }
         }
 
         // 本地模拟分析（备用方案）
@@ -1784,6 +1799,7 @@ function updatePetDisplay() {
     </script>
 </body>
 </html>
+
 
 
 
