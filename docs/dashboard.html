@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>猫咪健康管理中心 - CatHealth</title>
+    <title>猫咪健康监测 - CatHealth</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -17,65 +17,194 @@
             --primary: #D4A574;
             --primary-light: #E8D0B3;
             --secondary: #A8C8B8;
-            --accent: #8DB596;
             --light: #F8F4E9;
             --light-bg: #FDF8F0;
             --dark: #5C4B37;
             --gray: #8A7E6F;
-            --sidebar-width: 280px;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --success: #28a745;
         }
 
-        /* 模态框样式 */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 10000;
-            justify-content: center;
-            align-items: center;
+        body {
+            background: var(--light-bg);
+            color: var(--dark);
+            min-height: 100vh;
+            padding: 20px;
         }
 
-        .modal.active {
-            display: flex;
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
         }
 
-        .modal-content {
-            background: var(--light);
-            padding: 40px;
-            border-radius: 15px;
-            max-width: 500px;
-            width: 90%;
+        .header {
             text-align: center;
-            border: 2px solid var(--primary);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 40px;
         }
 
-        .modal-icon {
-            font-size: 4rem;
-            color: var(--primary);
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            color: var(--dark);
+        }
+
+        .header p {
+            color: var(--gray);
+            font-size: 1.1rem;
+        }
+
+        /* 寄生虫检测卡片 */
+        .parasite-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            border-left: 5px solid var(--danger);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
             margin-bottom: 20px;
         }
 
-        .modal h2 {
-            color: var(--dark);
-            margin-bottom: 15px;
+        .card-header i {
+            font-size: 2rem;
+            color: var(--danger);
+        }
+
+        .card-header h2 {
+            color: var(--danger);
             font-size: 1.8rem;
         }
 
-        .modal p {
-            color: var(--gray);
-            margin-bottom: 25px;
-            line-height: 1.6;
+        .risk-indicator {
+            background: #ffe6e6;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 2px solid var(--danger);
         }
 
-        .modal-buttons {
+        .risk-level {
             display: flex;
+            align-items: center;
             gap: 15px;
-            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .risk-bar {
+            flex: 1;
+            height: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .risk-fill {
+            height: 100%;
+            background: var(--danger);
+            width: 75%;
+            border-radius: 10px;
+        }
+
+        .risk-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--danger);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 25px 0;
+        }
+
+        .stat-item {
+            background: var(--light);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid var(--primary-light);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        /* 治疗建议 */
+        .treatment-section {
+            background: #fff3cd;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 25px 0;
+            border-left: 4px solid var(--warning);
+        }
+
+        .treatment-section h3 {
+            color: #856404;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .urgent-section {
+            background: #f8d7da;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 25px 0;
+            border-left: 4px solid var(--danger);
+        }
+
+        .urgent-section h3 {
+            color: #721c24;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .info-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .info-list li:last-child {
+            border-bottom: none;
+        }
+
+        .hospital-info {
+            background: #d1ecf1;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 25px 0;
+            border-left: 4px solid var(--secondary);
+        }
+
+        .hospital-info h3 {
+            color: #0c5460;
+            margin-bottom: 15px;
         }
 
         .btn {
@@ -88,1726 +217,174 @@
             font-size: 1rem;
         }
 
-        .btn-primary {
-            background: var(--primary);
-            color: var(--dark);
-        }
-
-        .btn-primary:hover {
-            background: var(--primary-light);
-        }
-
-        .btn-secondary {
-            background: var(--secondary);
-            color: var(--dark);
-        }
-
-        .btn-secondary:hover {
-            background: #7DAE8B;
-        }
-
-        body {
-            background: var(--light-bg);
-            color: var(--dark);
-            display: flex;
-            min-height: 100vh;
-        }
-
-        /* 侧边栏样式 */
-        .sidebar {
-            width: var(--sidebar-width);
-            background: linear-gradient(180deg, var(--primary) 0%, var(--primary-light) 100%);
-            color: var(--dark);
-            padding: 0;
-            position: fixed;
-            height: 100vh;
-            overflow-y: auto;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-            border-right: 1px solid var(--primary-light);
-        }
-
-        .sidebar-header {
-            padding: 30px 20px;
-            text-align: center;
-            border-bottom: 1px solid rgba(90, 70, 50, 0.1);
-            background: var(--primary);
-        }
-
-        .sidebar-header h1 {
-            font-size: 1.5rem;
-            margin-bottom: 5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .sidebar-header p {
-            font-size: 0.9rem;
-            opacity: 0.8;
-        }
-
-        .sidebar-nav {
-            padding: 20px 0;
-            background: var(--light);
-        }
-
-        .nav-section {
-            margin-bottom: 20px;
-        }
-
-        .nav-title {
-            padding: 10px 20px;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            opacity: 0.6;
-            letter-spacing: 1px;
-            color: var(--dark);
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            padding: 12px 20px;
-            color: var(--dark);
-            text-decoration: none;
-            transition: all 0.3s ease;
-            border-left: 3px solid transparent;
-            cursor: pointer;
-        }
-
-        .nav-item:hover {
-            background: var(--primary-light);
-            border-left-color: var(--secondary);
-        }
-
-        .nav-item.active {
-            background: var(--primary-light);
-            border-left-color: var(--secondary);
-            font-weight: 600;
-        }
-
-        .nav-item i {
-            width: 20px;
-            margin-right: 12px;
-            font-size: 1.1rem;
-            color: var(--dark);
-        }
-
-        /* 主内容区样式 */
-        .main-content {
-            flex: 1;
-            margin-left: var(--sidebar-width);
-            padding: 0;
-            background: var(--light-bg);
-        }
-
-        .top-bar {
-            background: var(--light);
-            padding: 20px 30px;
-            border-bottom: 1px solid var(--primary-light);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            cursor: pointer;
-            padding: 8px 15px;
-            border-radius: 8px;
-            transition: background 0.3s ease;
-        }
-
-        .user-info:hover {
-            background: var(--primary-light);
-        }
-
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            background: var(--secondary);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--dark);
-            font-weight: bold;
-        }
-
-        .content-area {
-            padding: 30px;
-        }
-
-        /* 页面内容区 */
-        .page-content {
-            display: none;
-        }
-
-        .page-content.active {
-            display: block;
-        }
-
-        /* 仪表板样式 */
-        .welcome-banner {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-            color: var(--dark);
-            padding: 40px;
-            border-radius: 15px;
-            margin-bottom: 30px;
-            text-align: center;
-            border: 1px solid var(--primary-light);
-        }
-
-        .welcome-banner h2 {
-            font-size: 2.2rem;
-            margin-bottom: 10px;
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 25px;
-            margin-bottom: 40px;
-        }
-
-        .feature-card {
-            background: var(--light);
-            border-radius: 15px;
-            padding: 30px;
-            text-align: center;
-            border: 1px solid var(--primary-light);
-            text-decoration: none;
-            color: var(--dark);
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            border-color: var(--secondary);
-        }
-
-        .feature-icon {
-            font-size: 3.5rem;
-            color: var(--primary);
-            margin-bottom: 20px;
-        }
-
-        .feature-title {
-            font-size: 1.4rem;
-            margin-bottom: 10px;
-            font-weight: 600;
-        }
-
-        .feature-desc {
-            color: var(--gray);
-            font-size: 0.95rem;
-            line-height: 1.5;
-            margin-bottom: 15px;
-        }
-
-        .feature-badge {
-            background: var(--secondary);
-            color: var(--dark);
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: var(--light);
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-            text-align: center;
-            border-left: 4px solid var(--secondary);
-            border: 1px solid var(--primary-light);
-        }
-
-        .stat-icon {
-            font-size: 2.5rem;
-            color: var(--primary);
-            margin-bottom: 15px;
-        }
-
-        .stat-value {
-            font-size: 2rem;
-            font-weight: bold;
-            color: var(--dark);
-            margin-bottom: 5px;
-        }
-
-        .stat-label {
-            color: var(--gray);
-            font-size: 0.9rem;
-        }
-
-        .no-data {
-            color: var(--gray) !important;
-            font-style: italic;
-        }
-
-        .pets-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-        }
-
-        .pet-card {
-            background: var(--light);
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-            transition: transform 0.3s ease;
-            border: 1px solid var(--primary-light);
-            position: relative;
-        }
-
-        .pet-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 20px rgba(0,0,0,0.12);
-        }
-
-        .pet-header {
-            background: var(--secondary);
-            color: var(--dark);
-            padding: 20px;
-            text-align: center;
-        }
-
-        .pet-avatar {
-            width: 80px;
-            height: 80px;
-            background: var(--primary);
-            border-radius: 50%;
-            margin: 0 auto 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            color: var(--dark);
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-        }
-
-        .pet-avatar.has-image {
-            background-color: transparent;
-        }
-
-        .pet-avatar.has-image i {
-            display: none;
-        }
-
-        .pet-body {
-            padding: 20px;
-        }
-
-        .pet-info {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        .info-item {
-            text-align: center;
-        }
-
-        .info-label {
-            font-size: 0.8rem;
-            color: var(--gray);
-            margin-bottom: 5px;
-        }
-
-        .info-value {
-            font-weight: 600;
-            color: var(--dark);
-        }
-
-        .info-value.no-data {
-            color: var(--gray);
-            font-style: italic;
-        }
-
-                        .delete-pet-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: #dc3545;
+        .btn-danger {
+            background: var(--danger);
             color: white;
-            border: none;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            z-index: 10;
-            font-size: 0.8rem;
         }
 
-        .delete-pet-btn:hover {
+        .btn-danger:hover {
             background: #c82333;
-            transform: scale(1.1);
         }
 
-        .hospital-card {
-            cursor: default;
-        }
-
-        .hospital-card:hover {
-            transform: none;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-        }
-
-        .edit-pet-btn {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: var(--secondary);
+        .btn-warning {
+            background: var(--warning);
             color: var(--dark);
-            border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            z-index: 10;
         }
 
-        .edit-pet-btn:hover {
-            background: #7DAE8B;
-            transform: scale(1.1);
-        }
-
-        .upload-pet-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: var(--primary);
-            color: var(--dark);
-            border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
-
-        .upload-pet-btn:hover {
-            background: var(--primary-light);
-            transform: scale(1.1);
-        }
-
-        /* 粪便检测页面样式 */
-        .analysis-section {
-            background: var(--light);
-            padding: 30px;
-            border-radius: 15px;
-            margin-bottom: 30px;
-            border: 1px solid var(--primary-light);
-        }
-
-        .section-title {
-            font-size: 1.5rem;
-            margin-bottom: 20px;
-            color: var(--dark);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .upload-area {
-            border: 2px dashed var(--primary);
-            padding: 60px 40px;
-            text-align: center;
-            border-radius: 10px;
-            margin: 20px 0;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: var(--light-bg);
-        }
-
-        .upload-area:hover {
-            border-color: var(--secondary);
-            background: var(--light);
-        }
-
-        .upload-area.dragover {
-            border-color: var(--secondary);
-            background: var(--primary-light);
-        }
-
-        .upload-icon {
-            font-size: 4rem;
-            color: var(--primary);
-            margin-bottom: 20px;
-        }
-
-        .detection-results {
-            margin-top: 30px;
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            border: 1px solid var(--primary-light);
-            display: none;
-        }
-
-        .result-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-
-        .result-item {
-            background: var(--light-bg);
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
-            border-left: 4px solid var(--secondary);
-        }
-
-        .result-value {
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .result-label {
-            color: var(--gray);
-            font-size: 0.9rem;
-        }
-
-        .image-preview {
-            max-width: 400px;
-            margin: 20px auto;
-            border-radius: 10px;
-            overflow: hidden;
-            display: none;
-        }
-
-        .image-preview img {
-            width: 100%;
-            height: auto;
-            display: block;
+        .btn-warning:hover {
+            background: #e0a800;
         }
 
         @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-100%);
-                z-index: 1000;
-            }
-            
-            .main-content {
-                margin-left: 0;
-            }
-            
-            .features-grid {
-                grid-template-columns: 1fr;
+            .header h1 {
+                font-size: 2rem;
             }
             
             .stats-grid {
                 grid-template-columns: 1fr;
             }
-            
-            .modal-buttons {
-                flex-direction: column;
-            }
         }
     </style>
 </head>
 <body>
-    <!-- 欢迎模态框 -->
-    <div id="welcome-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-icon">
-                <i class="fas fa-cat"></i>
-            </div>
-            <h2>欢迎使用 CatHealth！</h2>
-            <p>为了更好的使用体验，请先上传您的猫咪照片。这样我们就能为您提供个性化的健康管理服务。</p>
-            <div class="modal-buttons">
-                <button class="btn btn-primary" onclick="uploadCatPhoto()">
-                    <i class="fas fa-camera"></i> 上传猫咪照片
-                </button>
-                <button class="btn btn-secondary" onclick="closeWelcomeModal()">
-                    稍后再说
-                </button>
-            </div>
+    <div class="container">
+        <!-- 页头 -->
+        <div class="header">
+            <h1><i class="fas fa-cat"></i> 猫咪健康监测系统</h1>
+            <p>专业寄生虫感染检测与治疗方案</p>
         </div>
-    </div>
 
-    <!-- 猫咪照片上传模态框 -->
-    <div id="cat-photo-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-icon">
-                <i class="fas fa-camera"></i>
-            </div>
-            <h2>上传猫咪照片</h2>
-            <p>选择一张清晰的猫咪正面照片，这将用于您的猫咪档案。</p>
-            
-            <div class="upload-area" id="cat-upload-area" style="margin: 20px 0;">
-                <div class="upload-icon">
-                    <i class="fas fa-cloud-upload-alt"></i>
-                </div>
-                <h3>点击上传猫咪照片</h3>
-                <p>支持 JPG、PNG 格式</p>
-                <input type="file" id="cat-photo-upload" accept="image/*" style="display: none;">
-                <button class="btn btn-primary" onclick="document.getElementById('cat-photo-upload').click()" style="margin-top: 20px;">
-                    <i class="fas fa-upload"></i> 选择照片
-                </button>
-            </div>
-
-            <div class="image-preview" id="cat-image-preview">
-                <img id="cat-preview-img" src="" alt="猫咪照片预览">
-            </div>
-
-            <div class="modal-buttons">
-                <button class="btn btn-primary" onclick="saveCatPhoto()" id="save-cat-btn" disabled>
-                    <i class="fas fa-save"></i> 保存照片
-                </button>
-                <button class="btn btn-secondary" onclick="closeCatPhotoModal()">
-                    取消
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 侧边栏 -->
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <h1><i class="fas fa-paw"></i> CatHealth</h1>
-            <p>猫咪健康管理中心</p>
-        </div>
-        
-        <nav class="sidebar-nav">
-            <div class="nav-section">
-                <div class="nav-title">主要功能</div>
-                <a class="nav-item active" data-page="dashboard">
-                    <i class="fas fa-home"></i>控制面板
-                </a>
-                <a class="nav-item" data-page="analysis">
-                    <i class="fas fa-robot"></i>AI排泄物分析
-                </a>
-                <a class="nav-item" data-page="pets">
-                    <i class="fas fa-cat"></i>猫咪档案
-                </a>
-                <a class="nav-item" data-page="hospital">\n                    <i class="fas fa-hospital"></i>附近医院\n                </a>
+        <!-- 寄生虫检测卡片 -->
+        <div class="parasite-card">
+            <div class="card-header">
+                <i class="fas fa-bug"></i>
+                <h2>寄生虫感染检测结果</h2>
             </div>
             
-            <div class="nav-section">
-                <div class="nav-title">智能分析</div>
-                <a class="nav-item" data-page="trends">
-                    <i class="fas fa-chart-line"></i>健康趋势
-                </a>
-                <a class="nav-item" data-page="location">
-                    <i class="fas fa-map-marker-alt"></i>位置追踪
-                </a>
-            </div>
-            
-            <div class="nav-section">
-                <div class="nav-title">管理</div>
-                <a class="nav-item" data-page="reminders">
-                    <i class="fas fa-bell"></i>提醒设置
-                </a>
-                <a class="nav-item" data-page="records">
-                    <i class="fas fa-file-medical"></i>医疗记录
-                </a>
-                <a class="nav-item" data-page="settings">
-                    <i class="fas fa-cog"></i>系统设置
-                </a>
-            </div>
-        </nav>
-    </div>
+            <p><strong>检测状态：</strong>检测到寄生虫感染特征</p>
+            <p><strong>置信度：</strong>85%</p>
+            <p><strong>检测时间：</strong><span id="detection-time">正在检测...</span></p>
 
-    <!-- 主内容区 -->
-    <div class="main-content">
-        <div class="top-bar">
-            <h2 id="page-title">控制面板</h2>
-            <div class="user-info">
-                <div class="user-avatar">
-                    <i class="fas fa-user"></i>
+            <!-- 风险指示器 -->
+            <div class="risk-indicator">
+                <div class="risk-level">
+                    <div class="risk-bar">
+                        <div class="risk-fill"></div>
+                    </div>
+                    <div class="risk-text">高风险 (75%)</div>
                 </div>
-                <div>
-                    <div id="user-name">用户</div>
-                    <div style="font-size: 0.8rem; color: var(--gray);" id="user-email">邮箱</div>
+                <p><strong> 紧急程度：</strong>需要立即就医检查</p>
+            </div>
+
+            <!-- 统计信息 -->
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value">75%</div>
+                    <div class="stat-label">危险程度</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">95%</div>
+                    <div class="stat-label">治愈概率</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">24小时</div>
+                    <div class="stat-label">建议就医时间</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">5种</div>
+                    <div class="stat-label">常见寄生虫类型</div>
                 </div>
             </div>
         </div>
 
-        <div class="content-area">
-            <!-- 仪表板页面 -->
-            <div id="dashboard-page" class="page-content active">
-                <div class="welcome-banner">
-                    <h2>欢迎回来！ </h2>
-                    <p>全方位守护您的爱宠健康，从智能分析开始</p>
-                </div>
+        <!-- 紧急处理建议 -->
+        <div class="urgent-section">
+            <h3><i class="fas fa-exclamation-triangle"></i> 立即行动</h3>
+            <ul class="info-list">
+                <li><strong>收集粪便样本：</strong>1-2小时内的新鲜粪便，用保鲜袋装好</li>
+                <li><strong>立即就医：</strong>带样本前往宠物医院进行粪便检查</li>
+                <li><strong>不要盲目驱虫：</strong>等待便检结果确定寄生虫种类</li>
+                <li><strong>隔离处理：</strong>如果有多只猫咪，请暂时隔离</li>
+            </ul>
+            <button class="btn btn-danger" onclick="showHospitals()">
+                <i class="fas fa-phone"></i> 立即联系医院
+            </button>
+        </div>
 
-                <!-- 功能入口网格 -->
-                <div class="features-grid">
-                    <div class="feature-card" onclick="showPage('analysis')">
-                        <div class="feature-icon">
-                            <i class="fas fa-robot"></i>
-                        </div>
-                        <div class="feature-title">AI排泄物分析</div>
-                        <div class="feature-desc">
-                            基于YOLOv8模型的智能识别系统，自动分析猫咪排泄物健康状况
-                        </div>
-                        <div class="feature-badge">AI智能</div>
-                    </div>
+        <!-- 治疗建议 -->
+        <div class="treatment-section">
+            <h3><i class="fas fa-stethoscope"></i> 兽医治疗流程</h3>
+            <ul class="info-list">
+                <li><strong>粪便检查：</strong>显微镜鉴定寄生虫种类（蛔虫、钩虫、绦虫、球虫、贾第鞭毛虫）</li>
+                <li><strong>针对性用药：</strong>根据检查结果使用处方驱虫药</li>
+                <li><strong>完成疗程：</strong>即使症状消失也要完成整个治疗周期</li>
+                <li><strong>复查确认：</strong>治疗后复查确保寄生虫完全清除</li>
+            </ul>
+        </div>
 
-                    <div class="feature-card" onclick="showPage('pets')">
-                        <div class="feature-icon">
-                            <i class="fas fa-cat"></i>
-                        </div>
-                        <div class="feature-title">猫咪档案</div>
-                        <div class="feature-desc">
-                            管理多只猫咪的健康档案，记录体重、饮食、医疗等信息
-                        </div>
-                        <div class="feature-badge">档案管理</div>
-                    </div>
+        <!-- 药物信息 -->
+        <div class="treatment-section">
+            <h3><i class="fas fa-pills"></i> 常见寄生虫对应药物</h3>
+            <ul class="info-list">
+                <li><strong>蛔虫/钩虫：</strong>吡喹酮、芬苯达唑、米尔贝肟</li>
+                <li><strong>绦虫：</strong>吡喹酮、艾沙达唑（需同时进行跳蚤防治）</li>
+                <li><strong>球虫：</strong>托曲珠利、磺胺类药物</li>
+                <li><strong>贾第鞭毛虫：</strong>芬苯达唑、甲硝唑</li>
+            </ul>
+        </div>
 
-                    <div class="feature-card" onclick="showPage('health')">
-                        <div class="feature-icon">
-                            <i class="fas fa-heartbeat"></i>
-                        </div>
-                        <div class="feature-title">健康监测</div>
-                        <div class="feature-desc">
-                            实时追踪猫咪健康数据，生成健康报告和趋势分析
-                        </div>
-                        <div class="feature-badge">实时监测</div>
-                    </div>
+        <!-- 医院信息 -->
+        <div class="hospital-info" id="hospitals" style="display: none;">
+            <h3><i class="fas fa-hospital"></i> 附近24小时宠物医院</h3>
+            <ul class="info-list">
+                <li><strong>绿十字兽医医院</strong> -  2883 7050 (24小时营业)</li>
+                <li><strong>美国爱屋申生动物医院</strong> -  2883 5371 (10:00-20:00)</li>
+                <li><strong>澳门宠物医院有限公司</strong> -  2833 2262 (09:00-22:00)</li>
+                <li><strong>澳栢兽医诊所</strong> -  2835 3888 (12:00-22:00)</li>
+            </ul>
+            <button class="btn btn-warning" onclick="hideHospitals()">
+                <i class="fas fa-times"></i> 关闭
+            </button>
+        </div>
 
-                    <div class="feature-card" onclick="showPage('location')">
-                        <div class="feature-icon">
-                            <i class="fas fa-map-marker-alt"></i>
-                        </div>
-                        <div class="feature-title">位置追踪</div>
-                        <div class="feature-desc">
-                            GPS实时定位，设置安全区域，越界即时提醒
-                        </div>
-                        <div class="feature-badge">安全守护</div>
-                    </div>
-                </div>
-
-                <!-- 健康统计 -->
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon"><i class="fas fa-heartbeat"></i></div>
-                        <div class="stat-value no-data" id="health-index">--</div>
-                        <div class="stat-label">整体健康指数</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon"><i class="fas fa-utensils"></i></div>
-                        <div class="stat-value no-data" id="diet-status">--</div>
-                        <div class="stat-label">饮食状态</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon"><i class="fas fa-running"></i></div>
-                        <div class="stat-value no-data" id="activity-level">--</div>
-                        <div class="stat-label">活动水平</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon"><i class="fas fa-weight"></i></div>
-                        <div class="stat-value no-data" id="avg-weight">--</div>
-                        <div class="stat-label">平均体重</div>
-                    </div>
-                </div>
-
-                <!-- 我的猫咪 -->
-                <div class="section-title">
-                    <i class="fas fa-paw"></i> 我的猫咪
-                </div>
-                <div class="pets-grid">
-                    <div class="pet-card">
-                        <button class="upload-pet-btn" onclick="uploadCatPhoto()" title="上传猫咪照片">
-                            <i class="fas fa-camera"></i>
-                        </button>
-                        <div class="pet-header">
-                            <div class="pet-avatar" id="main-cat-avatar">
-                                <i class="fas fa-cat"></i>
-                            </div>
-                            <h3 id="cat-name">我的猫咪</h3>
-                            <p id="cat-breed">品种  年龄</p>
-                        </div>
-                        <div class="pet-body">
-                            <div class="pet-info">
-                                <div class="info-item">
-                                    <div class="info-label">体重</div>
-                                    <div class="info-value no-data" id="cat-weight">--</div>
-                                </div>
-                                <div class="info-item">
-                                    <div class="info-label">体温</div>
-                                    <div class="info-value no-data" id="cat-temp">--</div>
-                                </div>
-                                <div class="info-item">
-                                    <div class="info-label">健康指数</div>
-                                    <div class="info-value no-data" id="cat-health">--</div>
-                                </div>
-                                <div class="info-item">
-                                    <div class="info-label">活动量</div>
-                                    <div class="info-value no-data" id="cat-activity">--</div>
-                                </div>
-                            </div>
-                            <button class="btn btn-primary" style="width: 100%;" onclick="showPage('health')">
-                                <i class="fas fa-chart-line"></i> 查看详细报告
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 粪便检测页面 -->
-            <div id="analysis-page" class="page-content">
-                <div class="analysis-section">
-                    <div class="section-title">
-                        <i class="fas fa-robot"></i> AI排泄物智能分析
-                    </div>
-                    <p style="margin-bottom: 20px; color: var(--gray);">
-                        上传猫咪排泄物照片，AI自动分析健康状态并提供专业建议
-                    </p>
-                    
-                    <div class="upload-area" id="upload-area">
-                        <div class="upload-icon">
-                            <i class="fas fa-cloud-upload-alt"></i>
-                        </div>
-                        <h3>点击上传或拖拽图片到此区域</h3>
-                        <p>支持 JPG、PNG 格式，最大 5MB</p>
-                        <input type="file" id="image-upload" accept="image/*" style="display: none;">
-                        <button class="btn btn-primary" onclick="document.getElementById('image-upload').click()" style="margin-top: 20px;">
-                            <i class="fas fa-upload"></i> 选择图片
-                        </button>
-                    </div>
-
-                    <div class="image-preview" id="image-preview">
-                        <img id="preview-img" src="" alt="图片预览">
-                    </div>
-
-                    <div class="detection-results" id="detection-results">
-                        <h3 style="margin-bottom: 25px; text-align: center; color: var(--dark);">
-                            <i class="fas fa-chart-bar"></i> 分析结果
-                        </h3>
-                        
-                        <div class="result-grid">
-                            <div class="result-item">
-                                <div class="result-value" style="color: #28a745;">正常</div>
-                                <div class="result-label">健康状态</div>
-                            </div>
-                            <div class="result-item">
-                                <div class="result-value">92%</div>
-                                <div class="result-label">置信度</div>
-                            </div>
-                            <div class="result-item">
-                                <div class="result-value">无异常</div>
-                                <div class="result-label">检测特征</div>
-                            </div>
-                            <div class="result-item">
-                                <div class="result-value">良好</div>
-                                <div class="result-label">消化状态</div>
-                            </div>
-                        </div>
-
-                        <div style="background: #e8f5e8; padding: 20px; border-radius: 8px; border-left: 4px solid #28a745;">
-                            <h4 style="margin-bottom: 10px; color: #155724;"> 健康建议</h4>
-                            <p style="color: #155724; margin: 0;">
-                                猫咪排泄物形态正常，颜色健康，表明消化系统工作良好。建议继续保持当前饮食和护理习惯，定期监测。
-                            </p>
-                        </div>
-
-                        <div style="text-align: center; margin-top: 25px;">
-                            <button class="btn btn-primary" onclick="analyzeNewImage()">
-                                <i class="fas fa-sync-alt"></i> 分析新图片
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-                        <!-- 医院信息页面 -->
-            <div id="hospital-page" class="page-content">
-                <div class="welcome-banner">
-                    <h2> 附近宠物医院</h2>
-                    <p>紧急情况请立即联系附近的宠物医院</p>
-                </div>
-
-                <div class="features-grid">
-                    <div class="feature-card hospital-card">
-                        <div class="feature-icon" style="color: #28a745;">
-                            <i class="fas fa-hospital"></i>
-                        </div>
-                        <div class="feature-title">绿十字兽医医院</div>
-                        <div class="feature-desc">
-                            <div style="text-align: left; margin: 15px 0;">
-                                <p><strong> 电话:</strong> 2883 7050</p>
-                                <p><strong> 营业时间:</strong> 24小时营业</p>
-                                <p><strong>📍 服务:</strong> 急诊、全科</p>
-                            </div>
-                        </div>
-                        <div class="feature-badge" style="background: #28a745; color: white;">24小时</div>
-                    </div>
-
-                    <div class="feature-card hospital-card">
-                        <div class="feature-icon" style="color: #17a2b8;">
-                            <i class="fas fa-clinic-medical"></i>
-                        </div>
-                        <div class="feature-title">美国爱屋申生动物医院</div>
-                        <div class="feature-desc">
-                            <div style="text-align: left; margin: 15px 0;">
-                                <p><strong> 电话:</strong> 2883 5371</p>
-                                <p><strong> 营业时间:</strong> 10:00 - 20:00</p>
-                                <p><strong> 服务:</strong> 全科、专科</p>
-                            </div>
-                        </div>
-                        <div class="feature-badge" style="background: #17a2b8; color: white;">10:00-20:00</div>
-                    </div>
-
-                    <div class="feature-card hospital-card">
-                        <div class="feature-icon" style="color: #ffc107;">
-                            <i class="fas fa-stethoscope"></i>
-                        </div>
-                        <div class="feature-title">澳门宠物医院有限公司</div>
-                        <div class="feature-desc">
-                            <div style="text-align: left; margin: 15px 0;">
-                                <p><strong> 电话:</strong> 2833 2262</p>
-                                <p><strong> 营业时间:</strong> 09:00 - 22:00</p>
-                                <p><strong> 服务:</strong> 全科、手术</p>
-                            </div>
-                        </div>
-                        <div class="feature-badge" style="background: #ffc107; color: black;">09:00-22:00</div>
-                    </div>
-
-                    <div class="feature-card hospital-card">
-                        <div class="feature-icon" style="color: #dc3545;">
-                            <i class="fas fa-first-aid"></i>
-                        </div>
-                        <div class="feature-title">澳栢兽医诊所</div>
-                        <div class="feature-desc">
-                            <div style="text-align: left; margin: 15px 0;">
-                                <p><strong> 电话:</strong> 2835 3888</p>
-                                <p><strong> 营业时间:</strong> 12:00 - 22:00</p>
-                                <p><strong> 服务:</strong> 全科、牙科</p>
-                            </div>
-                        </div>
-                        <div class="feature-badge" style="background: #dc3545; color: white;">12:00-22:00</div>
-                    </div>
-                </div>
-
-                <div style="background: #fff3cd; padding: 20px; border-radius: 10px; margin-top: 30px; border-left: 4px solid #ffc107;">
-                    <h4><i class="fas fa-exclamation-triangle"></i> 紧急提示</h4>
-                    <p style="margin: 10px 0 0 0; color: #856404;">
-                        如果猫咪出现以下情况，请立即联系24小时医院：
-                        <strong>频繁呕吐、便血、精神萎靡、呼吸困难、抽搐、无法排尿</strong>
-                    </p>
-                </div>
-            </div>
-            <div id="pets-page" class="page-content">
-                <div class="welcome-banner">
-                    <h2> 猫咪档案管理</h2>
-                    <p>管理您的爱猫信息，查看详细健康档案</p>
-                </div>
-                <div style="text-align: center; padding: 50px;">
-                    <i class="fas fa-cat" style="font-size: 4rem; color: var(--primary); margin-bottom: 20px;"></i>
-                    <h3>猫咪档案功能开发中</h3>
-                    <p style="color: var(--gray);">即将推出，敬请期待！</p>
-                </div>
-            </div>
-
-            <div id="health-page" class="page-content">
-                <div class="welcome-banner">
-                    <h2> 健康监测</h2>
-                    <p>实时追踪猫咪健康数据，及时发现异常</p>
-                </div>
-                <div style="text-align: center; padding: 50px;">
-                    <i class="fas fa-heartbeat" style="font-size: 4rem; color: var(--primary); margin-bottom: 20px;"></i>
-                    <h3>健康监测功能开发中</h3>
-                    <p style="color: var(--gray);">即将推出，敬请期待！</p>
-                </div>
-            </div>
+        <!-- 预防措施 -->
+        <div class="treatment-section">
+            <h3><i class="fas fa-shield-alt"></i> 预防措施</h3>
+            <ul class="info-list">
+                <li><strong>定期驱虫：</strong>室内猫每3个月，室外猫每月进行预防性驱虫</li>
+                <li><strong>环境清洁：</strong>每天清理猫砂盆，定期消毒家居环境</li>
+                <li><strong>跳蚤防治：</strong>坚持使用体外驱虫药，杜绝绦虫感染源</li>
+                <li><strong>饮食安全：</strong>避免喂食未经处理的生肉/生鱼</li>
+            </ul>
         </div>
     </div>
 
     <script>
-        // AI服务配置 - 使用本地Node.js后端
-        const LOCAL_AI_URL = "/api/ai"; // 使用本地后端
-        let currentAnalysisResult = null;
-
-        // 测试AI服务连接
-        async function testAIConnection() {
-            try {
-                const response = await fetch(LOCAL_AI_URL + '/health');
-                const data = await response.json();
-                console.log('AI服务状态:', data);
-                return data.status === 'healthy';
-            } catch (error) {
-                console.log('AI服务连接失败');
-                return false;
-            }
+        // 更新时间
+        function updateDetectionTime() {
+            const now = new Date();
+            document.getElementById('detection-time').textContent = 
+                now.toLocaleString('zh-CN');
         }
 
-        
-        // ==================== AI服务配置 ====================
-        const CLOUD_AI_URL = "https://cathealth-monitor-1.onrender.com";
-        let currentAnalysisResult = null;
-
-        // 测试AI服务连接
-        async function testAIConnection() {
-            try {
-                const response = await fetch(CLOUD_AI_URL + '/health');
-                const data = await response.json();
-                console.log('AI服务状态:', data);
-                return data.status === 'healthy';
-            } catch (error) {
-                console.log('AI服务连接失败，使用本地模拟');
-                return false;
-            }
+        // 显示医院信息
+        function showHospitals() {
+            document.getElementById('hospitals').style.display = 'block';
         }
 
-        // 连接到云端AI服务的粪便检测功能
-                // 连接到本地AI服务的粪便检测功能
-        async function analyzeStoolWithAI(imageFile) {
-            console.log("开始本地AI分析...");
-            
-            try {
-                // 显示分析中状态
-                uploadArea.innerHTML = `
-                    <div class="upload-icon">
-                        <i class="fas fa-spinner fa-spin"></i>
-                    </div>
-                    <h3>AI分析中...</h3>
-                    <p>正在使用本地AI模型分析排泄物特征</p>
-                    <div style="margin-top: 20px;">
-                        <div style="background: var(--primary-light); border-radius: 10px; padding: 10px;">
-                            <div style="background: var(--secondary); height: 8px; border-radius: 4px; width: 60%; transition: width 2s;"></div>
-                        </div>
-                    </div>
-                `;
-
-                // 发送到本地AI服务
-                const response = await fetch(LOCAL_AI_URL + '/analyze', {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        image: 'base64_encoded_image_data'
-                    }),
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const result = await response.json();
-                console.log('本地AI分析结果:', result);
-                
-                currentAnalysisResult = result;
-                showAnalysisResult(result);
-                
-            } catch (error) {
-                console.error('本地AI分析失败:', error);
-                // 如果本地服务也失败，使用纯前端模拟
-                simulateLocalAnalysis(imageFile);
-            }
-        }
+        // 隐藏医院信息
+        function hideHospitals() {
+            document.getElementById('hospitals').style.display = 'none';
         }
 
-        // 本地模拟分析（备用方案）
-                // 本地模拟分析（备用方案）- 使用YOLOv8症状名称
-        function simulateLocalAnalysis(imageFile) {
-            setTimeout(() => {
-                const symptoms = [
-                    {
-                        name: "normal",
-                        display_name: "正常",
-                        risk_level: 5,
-                        cure_rate: 98,
-                        color: "#28a745",
-                        description: "排泄物特征正常，猫咪健康状况良好",
-                        recommendation: "请保持当前的喂养习惯，继续观察猫咪的健康状况。",
-                        confidence: 0.92,
-                        features: {color: "棕色", texture: "成形", shape: "长条状"}
-                    },
-                    {
-                        name: "Lightweight and portable",
-                        display_name: "软便",
-                        risk_level: 25,
-                        cure_rate: 90,
-                        color: "#ffc107",
-                        description: "检测到轻微消化不良症状，可能存在饮食问题",
-                        recommendation: "建议调整饮食，暂时禁食12小时，喂食温和食物如白水煮鸡胸肉。",
-                        confidence: 0.85,
-                        features: {color: "黄色", texture: "软便", shape: "糊状"}
-                    },
-                    {
-                        name: "watery diarrhoea",
-                        display_name: "拉稀",
-                        risk_level: 65,
-                        cure_rate: 85,
-                        color: "#fd7e14",
-                        description: "检测到水样腹泻，需要注意消化系统健康",
-                        recommendation: "确保猫咪充足饮水，避免脱水，如症状持续请咨询兽医。",
-                        confidence: 0.78,
-                        features: {color: "黄色", texture: "稀水", shape: "不规则"}
-                    },
-                    {
-                        name: "constipation",
-                        display_name: "便秘",
-                        risk_level: 40,
-                        cure_rate: 92,
-                        color: "#17a2b8",
-                        description: "检测到便秘特征，需要增加水分和纤维摄入",
-                        recommendation: "增加膳食纤维，鼓励多喝水，喂食南瓜泥帮助通便。",
-                        confidence: 0.82,
-                        features: {color: "深棕色", texture: "硬块", shape: "颗粒状"}
-                    },
-                    {
-                        name: "parasitic infection",
-                        display_name: "寄生虫感染",
-                        risk_level: 75,
-                        cure_rate: 95,
-                        color: "#dc3545",
-                        description: "检测到可能的寄生虫感染特征，建议立即检查",
-                        recommendation: "立即联系兽医进行检查，需要进行粪便检查和驱虫治疗。",
-                        confidence: 0.75,
-                        features: {color: "异常色", texture: "异常", shape: "不规则"}
-                    }
-                ];
-
-                // 随机选择症状（正常概率更高）
-                const weights = [0.5, 0.15, 0.12, 0.13, 0.1];
-                let randomValue = Math.random();
-                let selectedIndex = 0;
-                
-                for (let i = 0; i < weights.length; i++) {
-                    randomValue -= weights[i];
-                    if (randomValue <= 0) {
-                        selectedIndex = i;
-                        break;
-                    }
-                }
-
-                const symptom = symptoms[selectedIndex];
-                const result = {
-                    success: true,
-                    detection: {
-                        ...symptom.features,
-                        confidence: symptom.confidence,
-                        class_name: symptom.name
-                    },
-                    health_analysis: {
-                        risk_level: symptom.risk_level <= 30 ? "normal" : symptom.risk_level <= 50 ? "warning" : "danger",
-                        message: symptom.display_name + "症状",
-                        description: symptom.description,
-                        confidence: symptom.confidence,
-                        recommendation: symptom.recommendation,
-                        detected_class: symptom.name
-                    },
-                    risk_metrics: {
-                        risk_level: symptom.risk_level,
-                        cure_rate: symptom.cure_rate,
-                        color: symptom.color
-                    },
-                    processing_time: (Math.random() * 2 + 1).toFixed(2),
-                    analyzed_at: new Date().toISOString(),
-                    service: "local_simulation_yolov8"
-                };
-
-                currentAnalysisResult = result;
-                showAnalysisResult(result);
-                
-            }, 2000);
-        }
-                };
-
-                currentAnalysisResult = result;
-                showAnalysisResult(result);
-                
-            }, 2000);
-        }
-
-        // 显示分析结果
-        function showAnalysisResult(result) {
-            if (!result.success) {
-                alert('分析失败: ' + result.error);
-                analyzeNewImage();
-                return;
-            }
-
-            const detection = result.detection;
-            const health = result.health_analysis;
-            const risk = result.risk_metrics;
-
-            // 更新结果界面
-            detectionResults.innerHTML = `
-                <h3 style="margin-bottom: 25px; text-align: center; color: var(--dark);">
-                    <i class="fas fa-chart-bar"></i> 分析结果
-                </h3>
-                
-                <div class="result-grid">
-                    <div class="result-item">
-                        <div class="result-value" style="color: ${risk.color};">${health.message}</div>
-                        <div class="result-label">健康状态</div>
-                    </div>
-                    <div class="result-item">
-                        <div class="result-value">${Math.round(detection.confidence * 100)}%</div>
-                        <div class="result-label">置信度</div>
-                    </div>
-                    <div class="result-item">
-                        <div class="result-value">${detection.color}</div>
-                        <div class="result-label">颜色特征</div>
-                    </div>
-                    <div class="result-item">
-                        <div class="result-value">${detection.texture}</div>
-                        <div class="result-label">质地特征</div>
-                    </div>
-                </div>
-
-                <div style="background: ${risk.color}20; padding: 20px; border-radius: 8px; border-left: 4px solid ${risk.color}; margin: 20px 0;">
-                    <h4 style="margin-bottom: 10px; color: ${risk.color};"> 健康建议</h4>
-                    <p style="color: ${risk.color}; margin: 0; line-height: 1.5;">
-                        ${health.description}<br><br>
-                        <strong>处理建议:</strong> ${health.recommendation}
-                    </p>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0;">
-                    <div style="background: var(--light-bg); padding: 15px; border-radius: 8px; text-align: center;">
-                        <div style="font-size: 1.2rem; font-weight: bold; color: ${risk.color};">${risk.risk_level}%</div>
-                        <div style="font-size: 0.8rem; color: var(--gray);">风险等级</div>
-                    </div>
-                    <div style="background: var(--light-bg); padding: 15px; border-radius: 8px; text-align: center;">
-                        <div style="font-size: 1.2rem; font-weight: bold; color: #28a745;">${risk.cure_rate}%</div>
-                        <div style="font-size: 0.8rem; color: var(--gray);">治愈概率</div>
-                    </div>
-                </div>
-
-                <div style="text-align: center; margin-top: 25px;">
-                    <button class="btn btn-primary" onclick="analyzeNewImage()">
-                        <i class="fas fa-sync-alt"></i> 分析新图片
-                    </button>
-                    <button class="btn btn-secondary" onclick="saveAnalysisResult()" style="margin-left: 10px;">
-                        <i class="fas fa-save"></i> 保存结果
-                    </button>
-                </div>
-                
-                <div style="text-align: center; margin-top: 15px; font-size: 0.8rem; color: var(--gray);">
-                    分析时间: ${new Date(result.analyzed_at).toLocaleString()} | 服务: ${result.service}
-                </div>
-            `;
-
-            detectionResults.style.display = 'block';
-            uploadArea.style.display = 'none';
-        }
-
-        // 保存分析结果
-        function saveAnalysisResult() {
-            if (!currentAnalysisResult) {
-                alert('没有可保存的分析结果');
-                return;
-            }
-
-            // 保存到localStorage
-            const savedResults = JSON.parse(localStorage.getItem('stoolAnalysisResults') || '[]');
-            savedResults.push({
-                ...currentAnalysisResult,
-                savedAt: new Date().toISOString(),
-                id: Date.now()
-            });
-            
-            localStorage.setItem('stoolAnalysisResults', JSON.stringify(savedResults));
-            alert(' 分析结果已保存到本地！');
-        }
-
-        
-        // AI服务配置
-        const CLOUD_AI_URL = "https://cathealth-monitor-1.onrender.com";
-        let currentAnalysisResult = null;
-
-        // 显示用户信息
-        try {
-            const userData = localStorage.getItem('currentUser');
-            if (userData) {
-                const user = JSON.parse(userData);
-                document.getElementById('user-name').textContent = user.name;
-                document.getElementById('user-email').textContent = user.email;
-            } else {
-                window.location.href = 'index.html';
-            }
-        } catch (error) {
-            console.log('用户信息加载失败:', error);
-            window.location.href = 'index.html';
-        }
-
-        // 检查是否第一次使用
-        function checkFirstTime() {
-            const hasSeenWelcome = localStorage.getItem('hasSeenWelcome');
-            const hasCatPhoto = localStorage.getItem('catPhoto');
-            
-            if (!hasSeenWelcome && !hasCatPhoto) {
-                setTimeout(() => {
-                    document.getElementById('welcome-modal').classList.add('active');
-                }, 1000);
-            }
-            
-            
-// 编辑猫咪信息
-function editPetInfo() {
-    // 从localStorage加载已保存的数据
-    const savedInfo = JSON.parse(localStorage.getItem('petInfo') || '{}');
-    
-    // 填充表单
-    document.getElementById('edit-cat-name').value = savedInfo.name || '';
-    document.getElementById('edit-cat-breed').value = savedInfo.breed || '';
-    document.getElementById('edit-cat-age').value = savedInfo.age || '';
-    document.getElementById('edit-cat-weight').value = savedInfo.weight || '';
-    document.getElementById('edit-cat-gender').value = savedInfo.gender || '';
-    
-    // 显示模态框
-    document.getElementById('edit-pet-modal').classList.add('active');
-}
-
-// 关闭编辑模态框
-function closeEditModal() {
-    document.getElementById('edit-pet-modal').classList.remove('active');
-}
-
-// 保存猫咪信息
-function savePetInfo() {
-    const petInfo = {
-        name: document.getElementById('edit-cat-name').value || '我的猫咪',
-        breed: document.getElementById('edit-cat-breed').value,
-        age: document.getElementById('edit-cat-age').value,
-        weight: document.getElementById('edit-cat-weight').value,
-        gender: document.getElementById('edit-cat-gender').value
-    };
-    
-    // 保存到localStorage
-    localStorage.setItem('petInfo', JSON.stringify(petInfo));
-    
-    // 更新显示
-    updatePetDisplay();
-    
-    // 关闭模态框
-    closeEditModal();
-    
-    alert(' 猫咪信息保存成功！');
-}
-
-// 更新猫咪信息显示
-function updatePetDisplay() {
-    const petInfo = JSON.parse(localStorage.getItem('petInfo') || '{}');
-    const catPhoto = localStorage.getItem('catPhoto');
-    
-    // 更新基本信息
-    document.getElementById('cat-name').textContent = petInfo.name || '我的猫咪';
-    document.getElementById('cat-breed').textContent = petInfo.breed ? `${petInfo.breed}  ${petInfo.age || '年龄'}` : '品种  年龄';
-    
-    // 更新详细信息
-    document.getElementById('cat-breed-value').textContent = petInfo.breed || '--';
-    document.getElementById('cat-age-value').textContent = petInfo.age || '--';
-    document.getElementById('cat-weight-value').textContent = petInfo.weight || '--';
-    document.getElementById('cat-gender-value').textContent = petInfo.gender || '--';
-    
-    // 移除无数据样式
-    const infoValues = document.querySelectorAll('.info-value');
-    infoValues.forEach(el => {
-        if (el.textContent !== '--') {
-            el.classList.remove('no-data');
-        } else {
-            el.classList.add('no-data');
-        }
-    });
-    
-    // 更新头像（如果有照片）
-    const avatar = document.getElementById('main-cat-avatar');
-    if (catPhoto) {
-        avatar.style.backgroundImage = `url(${catPhoto})`;
-        avatar.classList.add('has-image');
-    } else {
-        avatar.style.backgroundImage = '';
-        avatar.classList.remove('has-image');
-    }
-    
-    // 如果有猫咪信息，显示模拟的健康数据
-    if (petInfo.name && petInfo.name !== '我的猫咪') {
-        document.getElementById('health-index').textContent = '98%';
-        document.getElementById('health-index').classList.remove('no-data');
-        document.getElementById('diet-status').textContent = '正常';
-        document.getElementById('diet-status').classList.remove('no-data');
-        document.getElementById('activity-level').textContent = '85%';
-        document.getElementById('activity-level').classList.remove('no-data');
-        document.getElementById('avg-weight').textContent = petInfo.weight || '4.2kg';
-        document.getElementById('avg-weight').classList.remove('no-data');
-    } else {
-        // 没有猫咪信息，显示横线
-        document.getElementById('health-index').textContent = '--';
-        document.getElementById('health-index').classList.add('no-data');
-        document.getElementById('diet-status').textContent = '--';
-        document.getElementById('diet-status').classList.add('no-data');
-        document.getElementById('activity-level').textContent = '--';
-        document.getElementById('activity-level').classList.add('no-data');
-        document.getElementById('avg-weight').textContent = '--';
-        document.getElementById('avg-weight').classList.add('no-data');
-    }
-}
-            updateCatDisplay();
-        }
-
-        
-// 编辑猫咪信息
-function editPetInfo() {
-    // 从localStorage加载已保存的数据
-    const savedInfo = JSON.parse(localStorage.getItem('petInfo') || '{}');
-    
-    // 填充表单
-    document.getElementById('edit-cat-name').value = savedInfo.name || '';
-    document.getElementById('edit-cat-breed').value = savedInfo.breed || '';
-    document.getElementById('edit-cat-age').value = savedInfo.age || '';
-    document.getElementById('edit-cat-weight').value = savedInfo.weight || '';
-    document.getElementById('edit-cat-gender').value = savedInfo.gender || '';
-    
-    // 显示模态框
-    document.getElementById('edit-pet-modal').classList.add('active');
-}
-
-// 关闭编辑模态框
-function closeEditModal() {
-    document.getElementById('edit-pet-modal').classList.remove('active');
-}
-
-// 保存猫咪信息
-function savePetInfo() {
-    const petInfo = {
-        name: document.getElementById('edit-cat-name').value || '我的猫咪',
-        breed: document.getElementById('edit-cat-breed').value,
-        age: document.getElementById('edit-cat-age').value,
-        weight: document.getElementById('edit-cat-weight').value,
-        gender: document.getElementById('edit-cat-gender').value
-    };
-    
-    // 保存到localStorage
-    localStorage.setItem('petInfo', JSON.stringify(petInfo));
-    
-    // 更新显示
-    updatePetDisplay();
-    
-    // 关闭模态框
-    closeEditModal();
-    
-    alert(' 猫咪信息保存成功！');
-}
-
-// 更新猫咪信息显示
-function updatePetDisplay() {
-    const petInfo = JSON.parse(localStorage.getItem('petInfo') || '{}');
-    const catPhoto = localStorage.getItem('catPhoto');
-    
-    // 更新基本信息
-    document.getElementById('cat-name').textContent = petInfo.name || '我的猫咪';
-    document.getElementById('cat-breed').textContent = petInfo.breed ? `${petInfo.breed}  ${petInfo.age || '年龄'}` : '品种  年龄';
-    
-    // 更新详细信息
-    document.getElementById('cat-breed-value').textContent = petInfo.breed || '--';
-    document.getElementById('cat-age-value').textContent = petInfo.age || '--';
-    document.getElementById('cat-weight-value').textContent = petInfo.weight || '--';
-    document.getElementById('cat-gender-value').textContent = petInfo.gender || '--';
-    
-    // 移除无数据样式
-    const infoValues = document.querySelectorAll('.info-value');
-    infoValues.forEach(el => {
-        if (el.textContent !== '--') {
-            el.classList.remove('no-data');
-        } else {
-            el.classList.add('no-data');
-        }
-    });
-    
-    // 更新头像（如果有照片）
-    const avatar = document.getElementById('main-cat-avatar');
-    if (catPhoto) {
-        avatar.style.backgroundImage = `url(${catPhoto})`;
-        avatar.classList.add('has-image');
-    } else {
-        avatar.style.backgroundImage = '';
-        avatar.classList.remove('has-image');
-    }
-    
-    // 如果有猫咪信息，显示模拟的健康数据
-    if (petInfo.name && petInfo.name !== '我的猫咪') {
-        document.getElementById('health-index').textContent = '98%';
-        document.getElementById('health-index').classList.remove('no-data');
-        document.getElementById('diet-status').textContent = '正常';
-        document.getElementById('diet-status').classList.remove('no-data');
-        document.getElementById('activity-level').textContent = '85%';
-        document.getElementById('activity-level').classList.remove('no-data');
-        document.getElementById('avg-weight').textContent = petInfo.weight || '4.2kg';
-        document.getElementById('avg-weight').classList.remove('no-data');
-    } else {
-        // 没有猫咪信息，显示横线
-        document.getElementById('health-index').textContent = '--';
-        document.getElementById('health-index').classList.add('no-data');
-        document.getElementById('diet-status').textContent = '--';
-        document.getElementById('diet-status').classList.add('no-data');
-        document.getElementById('activity-level').textContent = '--';
-        document.getElementById('activity-level').classList.add('no-data');
-        document.getElementById('avg-weight').textContent = '--';
-        document.getElementById('avg-weight').classList.add('no-data');
-    }
-}
-        function updateCatDisplay() {
-            const catPhoto = localStorage.getItem('catPhoto');
-            const catName = localStorage.getItem('catName') || '我的猫咪';
-            const catBreed = localStorage.getItem('catBreed') || '品种  年龄';
-            
-            const avatar = document.getElementById('main-cat-avatar');
-            const nameEl = document.getElementById('cat-name');
-            const breedEl = document.getElementById('cat-breed');
-            
-            nameEl.textContent = catName;
-            breedEl.textContent = catBreed;
-            
-            if (catPhoto) {
-                avatar.style.backgroundImage = `url(${catPhoto})`;
-                avatar.classList.add('has-image');
-                
-                // 如果有猫咪照片，显示模拟的健康数据
-                document.getElementById('health-index').textContent = '98%';
-                document.getElementById('health-index').classList.remove('no-data');
-                document.getElementById('diet-status').textContent = '正常';
-                document.getElementById('diet-status').classList.remove('no-data');
-                document.getElementById('activity-level').textContent = '85%';
-                document.getElementById('activity-level').classList.remove('no-data');
-                document.getElementById('avg-weight').textContent = '4.2kg';
-                document.getElementById('avg-weight').classList.remove('no-data');
-                
-                document.getElementById('cat-weight').textContent = '4.2kg';
-                document.getElementById('cat-weight').classList.remove('no-data');
-                document.getElementById('cat-temp').textContent = '38.2C';
-                document.getElementById('cat-temp').classList.remove('no-data');
-                document.getElementById('cat-health').textContent = '98%';
-                document.getElementById('cat-health').classList.remove('no-data');
-                document.getElementById('cat-activity').textContent = '85%';
-                document.getElementById('cat-activity').classList.remove('no-data');
-            } else {
-                // 没有猫咪照片，显示横线
-                document.getElementById('health-index').textContent = '--';
-                document.getElementById('health-index').classList.add('no-data');
-                document.getElementById('diet-status').textContent = '--';
-                document.getElementById('diet-status').classList.add('no-data');
-                document.getElementById('activity-level').textContent = '--';
-                document.getElementById('activity-level').classList.add('no-data');
-                document.getElementById('avg-weight').textContent = '--';
-                document.getElementById('avg-weight').classList.add('no-data');
-                
-                document.getElementById('cat-weight').textContent = '--';
-                document.getElementById('cat-weight').classList.add('no-data');
-                document.getElementById('cat-temp').textContent = '--';
-                document.getElementById('cat-temp').classList.add('no-data');
-                document.getElementById('cat-health').textContent = '--';
-                document.getElementById('cat-health').classList.add('no-data');
-                document.getElementById('cat-activity').textContent = '--';
-                document.getElementById('cat-activity').classList.add('no-data');
-            }
-        }
-
-        // 模态框功能
-        function uploadCatPhoto() {
-            document.getElementById('welcome-modal').classList.remove('active');
-            document.getElementById('cat-photo-modal').classList.add('active');
-        }
-
-        function closeWelcomeModal() {
-            document.getElementById('welcome-modal').classList.remove('active');
-            localStorage.setItem('hasSeenWelcome', 'true');
-        }
-
-        function closeCatPhotoModal() {
-            document.getElementById('cat-photo-modal').classList.remove('active');
-        }
-
-        function saveCatPhoto() {
-            const catPhoto = localStorage.getItem('catPhoto');
-            if (catPhoto) {
-                localStorage.setItem('hasSeenWelcome', 'true');
-                closeCatPhotoModal();
-                updateCatDisplay();
-                alert(' 猫咪照片保存成功！');
-            }
-        }
-
-        // 猫咪照片上传处理
-        document.getElementById('cat-photo-upload').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const imageUrl = e.target.result;
-                    localStorage.setItem('catPhoto', imageUrl);
-                    
-                    // 显示预览
-                    document.getElementById('cat-preview-img').src = imageUrl;
-                    document.getElementById('cat-image-preview').style.display = 'block';
-                    
-                    // 启用保存按钮
-                    document.getElementById('save-cat-btn').disabled = false;
-                    
-                    // 自动填充猫咪信息（模拟）
-                    localStorage.setItem('catName', '咪咪');
-                    localStorage.setItem('catBreed', '英国短毛猫  3岁');
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-
-        // 页面切换功能
-        function showPage(pageId) {
-            document.querySelectorAll('.page-content').forEach(page => {
-                page.classList.remove('active');
-            });
-            
-            document.getElementById(pageId + '-page').classList.add('active');
-            
-            document.querySelectorAll('.nav-item').forEach(nav => {
-                nav.classList.remove('active');
-                if (nav.getAttribute('data-page') === pageId) {
-                    nav.classList.add('active');
-                }
-            });
-            
-            const pageTitles = {
-                'dashboard': '控制面板',
-                'analysis': 'AI排泄物分析',
-                'pets': '猫咪档案',
-                'health': '健康监测',
-                'trends': '健康趋势',
-                'location': '位置追踪',
-                'reminders': '提醒设置',
-                'records': '医疗记录',
-                'settings': '系统设置'
-            };
-            document.getElementById('page-title').textContent = pageTitles[pageId] || '控制面板';
-        }
-
-        // 侧边栏导航点击事件
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', function(e) {
-                e.preventDefault();
-                const pageId = this.getAttribute('data-page');
-                showPage(pageId);
-            });
-        });
-
-        // 粪便检测功能
-        const uploadArea = document.getElementById('upload-area');
-        const imageUpload = document.getElementById('image-upload');
-        const detectionResults = document.getElementById('detection-results');
-        const imagePreview = document.getElementById('image-preview');
-        const previewImg = document.getElementById('preview-img');
-
-        imageUpload.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                handleImageUpload(file);
-            }
-        });
-
-                function handleImageUpload(file) {
-            console.log('上传图片:', file.name);
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                previewImg.src = e.target.result;
-                imagePreview.style.display = 'block';
-            };
-            reader.readAsDataURL(file);
-
-            // 调用AI分析函数
-            analyzeStoolWithAI(file);
-        };
-            reader.readAsDataURL(file);
-
-            uploadArea.innerHTML = `
-                <div class="upload-icon">
-                    <i class="fas fa-spinner fa-spin"></i>
-                </div>
-                <h3>AI分析中...</h3>
-                <p>正在使用YOLOv8模型分析排泄物特征</p>
-            `;
-
-            setTimeout(() => {
-                detectionResults.style.display = 'block';
-                uploadArea.style.display = 'none';
-                alert(' AI分析完成！猫咪健康状况良好。');
-            }, 3000);
-        }
-
-        function analyzeNewImage() {
-            detectionResults.style.display = 'none';
-            imagePreview.style.display = 'none';
-            uploadArea.style.display = 'block';
-            uploadArea.innerHTML = `
-                <div class="upload-icon">
-                    <i class="fas fa-cloud-upload-alt"></i>
-                </div>
-                <h3>点击上传或拖拽图片到此区域</h3>
-                <p>支持 JPG、PNG 格式，最大 5MB</p>
-                <button class="btn btn-primary" onclick="document.getElementById('image-upload').click()" style="margin-top: 20px;">
-                    <i class="fas fa-upload"></i> 选择图片
-                </button>
-            `;
-            imageUpload.value = '';
-        }
-
-        // 退出登录
-        document.querySelector('.user-info').addEventListener('click', function() {
-            if (confirm('确定要退出登录吗？')) {
-                localStorage.removeItem('currentUser');
-                window.location.href = 'index.html';
-            }
-        });
-
-        // 初始化
+        // 页面加载时初始化
         document.addEventListener('DOMContentLoaded', function() {
-    updatePetDisplay();
-            checkFirstTime();
-            updateCatDisplay();
+            updateDetectionTime();
+            // 每秒更新一次时间
+            setInterval(updateDetectionTime, 1000);
         });
 
-        console.log('猫咪照片功能加载完成');
+        console.log(' 寄生虫感染检测页面加载完成');
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
