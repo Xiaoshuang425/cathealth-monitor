@@ -1,6 +1,32 @@
 ﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+<script>
+// 检查登录状态
+document.addEventListener('DOMContentLoaded', function() {
+    const isLoggedIn = localStorage.getItem('isLoggedIn');
+    const loginTime = localStorage.getItem('loginTime');
+    
+    // 检查是否登录且登录时间在24小时内
+    if (!isLoggedIn || !loginTime || (Date.now() - loginTime > 24 * 60 * 60 * 1000)) {
+        // 未登录或登录过期，跳转到登录页
+        localStorage.removeItem('isLoggedIn');
+        localStorage.removeItem('loginTime');
+        window.location.href = 'login.html';
+        return;
+    }
+    
+    // 登录成功，显示页面内容
+    document.body.style.display = 'block';
+});
+
+// 登出功能
+function logout() {
+    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('loginTime');
+    window.location.href = 'login.html';
+}
+</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>猫咪健康监测系统</title>
@@ -245,3 +271,4 @@
     </script>
 </body>
 </html>
+
