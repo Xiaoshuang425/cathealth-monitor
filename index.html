@@ -1,29 +1,8 @@
 ﻿<!DOCTYPE html>
 <html data-version="20251021200934" lang="zh-CN">
 <head>
-<script src="js/auth.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // 非阻塞的登录检查
-        setTimeout(function() {
-            if (typeof auth !== 'undefined' && !auth.isLoggedIn) {
-                // 如果未登录，跳转到登录页
-                window.location.href = 'login.html';
-                return;
-            }
-            
-            // 已登录，确保登出按钮正常工作
-            const logoutBtn = document.getElementById('logoutBtn');
-            if (logoutBtn) {
-                logoutBtn.addEventListener('click', function() {
-                    if (typeof auth !== 'undefined') {
-                        auth.logout();
-                    }
-                });
-            }
-        }, 100);
-    });
-</script>
+
+
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -623,7 +602,7 @@
         document.getElementById('logoutBtn').addEventListener('click', function() {
             localStorage.removeItem('token');
             localStorage.removeItem('user');
-            window.location.href = 'index.html';
+            // 登录检查已禁用';
         });
 
         // 页面加载时更新用户信息
@@ -633,7 +612,7 @@
             const user = localStorage.getItem('user');
             
             if (!token || !user) {
-                window.location.href = 'index.html';
+                // 登录检查已禁用';
                 return;
             }
             
@@ -665,6 +644,7 @@
 <!-- Deployment trigger update -->
 <!-- 强制重新部署 20:04:56 -->
 <!-- 医院地址更新于 2025-10-21 20:07:54 -->
+
 
 
 
