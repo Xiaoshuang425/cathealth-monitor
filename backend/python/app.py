@@ -1,13 +1,19 @@
 ﻿import os
-from flask import Flask, request, jsonify
-from flask_cors import CORS
 import random
 from datetime import datetime
+from flask import Flask, request, jsonify
 
 app = Flask(__name__)
-CORS(app)
 
-print(" CatHealth Minimal Cloud Service Starting...")
+# 手动处理CORS（不需要flask-cors）
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    return response
+
+print(" CatHealth Ultra Simple Service Starting...")
 
 # 症状数据库
 SYMPTOM_DATABASE = {
@@ -20,7 +26,7 @@ SYMPTOM_DATABASE = {
         "recommendation": "请保持当前的喂养习惯，继续观察猫咪的健康状况。",
         "features": {"color": "棕色", "texture": "成形", "shape": "长条状"}
     },
-    "Lightweight and portable": {
+    "soft_stool": {
         "name": "软便", 
         "risk_level": 25,
         "cure_rate": 90,
@@ -29,7 +35,7 @@ SYMPTOM_DATABASE = {
         "recommendation": "建议调整饮食，暂时禁食12小时，喂食温和食物如白水煮鸡胸肉。",
         "features": {"color": "黄色", "texture": "软便", "shape": "糊状"}
     },
-    "watery diarrhoea": {
+    "diarrhea": {
         "name": "拉稀",
         "risk_level": 65, 
         "cure_rate": 85,
@@ -47,7 +53,7 @@ SYMPTOM_DATABASE = {
         "recommendation": "增加膳食纤维，鼓励多喝水，喂食南瓜泥帮助通便。",
         "features": {"color": "深棕色", "texture": "硬块", "shape": "颗粒状"}
     },
-    "parasitic infection": {
+    "parasite": {
         "name": "寄生虫感染",
         "risk_level": 75,
         "cure_rate": 95, 
@@ -58,8 +64,8 @@ SYMPTOM_DATABASE = {
     }
 }
 
-def simulate_ai_analysis():
-    """模拟AI分析 - 纯逻辑，无外部依赖"""
+def simple_ai_analysis():
+    """极简AI分析 - 纯随机逻辑"""
     symptoms = list(SYMPTOM_DATABASE.keys())
     weights = [0.5, 0.15, 0.12, 0.13, 0.1]
     detected_symptom = random.choices(symptoms, weights=weights)[0]
@@ -68,97 +74,111 @@ def simulate_ai_analysis():
     confidence = round(random.uniform(0.82, 0.96), 3)
     
     return {
-        "detection": {
-            **symptom_data["features"],
-            "confidence": confidence,
-            "class_name": detected_symptom
-        },
-        "health_analysis": {
-            "risk_level": "normal" if symptom_data["risk_level"] <= 30 else "warning" if symptom_data["risk_level"] <= 50 else "danger",
-            "message": symptom_data["name"] + "症状",
-            "description": symptom_data["description"],
-            "confidence": confidence,
-            "recommendation": symptom_data["recommendation"],
-            "detected_class": detected_symptom
-        },
-        "risk_metrics": {
-            "risk_level": symptom_data["risk_level"],
-            "cure_rate": symptom_data["cure_rate"], 
-            "color": symptom_data["color"]
-        }
+        "symptom": detected_symptom,
+        "data": symptom_data,
+        "confidence": confidence
     }
 
 @app.route('/')
 def home():
-    return jsonify({
-        "service": "CatHealth Minimal API",
+    return {
+        "service": "CatHealth Ultra Simple API",
         "status": "running", 
-        "version": "3.0",
-        "ai_service": "Pure Logic Simulation",
-        "dependencies": "flask only"
-    })
+        "version": "1.0",
+        "ai_service": "Random Logic AI",
+        "dependencies": "Flask only"
+    }
 
 @app.route('/health', methods=['GET'])
 def health_check():
-    return jsonify({
+    return {
         "status": "healthy",
         "service": "CatHealth AI Service",
-        "version": "Minimal Flask Only",
-        "symptoms_supported": list(SYMPTOM_DATABASE.keys())
-    })
+        "version": "Ultra Simple",
+        "symptoms": list(SYMPTOM_DATABASE.keys())
+    }
 
-@app.route('/analyze/stool', methods=['POST'])
+@app.route('/analyze', methods=['POST'])
 def analyze_stool():
     """AI排泄物分析端点 - 极简版本"""
     try:
         data = request.get_json()
         
-        if not data or 'image' not in data:
-            return jsonify({
+        if not data:
+            return {
                 "success": False,
-                "error": "没有提供图像数据"
-            }), 400
+                "error": "没有提供数据"
+            }, 400
         
         print(f" AI分析请求 - {datetime.now().strftime('%H:%M:%S')}")
         
         # 极速处理
-        processing_time = random.uniform(0.5, 1.5)
+        processing_time = round(random.uniform(0.3, 1.2), 2)
         
         # 使用极简分析
-        analysis_result = simulate_ai_analysis()
+        analysis = simple_ai_analysis()
+        symptom_data = analysis["data"]
         
         result = {
             "success": True,
-            **analysis_result,
-            "processing_time": round(processing_time, 2),
+            "detection": {
+                **symptom_data["features"],
+                "confidence": analysis["confidence"],
+                "class_name": analysis["symptom"]
+            },
+            "health_analysis": {
+                "risk_level": "normal" if symptom_data["risk_level"] <= 30 else "warning" if symptom_data["risk_level"] <= 50 else "danger",
+                "message": symptom_data["name"] + "症状",
+                "description": symptom_data["description"],
+                "confidence": analysis["confidence"],
+                "recommendation": symptom_data["recommendation"],
+                "detected_class": analysis["symptom"]
+            },
+            "risk_metrics": {
+                "risk_level": symptom_data["risk_level"],
+                "cure_rate": symptom_data["cure_rate"], 
+                "color": symptom_data["color"]
+            },
+            "processing_time": processing_time,
             "analyzed_at": datetime.now().isoformat(),
-            "service": "minimal_ai",
-            "model": "pure_software"
+            "service": "ultra_simple_ai"
         }
         
-        return jsonify(result)
+        return result
         
     except Exception as e:
         print(f" 分析失败: {e}")
-        return jsonify({
+        return {
             "success": False,
             "error": f"分析失败: {str(e)}"
-        }), 500
+        }, 500
 
-@app.route('/test/analysis', methods=['GET'])
+@app.route('/test', methods=['GET'])
 def test_analysis():
     """测试分析功能"""
-    result = simulate_ai_analysis()
-    return jsonify({
+    analysis = simple_ai_analysis()
+    symptom_data = analysis["data"]
+    
+    return {
         "success": True,
-        **result,
+        "detection": {
+            **symptom_data["features"],
+            "confidence": analysis["confidence"],
+            "class_name": analysis["symptom"]
+        },
+        "health_analysis": {
+            "risk_level": "normal" if symptom_data["risk_level"] <= 30 else "warning" if symptom_data["risk_level"] <= 50 else "danger",
+            "message": symptom_data["name"] + "症状",
+            "description": symptom_data["description"],
+            "confidence": analysis["confidence"],
+            "recommendation": symptom_data["recommendation"]
+        },
         "test_mode": True
-    })
+    }
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 10000))
     print(f" 极简服务启动在端口 {port}")
-    print(f" 服务模式: 纯逻辑模拟")
-    print(f" 支持5种症状检测")
     print(f" 依赖: 仅Flask")
+    print(f" 支持5种症状检测")
     app.run(host='0.0.0.0', port=port, debug=False)
