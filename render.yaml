@@ -1,0 +1,15 @@
+﻿version: "1"
+services:
+  web:
+    type: web
+    name: cathealth-fullstack
+    env: python
+    plan: free
+    buildCommand: |
+      cd backend/python
+      pip install -r requirements.txt
+      echo "YOLOv8依赖安装完成"
+    startCommand: python ../app.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11
