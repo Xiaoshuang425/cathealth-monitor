@@ -1119,11 +1119,13 @@
         }
 
         // 本地模拟分析（备用方案）
+                // 本地模拟分析（备用方案）- 使用YOLOv8症状名称
         function simulateLocalAnalysis(imageFile) {
             setTimeout(() => {
                 const symptoms = [
                     {
-                        name: "正常",
+                        name: "normal",
+                        display_name: "正常",
                         risk_level: 5,
                         cure_rate: 98,
                         color: "#28a745",
@@ -1133,7 +1135,8 @@
                         features: {color: "棕色", texture: "成形", shape: "长条状"}
                     },
                     {
-                        name: "软便",
+                        name: "Lightweight and portable",
+                        display_name: "软便",
                         risk_level: 25,
                         cure_rate: 90,
                         color: "#ffc107",
@@ -1143,7 +1146,8 @@
                         features: {color: "黄色", texture: "软便", shape: "糊状"}
                     },
                     {
-                        name: "拉稀",
+                        name: "watery diarrhoea",
+                        display_name: "拉稀",
                         risk_level: 65,
                         cure_rate: 85,
                         color: "#fd7e14",
@@ -1153,7 +1157,8 @@
                         features: {color: "黄色", texture: "稀水", shape: "不规则"}
                     },
                     {
-                        name: "便秘",
+                        name: "constipation",
+                        display_name: "便秘",
                         risk_level: 40,
                         cure_rate: 92,
                         color: "#17a2b8",
@@ -1163,7 +1168,8 @@
                         features: {color: "深棕色", texture: "硬块", shape: "颗粒状"}
                     },
                     {
-                        name: "寄生虫感染",
+                        name: "parasitic infection",
+                        display_name: "寄生虫感染",
                         risk_level: 75,
                         cure_rate: 95,
                         color: "#dc3545",
@@ -1197,7 +1203,7 @@
                     },
                     health_analysis: {
                         risk_level: symptom.risk_level <= 30 ? "normal" : symptom.risk_level <= 50 ? "warning" : "danger",
-                        message: symptom.name + "症状",
+                        message: symptom.display_name + "症状",
                         description: symptom.description,
                         confidence: symptom.confidence,
                         recommendation: symptom.recommendation,
@@ -1210,7 +1216,14 @@
                     },
                     processing_time: (Math.random() * 2 + 1).toFixed(2),
                     analyzed_at: new Date().toISOString(),
-                    service: "local_simulation"
+                    service: "local_simulation_yolov8"
+                };
+
+                currentAnalysisResult = result;
+                showAnalysisResult(result);
+                
+            }, 2000);
+        }
                 };
 
                 currentAnalysisResult = result;
@@ -1771,6 +1784,7 @@ function updatePetDisplay() {
     </script>
 </body>
 </html>
+
 
 
 

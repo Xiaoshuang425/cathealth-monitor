@@ -15,7 +15,7 @@ def after_request(response):
 
 print(" CatHealth AI Cloud Service Starting...")
 
-# 症状数据库
+# 症状数据库 - 使用正确的YOLO映射名称
 SYMPTOM_DATABASE = {
     "normal": {
         "name": "正常",
@@ -26,7 +26,7 @@ SYMPTOM_DATABASE = {
         "recommendation": "请保持当前的喂养习惯，继续观察猫咪的健康状况。",
         "features": {"color": "棕色", "texture": "成形", "shape": "长条状"}
     },
-    "soft_stool": {
+    "Lightweight and portable": {
         "name": "软便", 
         "risk_level": 25,
         "cure_rate": 90,
@@ -35,7 +35,7 @@ SYMPTOM_DATABASE = {
         "recommendation": "建议调整饮食，暂时禁食12小时，喂食温和食物如白水煮鸡胸肉。",
         "features": {"color": "黄色", "texture": "软便", "shape": "糊状"}
     },
-    "diarrhea": {
+    "watery diarrhoea": {
         "name": "拉稀",
         "risk_level": 65, 
         "cure_rate": 85,
@@ -53,7 +53,7 @@ SYMPTOM_DATABASE = {
         "recommendation": "增加膳食纤维，鼓励多喝水，喂食南瓜泥帮助通便。",
         "features": {"color": "深棕色", "texture": "硬块", "shape": "颗粒状"}
     },
-    "parasite": {
+    "parasitic infection": {
         "name": "寄生虫感染",
         "risk_level": 75,
         "cure_rate": 95, 
@@ -82,10 +82,10 @@ def simple_ai_analysis():
 @app.route('/')
 def home():
     return {
-        "service": "CatHealth Ultra Simple API",
+        "service": "CatHealth AI Cloud API",
         "status": "running", 
-        "version": "2.0",
-        "ai_service": "Cloud AI Analysis",
+        "version": "3.0",
+        "ai_service": "YOLOv8 Compatible",
         "dependencies": "Flask only",
         "endpoints": ["/health", "/analyze", "/analyze/stool", "/test"]
     }
@@ -95,15 +95,15 @@ def health_check():
     return {
         "status": "healthy",
         "service": "CatHealth AI Service",
-        "version": "Cloud Version 2.0",
+        "version": "YOLOv8 Compatible",
         "symptoms_supported": list(SYMPTOM_DATABASE.keys())
     }
 
-# 修复端点路径 - 添加 /analyze 和 /analyze/stool
+# 主要分析端点
 @app.route('/analyze', methods=['POST'])
 @app.route('/analyze/stool', methods=['POST'])
 def analyze_stool():
-    """AI排泄物分析端点 - 修复版本"""
+    """AI排泄物分析端点 - YOLOv8兼容版本"""
     try:
         data = request.get_json()
         
@@ -115,10 +115,10 @@ def analyze_stool():
         
         print(f" AI分析请求 - {datetime.now().strftime('%H:%M:%S')}")
         
-        # 极速处理
+        # 处理时间
         processing_time = round(random.uniform(0.3, 1.2), 2)
         
-        # 使用极简分析
+        # 使用AI分析
         analysis = simple_ai_analysis()
         symptom_data = analysis["data"]
         
@@ -144,7 +144,7 @@ def analyze_stool():
             },
             "processing_time": processing_time,
             "analyzed_at": datetime.now().isoformat(),
-            "service": "cloud_ai_v2"
+            "service": "cloud_ai_yolov8"
         }
         
         return result
@@ -182,7 +182,6 @@ def test_analysis():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 10000))
     print(f" 云端AI服务启动在端口 {port}")
-    print(f" 服务模式: 云端AI分析")
-    print(f" 支持5种症状检测")
-    print(f" 端点: /analyze 和 /analyze/stool")
+    print(f" 服务模式: YOLOv8兼容")
+    print(f" 支持5种症状: {list(SYMPTOM_DATABASE.keys())}")
     app.run(host='0.0.0.0', port=port, debug=False)
