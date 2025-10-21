@@ -25,6 +25,87 @@
             --sidebar-width: 280px;
         }
 
+        /* 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--light);
+            padding: 40px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            border: 2px solid var(--primary);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .modal-icon {
+            font-size: 4rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+
+        .modal h2 {
+            color: var(--dark);
+            margin-bottom: 15px;
+            font-size: 1.8rem;
+        }
+
+        .modal p {
+            color: var(--gray);
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--dark);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-light);
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: var(--dark);
+        }
+
+        .btn-secondary:hover {
+            background: #7DAE8B;
+        }
+
         body {
             background: var(--light-bg);
             color: var(--dark);
@@ -274,6 +355,11 @@
             font-size: 0.9rem;
         }
 
+        .no-data {
+            color: var(--gray) !important;
+            font-style: italic;
+        }
+
         .pets-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -287,6 +373,7 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.08);
             transition: transform 0.3s ease;
             border: 1px solid var(--primary-light);
+            position: relative;
         }
 
         .pet-card:hover {
@@ -312,6 +399,17 @@
             justify-content: center;
             font-size: 2rem;
             color: var(--dark);
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .pet-avatar.has-image {
+            background-color: transparent;
+        }
+
+        .pet-avatar.has-image i {
+            display: none;
         }
 
         .pet-body {
@@ -340,22 +438,31 @@
             color: var(--dark);
         }
 
-        .btn {
-            padding: 10px 20px;
+        .info-value.no-data {
+            color: var(--gray);
+            font-style: italic;
+        }
+
+        .upload-pet-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--primary);
+            color: var(--dark);
             border: none;
-            border-radius: 6px;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
             cursor: pointer;
-            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             transition: all 0.3s ease;
         }
 
-        .btn-primary {
-            background: var(--primary);
-            color: var(--dark);
-        }
-
-        .btn-primary:hover {
+        .upload-pet-btn:hover {
             background: var(--primary-light);
+            transform: scale(1.1);
         }
 
         /* 粪便检测页面样式 */
@@ -469,10 +576,69 @@
             .stats-grid {
                 grid-template-columns: 1fr;
             }
+            
+            .modal-buttons {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- 欢迎模态框 -->
+    <div id="welcome-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-icon">
+                <i class="fas fa-cat"></i>
+            </div>
+            <h2>欢迎使用 CatHealth！</h2>
+            <p>为了更好的使用体验，请先上传您的猫咪照片。这样我们就能为您提供个性化的健康管理服务。</p>
+            <div class="modal-buttons">
+                <button class="btn btn-primary" onclick="uploadCatPhoto()">
+                    <i class="fas fa-camera"></i> 上传猫咪照片
+                </button>
+                <button class="btn btn-secondary" onclick="closeWelcomeModal()">
+                    稍后再说
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 猫咪照片上传模态框 -->
+    <div id="cat-photo-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-icon">
+                <i class="fas fa-camera"></i>
+            </div>
+            <h2>上传猫咪照片</h2>
+            <p>选择一张清晰的猫咪正面照片，这将用于您的猫咪档案。</p>
+            
+            <div class="upload-area" id="cat-upload-area" style="margin: 20px 0;">
+                <div class="upload-icon">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                </div>
+                <h3>点击上传猫咪照片</h3>
+                <p>支持 JPG、PNG 格式</p>
+                <input type="file" id="cat-photo-upload" accept="image/*" style="display: none;">
+                <button class="btn btn-primary" onclick="document.getElementById('cat-photo-upload').click()" style="margin-top: 20px;">
+                    <i class="fas fa-upload"></i> 选择照片
+                </button>
+            </div>
+
+            <div class="image-preview" id="cat-image-preview">
+                <img id="cat-preview-img" src="" alt="猫咪照片预览">
+            </div>
+
+            <div class="modal-buttons">
+                <button class="btn btn-primary" onclick="saveCatPhoto()" id="save-cat-btn" disabled>
+                    <i class="fas fa-save"></i> 保存照片
+                </button>
+                <button class="btn btn-secondary" onclick="closeCatPhotoModal()">
+                    取消
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- 侧边栏 -->
     <div class="sidebar">
         <div class="sidebar-header">
@@ -596,22 +762,22 @@
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-icon"><i class="fas fa-heartbeat"></i></div>
-                        <div class="stat-value">98%</div>
+                        <div class="stat-value no-data" id="health-index">--</div>
                         <div class="stat-label">整体健康指数</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon"><i class="fas fa-utensils"></i></div>
-                        <div class="stat-value">正常</div>
+                        <div class="stat-value no-data" id="diet-status">--</div>
                         <div class="stat-label">饮食状态</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon"><i class="fas fa-running"></i></div>
-                        <div class="stat-value">85%</div>
+                        <div class="stat-value no-data" id="activity-level">--</div>
                         <div class="stat-label">活动水平</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon"><i class="fas fa-weight"></i></div>
-                        <div class="stat-value">4.2kg</div>
+                        <div class="stat-value no-data" id="avg-weight">--</div>
                         <div class="stat-label">平均体重</div>
                     </div>
                 </div>
@@ -622,33 +788,36 @@
                 </div>
                 <div class="pets-grid">
                     <div class="pet-card">
+                        <button class="upload-pet-btn" onclick="uploadCatPhoto()" title="上传猫咪照片">
+                            <i class="fas fa-camera"></i>
+                        </button>
                         <div class="pet-header">
-                            <div class="pet-avatar">
+                            <div class="pet-avatar" id="main-cat-avatar">
                                 <i class="fas fa-cat"></i>
                             </div>
-                            <h3>咪咪</h3>
-                            <p>英国短毛猫  3岁</p>
+                            <h3 id="cat-name">我的猫咪</h3>
+                            <p id="cat-breed">品种  年龄</p>
                         </div>
                         <div class="pet-body">
                             <div class="pet-info">
                                 <div class="info-item">
                                     <div class="info-label">体重</div>
-                                    <div class="info-value">4.2kg</div>
+                                    <div class="info-value no-data" id="cat-weight">--</div>
                                 </div>
                                 <div class="info-item">
                                     <div class="info-label">体温</div>
-                                    <div class="info-value">38.2C</div>
+                                    <div class="info-value no-data" id="cat-temp">--</div>
                                 </div>
                                 <div class="info-item">
                                     <div class="info-label">健康指数</div>
-                                    <div class="info-value" style="color: #28a745;">98%</div>
+                                    <div class="info-value no-data" id="cat-health">--</div>
                                 </div>
                                 <div class="info-item">
                                     <div class="info-label">活动量</div>
-                                    <div class="info-value">85%</div>
+                                    <div class="info-value no-data" id="cat-activity">--</div>
                                 </div>
                             </div>
-                            <button class="btn btn-primary" style="width: 100%;">
+                            <button class="btn btn-primary" style="width: 100%;" onclick="showPage('health')">
                                 <i class="fas fa-chart-line"></i> 查看详细报告
                             </button>
                         </div>
@@ -746,8 +915,6 @@
                     <p style="color: var(--gray);">即将推出，敬请期待！</p>
                 </div>
             </div>
-
-            <!-- 更多页面... -->
         </div>
     </div>
 
@@ -767,17 +934,135 @@
             window.location.href = 'index.html';
         }
 
+        // 检查是否第一次使用
+        function checkFirstTime() {
+            const hasSeenWelcome = localStorage.getItem('hasSeenWelcome');
+            const hasCatPhoto = localStorage.getItem('catPhoto');
+            
+            if (!hasSeenWelcome && !hasCatPhoto) {
+                setTimeout(() => {
+                    document.getElementById('welcome-modal').classList.add('active');
+                }, 1000);
+            }
+            
+            // 更新猫咪信息显示
+            updateCatDisplay();
+        }
+
+        // 更新猫咪信息显示
+        function updateCatDisplay() {
+            const catPhoto = localStorage.getItem('catPhoto');
+            const catName = localStorage.getItem('catName') || '我的猫咪';
+            const catBreed = localStorage.getItem('catBreed') || '品种  年龄';
+            
+            const avatar = document.getElementById('main-cat-avatar');
+            const nameEl = document.getElementById('cat-name');
+            const breedEl = document.getElementById('cat-breed');
+            
+            nameEl.textContent = catName;
+            breedEl.textContent = catBreed;
+            
+            if (catPhoto) {
+                avatar.style.backgroundImage = `url(${catPhoto})`;
+                avatar.classList.add('has-image');
+                
+                // 如果有猫咪照片，显示模拟的健康数据
+                document.getElementById('health-index').textContent = '98%';
+                document.getElementById('health-index').classList.remove('no-data');
+                document.getElementById('diet-status').textContent = '正常';
+                document.getElementById('diet-status').classList.remove('no-data');
+                document.getElementById('activity-level').textContent = '85%';
+                document.getElementById('activity-level').classList.remove('no-data');
+                document.getElementById('avg-weight').textContent = '4.2kg';
+                document.getElementById('avg-weight').classList.remove('no-data');
+                
+                document.getElementById('cat-weight').textContent = '4.2kg';
+                document.getElementById('cat-weight').classList.remove('no-data');
+                document.getElementById('cat-temp').textContent = '38.2C';
+                document.getElementById('cat-temp').classList.remove('no-data');
+                document.getElementById('cat-health').textContent = '98%';
+                document.getElementById('cat-health').classList.remove('no-data');
+                document.getElementById('cat-activity').textContent = '85%';
+                document.getElementById('cat-activity').classList.remove('no-data');
+            } else {
+                // 没有猫咪照片，显示横线
+                document.getElementById('health-index').textContent = '--';
+                document.getElementById('health-index').classList.add('no-data');
+                document.getElementById('diet-status').textContent = '--';
+                document.getElementById('diet-status').classList.add('no-data');
+                document.getElementById('activity-level').textContent = '--';
+                document.getElementById('activity-level').classList.add('no-data');
+                document.getElementById('avg-weight').textContent = '--';
+                document.getElementById('avg-weight').classList.add('no-data');
+                
+                document.getElementById('cat-weight').textContent = '--';
+                document.getElementById('cat-weight').classList.add('no-data');
+                document.getElementById('cat-temp').textContent = '--';
+                document.getElementById('cat-temp').classList.add('no-data');
+                document.getElementById('cat-health').textContent = '--';
+                document.getElementById('cat-health').classList.add('no-data');
+                document.getElementById('cat-activity').textContent = '--';
+                document.getElementById('cat-activity').classList.add('no-data');
+            }
+        }
+
+        // 模态框功能
+        function uploadCatPhoto() {
+            document.getElementById('welcome-modal').classList.remove('active');
+            document.getElementById('cat-photo-modal').classList.add('active');
+        }
+
+        function closeWelcomeModal() {
+            document.getElementById('welcome-modal').classList.remove('active');
+            localStorage.setItem('hasSeenWelcome', 'true');
+        }
+
+        function closeCatPhotoModal() {
+            document.getElementById('cat-photo-modal').classList.remove('active');
+        }
+
+        function saveCatPhoto() {
+            const catPhoto = localStorage.getItem('catPhoto');
+            if (catPhoto) {
+                localStorage.setItem('hasSeenWelcome', 'true');
+                closeCatPhotoModal();
+                updateCatDisplay();
+                alert(' 猫咪照片保存成功！');
+            }
+        }
+
+        // 猫咪照片上传处理
+        document.getElementById('cat-photo-upload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imageUrl = e.target.result;
+                    localStorage.setItem('catPhoto', imageUrl);
+                    
+                    // 显示预览
+                    document.getElementById('cat-preview-img').src = imageUrl;
+                    document.getElementById('cat-image-preview').style.display = 'block';
+                    
+                    // 启用保存按钮
+                    document.getElementById('save-cat-btn').disabled = false;
+                    
+                    // 自动填充猫咪信息（模拟）
+                    localStorage.setItem('catName', '咪咪');
+                    localStorage.setItem('catBreed', '英国短毛猫  3岁');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
         // 页面切换功能
         function showPage(pageId) {
-            // 隐藏所有页面
             document.querySelectorAll('.page-content').forEach(page => {
                 page.classList.remove('active');
             });
             
-            // 显示目标页面
             document.getElementById(pageId + '-page').classList.add('active');
             
-            // 更新导航激活状态
             document.querySelectorAll('.nav-item').forEach(nav => {
                 nav.classList.remove('active');
                 if (nav.getAttribute('data-page') === pageId) {
@@ -785,7 +1070,6 @@
                 }
             });
             
-            // 更新页面标题
             const pageTitles = {
                 'dashboard': '控制面板',
                 'analysis': 'AI排泄物分析',
@@ -816,12 +1100,6 @@
         const imagePreview = document.getElementById('image-preview');
         const previewImg = document.getElementById('preview-img');
 
-        // 点击上传区域触发文件选择
-        uploadArea.addEventListener('click', function() {
-            imageUpload.click();
-        });
-
-        // 文件选择处理
         imageUpload.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
@@ -829,29 +1107,9 @@
             }
         });
 
-        // 拖拽功能
-        uploadArea.addEventListener('dragover', function(e) {
-            e.preventDefault();
-            uploadArea.classList.add('dragover');
-        });
-
-        uploadArea.addEventListener('dragleave', function() {
-            uploadArea.classList.remove('dragover');
-        });
-
-        uploadArea.addEventListener('drop', function(e) {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-            const file = e.dataTransfer.files[0];
-            if (file && file.type.startsWith('image/')) {
-                handleImageUpload(file);
-            }
-        });
-
         function handleImageUpload(file) {
             console.log('上传图片:', file.name);
             
-            // 显示预览
             const reader = new FileReader();
             reader.onload = function(e) {
                 previewImg.src = e.target.result;
@@ -859,7 +1117,6 @@
             };
             reader.readAsDataURL(file);
 
-            // 显示加载状态
             uploadArea.innerHTML = `
                 <div class="upload-icon">
                     <i class="fas fa-spinner fa-spin"></i>
@@ -868,17 +1125,14 @@
                 <p>正在使用YOLOv8模型分析排泄物特征</p>
             `;
 
-            // 模拟分析过程
             setTimeout(() => {
                 detectionResults.style.display = 'block';
                 uploadArea.style.display = 'none';
-                
                 alert(' AI分析完成！猫咪健康状况良好。');
             }, 3000);
         }
 
         function analyzeNewImage() {
-            // 重置界面
             detectionResults.style.display = 'none';
             imagePreview.style.display = 'none';
             uploadArea.style.display = 'block';
@@ -903,7 +1157,13 @@
             }
         });
 
-        console.log('单页面应用仪表板加载完成');
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            checkFirstTime();
+            updateCatDisplay();
+        });
+
+        console.log('猫咪照片功能加载完成');
     </script>
 </body>
 </html>
