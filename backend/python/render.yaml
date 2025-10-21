@@ -1,16 +1,17 @@
 ﻿version: "1"
 services:
-  yolo-api:
+  yolo-service:
     type: web
     name: cathealth-yolo
     env: python
     plan: free
     buildCommand: |
+      echo "安装Python依赖..."
       pip install -r requirements.txt
-      echo "YOLOv8模型下载中..."
-    startCommand: python main.py
+      echo "✅ 依赖安装完成"
+    startCommand: python app_render.py
     envVars:
       - key: PYTHON_VERSION
-        value: 3.11
-      - key: PYTHON_PORT
+        value: 3.11.0
+      - key: PORT
         value: 10000

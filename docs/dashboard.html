@@ -443,7 +443,40 @@
             font-style: italic;
         }
 
-                .edit-pet-btn {
+                        .delete-pet-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 10;
+            font-size: 0.8rem;
+        }
+
+        .delete-pet-btn:hover {
+            background: #c82333;
+            transform: scale(1.1);
+        }
+
+        .hospital-card {
+            cursor: default;
+        }
+
+        .hospital-card:hover {
+            transform: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .edit-pet-btn {
             position: absolute;
             top: 10px;
             left: 10px;
@@ -681,9 +714,7 @@
                 <a class="nav-item" data-page="pets">
                     <i class="fas fa-cat"></i>猫咪档案
                 </a>
-                <a class="nav-item" data-page="health">
-                    <i class="fas fa-heartbeat"></i>健康监测
-                </a>
+                <a class="nav-item" data-page="hospital">\n                    <i class="fas fa-hospital"></i>附近医院\n                </a>
             </div>
             
             <div class="nav-section">
@@ -914,7 +945,83 @@
                 </div>
             </div>
 
-            <!-- 其他页面占位符 -->
+                        <!-- 医院信息页面 -->
+            <div id="hospital-page" class="page-content">
+                <div class="welcome-banner">
+                    <h2> 附近宠物医院</h2>
+                    <p>紧急情况请立即联系附近的宠物医院</p>
+                </div>
+
+                <div class="features-grid">
+                    <div class="feature-card hospital-card">
+                        <div class="feature-icon" style="color: #28a745;">
+                            <i class="fas fa-hospital"></i>
+                        </div>
+                        <div class="feature-title">绿十字兽医医院</div>
+                        <div class="feature-desc">
+                            <div style="text-align: left; margin: 15px 0;">
+                                <p><strong> 电话:</strong> 2883 7050</p>
+                                <p><strong> 营业时间:</strong> 24小时营业</p>
+                                <p><strong>📍 服务:</strong> 急诊、全科</p>
+                            </div>
+                        </div>
+                        <div class="feature-badge" style="background: #28a745; color: white;">24小时</div>
+                    </div>
+
+                    <div class="feature-card hospital-card">
+                        <div class="feature-icon" style="color: #17a2b8;">
+                            <i class="fas fa-clinic-medical"></i>
+                        </div>
+                        <div class="feature-title">美国爱屋申生动物医院</div>
+                        <div class="feature-desc">
+                            <div style="text-align: left; margin: 15px 0;">
+                                <p><strong> 电话:</strong> 2883 5371</p>
+                                <p><strong> 营业时间:</strong> 10:00 - 20:00</p>
+                                <p><strong> 服务:</strong> 全科、专科</p>
+                            </div>
+                        </div>
+                        <div class="feature-badge" style="background: #17a2b8; color: white;">10:00-20:00</div>
+                    </div>
+
+                    <div class="feature-card hospital-card">
+                        <div class="feature-icon" style="color: #ffc107;">
+                            <i class="fas fa-stethoscope"></i>
+                        </div>
+                        <div class="feature-title">澳门宠物医院有限公司</div>
+                        <div class="feature-desc">
+                            <div style="text-align: left; margin: 15px 0;">
+                                <p><strong> 电话:</strong> 2833 2262</p>
+                                <p><strong> 营业时间:</strong> 09:00 - 22:00</p>
+                                <p><strong> 服务:</strong> 全科、手术</p>
+                            </div>
+                        </div>
+                        <div class="feature-badge" style="background: #ffc107; color: black;">09:00-22:00</div>
+                    </div>
+
+                    <div class="feature-card hospital-card">
+                        <div class="feature-icon" style="color: #dc3545;">
+                            <i class="fas fa-first-aid"></i>
+                        </div>
+                        <div class="feature-title">澳栢兽医诊所</div>
+                        <div class="feature-desc">
+                            <div style="text-align: left; margin: 15px 0;">
+                                <p><strong> 电话:</strong> 2835 3888</p>
+                                <p><strong> 营业时间:</strong> 12:00 - 22:00</p>
+                                <p><strong> 服务:</strong> 全科、牙科</p>
+                            </div>
+                        </div>
+                        <div class="feature-badge" style="background: #dc3545; color: white;">12:00-22:00</div>
+                    </div>
+                </div>
+
+                <div style="background: #fff3cd; padding: 20px; border-radius: 10px; margin-top: 30px; border-left: 4px solid #ffc107;">
+                    <h4><i class="fas fa-exclamation-triangle"></i> 紧急提示</h4>
+                    <p style="margin: 10px 0 0 0; color: #856404;">
+                        如果猫咪出现以下情况，请立即联系24小时医院：
+                        <strong>频繁呕吐、便血、精神萎靡、呼吸困难、抽搐、无法排尿</strong>
+                    </p>
+                </div>
+            </div>
             <div id="pets-page" class="page-content">
                 <div class="welcome-banner">
                     <h2> 猫咪档案管理</h2>
@@ -1391,6 +1498,8 @@ function updatePetDisplay() {
     </script>
 </body>
 </html>
+
+
 
 
 
