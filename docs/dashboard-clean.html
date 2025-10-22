@@ -1,0 +1,98 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>猫咪健康管理中心 - CatHealth</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* 你的所有CSS样式保持不变 */
+    </style>
+    <script>
+        // ==================== 核心功能 - 无冲突版本 ====================
+        
+        // 1. 页面切换功能
+        function showPage(pageId) {
+            console.log("切换到:", pageId);
+            
+            // 隐藏所有页面
+            const pages = document.querySelectorAll(".page-content");
+            pages.forEach(page => page.classList.remove("active"));
+            
+            // 显示目标页面
+            const targetPage = document.getElementById(pageId + "-page");
+            if (targetPage) targetPage.classList.add("active");
+            
+            // 更新导航激活状态
+            const navItems = document.querySelectorAll(".nav-item");
+            navItems.forEach(nav => {
+                nav.classList.remove("active");
+                if (nav.getAttribute("data-page") === pageId) nav.classList.add("active");
+            });
+        }
+        
+        // 2. 猫咪管理功能
+        let allPets = JSON.parse(localStorage.getItem("allPets") || "[]");
+        let currentPetPhoto = null;
+        
+        function openAddPetModal() {
+            console.log("打开添加猫咪模态框");
+            document.getElementById("add-pet-modal").classList.add("active");
+        }
+        
+        function closeAddPetModal() {
+            document.getElementById("add-pot-modal").classList.remove("active");
+        }
+        
+        function addNewPet() {
+            const name = document.getElementById("new-pet-name").value.trim();
+            if (!name) {
+                alert("请输入猫咪名字");
+                return;
+            }
+            
+            const newPet = {
+                id: Date.now().toString(),
+                name: name,
+                breed: document.getElementById("new-pet-breed").value,
+                age: document.getElementById("new-pet-age").value,
+                weight: document.getElementById("new-pet-weight").value,
+                gender: document.getElementById("new-pet-gender").value,
+                notes: document.getElementById("new-pet-notes").value,
+                photo: currentPetPhoto,
+                createdAt: new Date().toISOString()
+            };
+
+            allPets.push(newPet);
+            localStorage.setItem("allPets", JSON.stringify(allPets));
+            closeAddPetModal();
+            alert(" 猫咪添加成功！");
+            location.reload();
+        }
+        
+        // 3. 初始化所有功能
+        document.addEventListener("DOMContentLoaded", function() {
+            console.log("初始化CatHealth应用...");
+            
+            // 初始化导航
+            document.querySelectorAll(".nav-item[data-page]").forEach(item => {
+                item.addEventListener("click", function(e) {
+                    e.preventDefault();
+                    showPage(this.getAttribute("data-page"));
+                });
+            });
+            
+            // 初始化添加猫咪按钮
+            const addPetBtn = document.querySelector('[onclick="openAddPetModal()"]');
+            if (addPetBtn) {
+                addPetBtn.onclick = openAddPetModal;
+            }
+            
+            console.log(" 初始化完成");
+        });
+    </script>
+</head>
+<body>
+    <!-- 你的所有HTML内容保持不变 -->
+</body>
+</html>

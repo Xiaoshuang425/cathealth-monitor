@@ -1,15 +1,27 @@
 ﻿{
   "version": 2,
+  "name": "cathealth-monitor",
   "builds": [
     {
       "src": "docs/**/*.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "*.html",
       "use": "@vercel/static"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
+      "dest": "/$1"
+    },
+    {
+      "src": "/docs/(.*)",
       "dest": "/docs/$1"
     }
-  ]
+  ],
+  "outputDirectory": "docs",
+  "cleanUrls": true,
+  "trailingSlash": false
 }

@@ -112,9 +112,11 @@ def test_model():
         "current_dir": current_dir
     })
 
+# 在main1.py文件末尾確保是10000端口
 if __name__ == '__main__':
-    port = int(os.environ.get('PYTHON_PORT', 3001))
-    print(f" YOLO分析服务启动在端口 {port}")
+    port = 10000  # 改為10000
+    print(f"🚀 YOLOv8服務啟動在端口 {port}")
+    app.run(host='0.0.0.0', port=port, debug=True)
     print(f" 工作目录: {current_dir}")
     print(f" 模型加载状态: {yolo_detector.model is not None}")
     

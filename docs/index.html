@@ -341,7 +341,58 @@
                 </div>
             </div>
         </div>
-
+<!-- 在登錄卡片後面添加注冊卡片 -->
+<div class="app-card hidden" id="register-card">
+    <div class="card-header">
+        <h2>用户注册</h2>
+        <p>创建您的CatHealth Monitor账号</p>
+    </div>
+    <div class="card-body">
+        <form id="register-form">
+            <div class="form-group">
+                <label for="register-name">用户名</label>
+                <div class="input-with-icon">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="register-name" placeholder="请输入用户名" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="register-email">邮箱地址</label>
+                <div class="input-with-icon">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" id="register-email" placeholder="请输入您的邮箱" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="register-password">密码</label>
+                <div class="input-with-icon">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="register-password" placeholder="请输入密码（至少6位）" required minlength="6">
+                    <i class="fas fa-eye password-toggle" id="register-toggle-password"></i>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="register-confirm-password">确认密码</label>
+                <div class="input-with-icon">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="register-confirm-password" placeholder="请再次输入密码" required>
+                    <i class="fas fa-eye password-toggle" id="register-toggle-confirm-password"></i>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="remember-me">
+                    <input type="checkbox" id="agree-terms" required>
+                    <label for="agree-terms">我同意 <a href="#" style="color: var(--secondary);">服务条款</a> 和 <a href="#" style="color: var(--secondary);">隐私政策</a></label>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">注册账号</button>
+        </form>
+        
+        <div class="switch-form">
+            <p>已有账号？<a href="#" id="show-login">立即登录</a></p>
+        </div>
+    </div>
+</div>
         <div class="features">
             <div class="feature">
                 <i class="fas fa-camera"></i>
@@ -418,6 +469,186 @@
             this.classList.toggle('fa-eye');
             this.classList.toggle('fa-eye-slash');
         });
+        // 表單切換功能
+document.getElementById('show-register').addEventListener('click', function(e) {
+    e.preventDefault();
+    document.getElementById('login-card').classList.add('hidden');
+    document.getElementById('register-card').classList.remove('hidden');
+    console.log('切换到注册表单');
+});
+
+document.getElementById('show-login').addEventListener('click', function(e) {
+    e.preventDefault();
+    document.getElementById('register-card').classList.add('hidden');
+    document.getElementById('login-card').classList.remove('hidden');
+    console.log('切换到登录表单');
+});
+
+// 注册表单处理
+document.getElementById('register-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    console.log('注册按钮点击');
+    
+    const name = document.getElementById('register-name').value;
+    const email = document.getElementById('register-email').value;
+    const password = document.getElementById('register-password').value;
+    const confirmPassword = document.getElementById('register-confirm-password').value;
+    const agreeTerms = document.getElementById('agree-terms').checked;
+    
+    // 验证表单
+    if (password !== confirmPassword) {
+        alert('两次输入的密码不一致');
+        return;
+    }
+    
+    if (password.length < 6) {
+        alert('密码长度至少6位');
+        return;
+    }
+    
+    if (!agreeTerms) {
+        alert('请同意服务条款和隐私政策');
+        return;
+    }
+    
+    // 显示加载状态
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 注册中...';
+    submitBtn.disabled = true;
+    
+    // 模拟注册过程
+    setTimeout(() => {
+        // 获取现有用户数据
+        const existingUsers = JSON.parse(localStorage.getItem('catHealthUsers') || '[]');
+        
+        // 检查邮箱是否已注册
+        const userExists = existingUsers.find(user => user.email === email);
+        if (userExists) {
+            alert('该邮箱已被注册，请使用其他邮箱或直接登录');
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+            return;
+        }
+        
+        // 创建新用户
+        const newUser = {
+            id: Date.now().toString(),
+            name: name,
+            email: email,
+            password: password, // 注意：实际应用中应该加密存储
+            createdAt: new Date().toISOString(),
+            pets: []
+        };
+        
+        // 保存用户数据
+        existingUsers.push(newUser);
+        localStorage.setItem('catHealthUsers', JSON.stringify(existingUsers));
+        
+        // 设置当前用户
+        localStorage.setItem('currentUser', JSON.stringify({
+            name: name,
+            email: email
+        }));
+        
+        console.log('新用户注册成功:', newUser);
+        alert('注册成功！欢迎使用CatHealth Monitor');
+        
+        // 跳转到主页面
+        window.location.href = 'dashboard.html';
+    }, 1500);
+});
+
+// 注册表单的密码显示/隐藏
+document.getElementById('register-toggle-password').addEventListener('click', function() {
+    const passwordInput = document.getElementById('register-password');
+    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+    passwordInput.setAttribute('type', type);
+    this.classList.toggle('fa-eye');
+    this.classList.toggle('fa-eye-slash');
+});
+
+document.getElementById('register-toggle-confirm-password').addEventListener('click', function() {
+    const passwordInput = document.getElementById('register-confirm-password');
+    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+    passwordInput.setAttribute('type', type);
+    this.classList.toggle('fa-eye');
+    this.classList.toggle('fa-eye-slash');
+});
+
+// 改进的登录功能 - 验证用户数据
+document.getElementById('login-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    console.log('登录按钮点击');
+    
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    
+    // 显示加载状态
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 登录中...';
+    submitBtn.disabled = true;
+    
+    setTimeout(() => {
+        // 获取用户数据
+        const existingUsers = JSON.parse(localStorage.getItem('catHealthUsers') || '[]');
+        
+        // 查找用户
+        const user = existingUsers.find(u => u.email === email && u.password === password);
+        
+        if (user) {
+            // 登录成功
+            localStorage.setItem('currentUser', JSON.stringify({
+                name: user.name,
+                email: user.email
+            }));
+            console.log('登录成功:', user);
+            alert(`欢迎回来，${user.name}！`);
+            window.location.href = 'dashboard.html';
+        } else {
+            // 登录失败
+            alert('邮箱或密码错误，请重试');
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }
+    }, 1000);
+});
+
+// 初始化用户数据（如果不存在）
+function initializeUserData() {
+    const existingUsers = JSON.parse(localStorage.getItem('catHealthUsers') || '[]');
+    
+    // 如果没有用户数据，创建默认测试用户
+    if (existingUsers.length === 0) {
+        const testUser = {
+            id: '1',
+            name: '凌霜大王',
+            email: 'jiaminpan4@gmail.com',
+            password: '091103ka',
+            createdAt: new Date().toISOString(),
+            pets: []
+        };
+        existingUsers.push(testUser);
+        localStorage.setItem('catHealthUsers', JSON.stringify(existingUsers));
+        console.log('已创建默认测试用户');
+    }
+}
+
+// 页面加载时初始化
+document.addEventListener('DOMContentLoaded', function() {
+    initializeUserData();
+    
+    // 自动填充测试账号（仅在登录页面）
+    const emailInput = document.getElementById('login-email');
+    const passwordInput = document.getElementById('login-password');
+    
+    if (emailInput && passwordInput) {
+        emailInput.value = 'jiaminpan4@gmail.com';
+        passwordInput.value = '091103ka';
+        console.log('测试账号已自动填充');
+    }
+});
     </script>
 </body>
 </html>
