@@ -307,3 +307,4 @@ class YOLODetector:
             }
         ]
         return random.choice(analyses)
+    
