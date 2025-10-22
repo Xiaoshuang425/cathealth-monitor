@@ -822,10 +822,10 @@ const CLOUD_AI_URL = window.location.hostname === 'localhost' || window.location
         function viewPetDetail(petId) {
             const pet = allPets.find(p => p.id === petId);
             if (pet) {
-                document.getElementById("detail-weight").value = pet.weight || "";
-                document.getElementById("detail-breed").value = pet.breed || "";
-                document.getElementById("detail-age").value = pet.age || "";
-                document.getElementById("detail-notes").value = pet.notes || "";
+                document.getElementById("detail-weight").value = pet.weight || ";
+                document.getElementById("detail-breed").value = pet.breed || ";
+                document.getElementById("detail-age").value = pet.age || ";
+                document.getElementById("detail-notes").value = pet.notes || ";
                 
                 showPage("health-detail");
                 window.currentEditingPetId = petId;
