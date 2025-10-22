@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>?怠?亙熒蝞∠?銝剖? - CatHealth</title>
+    <title>猫咪健康管理中心 - CatHealth</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -25,7 +25,7 @@
             --sidebar-width: 280px;
         }
 
-        /* 璅⊥??瑕? */
+        /* 模态框样式 */
         .modal {
             display: none;
             position: fixed;
@@ -113,7 +113,7 @@
             min-height: 100vh;
         }
 
-        /* 靘扯器?撘?*/
+        /* 侧边栏样式 */
         .sidebar {
             width: var(--sidebar-width);
             background: linear-gradient(180deg, var(--primary) 0%, var(--primary-light) 100%);
@@ -194,7 +194,7 @@
             color: var(--dark);
         }
 
-        /* 銝餃?摰孵?瑕? */
+        /* 主内容区样式 */
         .main-content {
             flex: 1;
             margin-left: var(--sidebar-width);
@@ -242,7 +242,7 @@
             padding: 30px;
         }
 
-        /* 憿菟?捆??*/
+        /* 页面内容区 */
         .page-content {
             display: none;
         }
@@ -251,7 +251,7 @@
             display: block;
         }
 
-        /* 隞芾”?踵撘?*/
+        /* 仪表板样式 */
         .welcome-banner {
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
             color: var(--dark);
@@ -521,7 +521,7 @@
             transform: scale(1.1);
         }
 
-        /* 蝎芯噶璉瘚△?Ｘ撘?*/
+        /* 粪便检测页面样式 */
         .analysis-section {
             background: var(--light);
             padding: 30px;
@@ -639,27 +639,24 @@
         }
     </style>
     <script>
-        // ==================== ?詨??蔭 ====================
-        // 動態配置後端URL
-const CLOUD_AI_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-    ? "http://127.0.0.1:10000" 
-    : "https://your-yolo-backend.herokuapp.com";
+        // ==================== 核心配置 ====================
+        const CLOUD_AI_URL = "http://127.0.0.1:10000";
         let allPets = JSON.parse(localStorage.getItem("allPets") || "[]");
         let currentPetPhoto = null;
 
-        // ==================== 憿菟?? ====================
+        // ==================== 页面切换功能 ====================
         function showPage(pageId) {
-            console.log("???", pageId);
+            console.log("切换到:", pageId);
             
-            // ????△??
+            // 隐藏所有页面
             const pages = document.querySelectorAll(".page-content");
             pages.forEach(page => page.classList.remove("active"));
             
-            // ?曄內?格?憿菟
+            // 显示目标页面
             const targetPage = document.getElementById(pageId + "-page");
             if (targetPage) targetPage.classList.add("active");
             
-            // ?湔撖潸瞈瘣餌??
+            // 更新导航激活状态
             const navItems = document.querySelectorAll(".nav-item");
             navItems.forEach(nav => {
                 nav.classList.remove("active");
@@ -668,12 +665,12 @@ const CLOUD_AI_URL = window.location.hostname === 'localhost' || window.location
                 }
             });
 
-            // ?湔憿菟??
+            // 更新页面标题
             const pageTitles = {
-                'dashboard': '?批?Ｘ',
-                'analysis': 'AI???拙???, 
-                'pets': '?怠獢??',
-                'hospital': '???駁'
+                'dashboard': '控制面板',
+                'analysis': 'AI排泄物分析', 
+                'pets': '猫咪档案',
+                'hospital': '附近医院'
             };
             
             const titleElement = document.getElementById('page-title');
@@ -682,21 +679,21 @@ const CLOUD_AI_URL = window.location.hostname === 'localhost' || window.location
             }
         }
 
-        // ==================== ?怠蝞∠?? ====================
+        // ==================== 猫咪管理功能 ====================
         function openAddPetModal() {
-            console.log("??瘛餃??怠璅⊥?");
+            console.log("打开添加猫咪模态框");
             document.getElementById("add-pet-modal").classList.add("active");
         }
 
         function closeAddPetModal() {
-            console.log("?喲瘛餃??怠璅⊥?");
+            console.log("关闭添加猫咪模态框");
             document.getElementById("add-pet-modal").classList.remove("active");
         }
 
         function addNewPet() {
             const name = document.getElementById("new-pet-name").value.trim();
             if (!name) {
-                alert("霂瑁??亦?芸?摮?);
+                alert("请输入猫咪名字");
                 return;
             }
 
@@ -716,7 +713,7 @@ const CLOUD_AI_URL = window.location.hostname === 'localhost' || window.location
             localStorage.setItem("allPets", JSON.stringify(allPets));
             closeAddPetModal();
             renderPets();
-            alert("???怠瘛餃???嚗?);
+            alert("✅ 猫咪添加成功！");
         }
 
         function renderPets() {
@@ -727,8 +724,8 @@ const CLOUD_AI_URL = window.location.hostname === 'localhost' || window.location
                 container.innerHTML = `
                     <div style="text-align: center; padding: 50px; color: var(--gray);">
                         <i class="fas fa-cat" style="font-size: 4rem; margin-bottom: 20px;"></i>
-                        <h3>餈瓷?溶???/h3>
-                        <p>?孵銝?瘛餃??函?蝚砌??芰??/p>
+                        <h3>还没有添加猫咪</h3>
+                        <p>点击上方按钮添加您的第一只猫咪</p>
                     </div>
                 `;
                 return;
@@ -736,10 +733,10 @@ const CLOUD_AI_URL = window.location.hostname === 'localhost' || window.location
 
             container.innerHTML = allPets.map(pet => `
                 <div class="pet-card">
-                    <button class="upload-pet-btn" onclick="changePetPhoto('${pet.id}')" title="?湔?抒?">
+                    <button class="upload-pet-btn" onclick="changePetPhoto('${pet.id}')" title="更换照片">
                         <i class="fas fa-camera"></i>
                     </button>
-                    <button class="delete-pet-btn" onclick="deletePet('${pet.id}')" title="??怠">
+                    <button class="delete-pet-btn" onclick="deletePet('${pet.id}')" title="删除猫咪">
                         <i class="fas fa-times"></i>
                     </button>
                     <div class="pet-header">
@@ -749,30 +746,30 @@ const CLOUD_AI_URL = window.location.hostname === 'localhost' || window.location
                             ${pet.photo ? '' : '<i class="fas fa-cat"></i>'}
                         </div>
                         <h3>${pet.name}</h3>
-                        <p>${pet.breed || "?芰??"} 繚 ${pet.age || "?芰撟湧?"}</p>
+                        <p>${pet.breed || "未知品种"} · ${pet.age || "未知年龄"}</p>
                     </div>
                     <div class="pet-body">
                         <div class="pet-info">
                             <div class="info-item">
-                                <div class="info-label">雿?</div>
+                                <div class="info-label">体重</div>
                                 <div class="info-value">${pet.weight || "--"}</div>
                             </div>
                             <div class="info-item">
-                                <div class="info-label">?批</div>
+                                <div class="info-label">性别</div>
                                 <div class="info-value">${pet.gender || "--"}</div>
                             </div>
                             <div class="info-item">
-                                <div class="info-label">撟湧?</div>
+                                <div class="info-label">年龄</div>
                                 <div class="info-value">${pet.age || "--"}</div>
                             </div>
                             <div class="info-item">
-                                <div class="info-label">?嗆?/div>
-                                <div class="info-value" style="color: #28a745;">?亙熒</div>
+                                <div class="info-label">状态</div>
+                                <div class="info-value" style="color: #28a745;">健康</div>
                             </div>
                         </div>
                         ${pet.notes ? `<div style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin-top: 10px; font-size: 0.9rem; color: var(--gray);">${pet.notes}</div>` : ""}
                         <button class="btn btn-primary" style="width: 100%; margin-top: 15px;" onclick="viewPetDetail('${pet.id}')">
-                            <i class="fas fa-chart-line"></i> ?亦??亙熒霂行?
+                            <i class="fas fa-chart-line"></i> 查看健康详情
                         </button>
                     </div>
                 </div>
@@ -786,7 +783,7 @@ const CLOUD_AI_URL = window.location.hostname === 'localhost' || window.location
         }
 
         function deletePet(petId) {
-            if (confirm("蝖桀?閬??方??芰?芸?嚗迨?????日???)) {
+            if (confirm("确定要删除这只猫咪吗？此操作无法撤销。")) {
                 allPets = allPets.filter(p => p.id !== petId);
                 localStorage.setItem("allPets", JSON.stringify(allPets));
                 renderPets();
@@ -809,7 +806,7 @@ const CLOUD_AI_URL = window.location.hostname === 'localhost' || window.location
                             allPets[petIndex].photo = photoUrl;
                             localStorage.setItem("allPets", JSON.stringify(allPets));
                             renderPets();
-                            alert("???怠?抒??湔??嚗?);
+                            alert("✅ 猫咪照片更新成功！");
                         }
                     };
                     reader.readAsDataURL(file);
@@ -822,10 +819,10 @@ const CLOUD_AI_URL = window.location.hostname === 'localhost' || window.location
         function viewPetDetail(petId) {
             const pet = allPets.find(p => p.id === petId);
             if (pet) {
-                document.getElementById("detail-weight").value = pet.weight || ";
-                document.getElementById("detail-breed").value = pet.breed || ";
-                document.getElementById("detail-age").value = pet.age || ";
-                document.getElementById("detail-notes").value = pet.notes || ";
+                document.getElementById("detail-weight").value = pet.weight || "";
+                document.getElementById("detail-breed").value = pet.breed || "";
+                document.getElementById("detail-age").value = pet.age || "";
+                document.getElementById("detail-notes").value = pet.notes || "";
                 
                 showPage("health-detail");
                 window.currentEditingPetId = petId;
@@ -849,11 +846,11 @@ const CLOUD_AI_URL = window.location.hostname === 'localhost' || window.location
                 localStorage.setItem("allPets", JSON.stringify(allPets));
                 renderPets();
                 showPage("pets");
-                alert("???亙熒靽⊥?湔??嚗?);
+                alert("✅ 健康信息更新成功！");
             }
         }
 
-        // ==================== YOLO??? ====================
+        // ==================== YOLO分析功能 ====================
         function initYOLOUpload() {
             const uploadArea = document.getElementById("upload-area");
             const imageUpload = document.getElementById("image-upload");
@@ -881,9 +878,9 @@ const CLOUD_AI_URL = window.location.hostname === 'localhost' || window.location
         }
 
         async function handleImageUpload(file) {
-            console.log("撘憪?摰OLO??:", file.name);
+            console.log("开始真实YOLO分析:", file.name);
             
-            // ?曄內憸?
+            // 显示预览
             const reader = new FileReader();
             reader.onload = function(e) {
                 document.getElementById("preview-img").src = e.target.result;
@@ -891,15 +888,15 @@ const CLOUD_AI_URL = window.location.hostname === 'localhost' || window.location
             };
             reader.readAsDataURL(file);
             
-            // ?曄內??銝剔??
+            // 显示分析中状态
             const uploadArea = document.getElementById("upload-area");
             if (uploadArea) {
                 uploadArea.innerHTML = `
                     <div class="upload-icon">
                         <i class="fas fa-spinner fa-spin"></i>
                     </div>
-                    <h3> YOLOv8 AI??銝?..</h3>
-                    <p>甇?雿輻??YOLO璅∪??????拍敺?/p>
+                    <h3> YOLOv8 AI分析中...</h3>
+                    <p>正在使用真实YOLO模型分析排泄物特征</p>
                     <div style="margin-top: 15px;">
                         <div style="background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%); height: 4px; border-radius: 2px; width: 80%; margin: 0 auto;"></div>
                     </div>
@@ -907,7 +904,7 @@ const CLOUD_AI_URL = window.location.hostname === 'localhost' || window.location
             }
             
             try {
-                // 頧祆銝槓ase64
+                // 转换为base64
                 const base64Image = await new Promise((resolve) => {
                     const reader = new FileReader();
                     reader.onload = () => resolve(reader.result);
@@ -916,7 +913,7 @@ const CLOUD_AI_URL = window.location.hostname === 'localhost' || window.location
                 
                 const imageData = base64Image.split(',')[1];
                 
-                console.log("靚??YOLO?垢API...");
+                console.log("调用真实YOLO后端API...");
                 const response = await fetch(CLOUD_AI_URL + "/analyze/stool", {
                     method: "POST",
                     headers: {
@@ -928,31 +925,31 @@ const CLOUD_AI_URL = window.location.hostname === 'localhost' || window.location
                 });
                 
                 if (!response.ok) {
-                    throw new Error(`HTTP?秤: ${response.status}`);
+                    throw new Error(`HTTP错误: ${response.status}`);
                 }
                 
                 const result = await response.json();
-                console.log("??????蝏?:", result);
+                console.log("✅ 真实分析结果:", result);
                 
                 if (result.success) {
                     showAnalysisResult(result);
                 } else {
-                    throw new Error(result.error || "??憭梯揖");
+                    throw new Error(result.error || "分析失败");
                 }
                 
             } catch (error) {
-                console.error("??API靚憭梯揖:", error);
+                console.error("❌ API调用失败:", error);
                 
-                // ?曄內?秤靽⊥
+                // 显示错误信息
                 const detectionResults = document.getElementById("detection-results");
                 if (detectionResults) {
                     detectionResults.innerHTML = `
                         <h3 style="color: #dc3545; text-align: center;">
-                            <i class="fas fa-exclamation-triangle"></i> ??憭梯揖
+                            <i class="fas fa-exclamation-triangle"></i> 分析失败
                         </h3>
                         <p style="text-align: center;">${error.message}</p>
                         <div style="text-align: center; margin-top: 20px;">
-                            <button class="btn btn-primary" onclick="analyzeNewImage()">?撠?</button>
+                            <button class="btn btn-primary" onclick="analyzeNewImage()">重新尝试</button>
                         </div>
                     `;
                     detectionResults.style.display = "block";
@@ -968,43 +965,43 @@ const CLOUD_AI_URL = window.location.hostname === 'localhost' || window.location
             
             detectionResults.innerHTML = `
                 <h3 style="margin-bottom: 25px; text-align: center; color: var(--dark);">
-                    <i class="fas fa-chart-bar"></i> AI??蝏?
+                    <i class="fas fa-chart-bar"></i> AI分析结果
                 </h3>
                 
                 <div class="result-grid">
                     <div class="result-item">
                         <div class="result-value" style="color: ${result.risk_metrics.color};">${result.health_analysis.message}</div>
-                        <div class="result-label">?亙熒?嗆?/div>
+                        <div class="result-label">健康状态</div>
                     </div>
                     <div class="result-item">
                         <div class="result-value">${Math.round(result.detection.confidence * 100)}%</div>
-                        <div class="result-label">蝵桐縑摨?/div>
+                        <div class="result-label">置信度</div>
                     </div>
                     <div class="result-item">
                         <div class="result-value">${result.risk_metrics.risk_level}%</div>
-                        <div class="result-label">憌蝑漣</div>
+                        <div class="result-label">风险等级</div>
                     </div>
                     <div class="result-item">
                         <div class="result-value">${result.risk_metrics.cure_rate}%</div>
-                        <div class="result-label">瘝餅?璁?</div>
+                        <div class="result-label">治愈概率</div>
                     </div>
                 </div>
                 
                 <div style="background: #e8f5e8; padding: 20px; border-radius: 8px; border-left: 4px solid ${result.risk_metrics.color}; margin: 20px 0;">
                     <h4 style="margin-bottom: 10px; color: #155724;">
-                        <i class="fas fa-stethoscope"></i> 璉瘚敺?
+                        <i class="fas fa-stethoscope"></i> 检测特征
                     </h4>
                     <p style="color: #155724; margin: 0; margin-bottom: 15px;">${result.detection.features}</p>
                     
                     <h4 style="margin-bottom: 10px; color: #155724;">
-                        <i class="fas fa-heartbeat"></i> ?亙熒撱箄悅
+                        <i class="fas fa-heartbeat"></i> 健康建议
                     </h4>
                     <p style="color: #155724; margin: 0;">${result.health_analysis.recommendation}</p>
                 </div>
                 
                 <div style="text-align: center; margin-top: 25px;">
                     <button class="btn btn-primary" onclick="analyzeNewImage()">
-                        <i class="fas fa-sync-alt"></i> ???啣??
+                        <i class="fas fa-sync-alt"></i> 分析新图片
                     </button>
                 </div>
             `;
@@ -1026,19 +1023,19 @@ const CLOUD_AI_URL = window.location.hostname === 'localhost' || window.location
                     <div class="upload-icon">
                         <i class="fas fa-cloud-upload-alt"></i>
                     </div>
-                    <h3>?孵銝????賢?甇文??/h3>
-                    <p>?舀? JPG?NG ?澆?嚗?憭?5MB</p>
+                    <h3>点击上传或拖拽图片到此区域</h3>
+                    <p>支持 JPG、PNG 格式，最大 5MB</p>
                     <button class="btn btn-primary" id="select-image-btn" style="margin-top: 20px;">
-                        <i class="fas fa-upload"></i> ??曄?
+                        <i class="fas fa-upload"></i> 选择图片
                     </button>
                 `;
                 
-                // ?????隡???
+                // 重新初始化上传功能
                 setTimeout(initYOLOUpload, 100);
             }
         }
 
-        // ==================== ?????拍??隡?====================
+        // ==================== 初始化宠物照片上传 ====================
         function initPetPhotoUpload() {
             const uploadArea = document.getElementById("pet-photo-upload-area");
             const fileInput = document.getElementById("pet-photo-upload");
@@ -1064,11 +1061,11 @@ const CLOUD_AI_URL = window.location.hostname === 'localhost' || window.location
             }
         }
 
-        // ==================== ????????====================
+        // ==================== 初始化所有功能 ====================
         document.addEventListener("DOMContentLoaded", function() {
-            console.log("????芸摨瑞恣?頂蝏?..");
+            console.log("初始化猫咪健康管理系统...");
             
-            // ???儒颲寞?
+            // 初始化侧边栏
             document.querySelectorAll(".nav-item[data-page]").forEach(item => {
                 item.addEventListener("click", function(e) {
                     e.preventDefault();
@@ -1076,217 +1073,217 @@ const CLOUD_AI_URL = window.location.hostname === 'localhost' || window.location
                 });
             });
             
-            // ??????
+            // 初始化功能
             renderPets();
             initYOLOUpload();
             initPetPhotoUpload();
             
-            console.log("??蝟餌???????);
-            console.log("? ?垢URL:", CLOUD_AI_URL);
+            console.log("✅ 系统初始化完成");
+            console.log("🎯 后端URL:", CLOUD_AI_URL);
         });
 
-        // ==================== 靚??賭誘 ====================
+        // ==================== 调试命令 ====================
         window.debugSystem = function() {
-            console.log("=== 蝟餌?靚?靽⊥ ===");
+            console.log("=== 系统调试信息 ===");
             console.log("CLOUD_AI_URL:", CLOUD_AI_URL);
-            console.log("?怠?圈?:", allPets.length);
-            console.log("靘扯器?★??", document.querySelectorAll('.nav-item[data-page]').length);
-            console.log("YOLO?:", typeof handleImageUpload);
-            console.log("?怠?:", typeof openAddPetModal);
+            console.log("猫咪数量:", allPets.length);
+            console.log("侧边栏项目:", document.querySelectorAll('.nav-item[data-page]').length);
+            console.log("YOLO功能:", typeof handleImageUpload);
+            console.log("猫咪功能:", typeof openAddPetModal);
         };
     </script>
 </head>
 <body>
-    <!-- 靘扯器??-->
+    <!-- 侧边栏 -->
     <div class="sidebar">
         <div class="sidebar-header">
             <h1><i class="fas fa-paw"></i> CatHealth</h1>
-            <p>?怠?亙熒蝞∠?銝剖?</p>
+            <p>猫咪健康管理中心</p>
         </div>
         
         <nav class="sidebar-nav">
             <div class="nav-section">
-                <div class="nav-title">銝餉??</div>
+                <div class="nav-title">主要功能</div>
                 <a class="nav-item active" data-page="dashboard">
-                    <i class="fas fa-home"></i>?批?Ｘ
+                    <i class="fas fa-home"></i>控制面板
                 </a>
                 <a class="nav-item" data-page="analysis">
-                    <i class="fas fa-robot"></i>AI???拙???
+                    <i class="fas fa-robot"></i>AI排泄物分析
                 </a>
                 <a class="nav-item" data-page="pets">
-                    <i class="fas fa-cat"></i>?怠獢??
+                    <i class="fas fa-cat"></i>猫咪档案
                 </a>
                 <a class="nav-item" data-page="hospital">
-                    <i class="fas fa-hospital"></i>???駁
+                    <i class="fas fa-hospital"></i>附近医院
                 </a>
             </div>
         </nav>
     </div>
 
-    <!-- 銝餃?摰孵 -->
+    <!-- 主内容区 -->
     <div class="main-content">
         <div class="top-bar">
-            <h2 id="page-title">?批?Ｘ</h2>
+            <h2 id="page-title">控制面板</h2>
             <div class="user-info">
                 <div class="user-avatar">
                     <i class="fas fa-user"></i>
                 </div>
                 <div>
-                    <div>?怠摰園</div>
-                    <div style="font-size: 0.8rem; color: var(--gray);">甈Ｚ?雿輻</div>
+                    <div>猫咪家长</div>
+                    <div style="font-size: 0.8rem; color: var(--gray);">欢迎使用</div>
                 </div>
             </div>
         </div>
 
                 <div class="content-area">
-            <!-- 隞芾”?輸△??-->
+            <!-- 仪表板页面 -->
             <div id="dashboard-page" class="page-content active">
                 <div class="welcome-banner">
-                    <h2>甈Ｚ??嚗?/h2>
-                    <p>?冽雿??斗?摰摨瘀?隞?賢???憪?/p>
+                    <h2>欢迎回来！</h2>
+                    <p>全方位守护您的爱宠健康，从智能分析开始</p>
                 </div>
 
-                <!-- ??亙蝵 -->
+                <!-- 功能入口网格 -->
                 <div class="features-grid">
                     <div class="feature-card" onclick="showPage('analysis')">
                         <div class="feature-icon">
                             <i class="fas fa-robot"></i>
                         </div>
-                        <div class="feature-title">AI???拙???/div>
+                        <div class="feature-title">AI排泄物分析</div>
                         <div class="feature-desc">
-                            ?箔?YOLOv8璅∪???質??怎頂蝏??芸???怠???拙摨瑞??
+                            基于YOLOv8模型的智能识别系统，自动分析猫咪排泄物健康状况
                         </div>
-                        <div class="feature-badge">AI?箄</div>
+                        <div class="feature-badge">AI智能</div>
                     </div>
 
                     <div class="feature-card" onclick="showPage('pets')">
                         <div class="feature-icon">
                             <i class="fas fa-cat"></i>
                         </div>
-                        <div class="feature-title">?怠獢??</div>
+                        <div class="feature-title">猫咪档案</div>
                         <div class="feature-desc">
-                            蝞∠?憭?怠?摨瑟﹝獢?霈啣?雿??幼憌??靽⊥
+                            管理多只猫咪的健康档案，记录体重、饮食、医疗等信息
                         </div>
-                        <div class="feature-badge">獢??蝞∠?</div>
+                        <div class="feature-badge">档案管理</div>
                     </div>
 
                     <div class="feature-card">
                         <div class="feature-icon">
                             <i class="fas fa-heartbeat"></i>
                         </div>
-                        <div class="feature-title">?亙熒??</div>
+                        <div class="feature-title">健康监测</div>
                         <div class="feature-desc">
-                            摰餈質葵?怠?亙熒?唳嚗??摨瑟??頞??
+                            实时追踪猫咪健康数据，生成健康报告和趋势分析
                         </div>
-                        <div class="feature-badge">摰??</div>
+                        <div class="feature-badge">实时监测</div>
                     </div>
 
                     <div class="feature-card" onclick="showPage('hospital')">
                         <div class="feature-icon">
                             <i class="fas fa-map-marker-alt"></i>
                         </div>
-                        <div class="feature-title">???駁</div>
+                        <div class="feature-title">附近医院</div>
                         <div class="feature-desc">
-                            蝝扳交??萄翰??暸?餈??拙?ｇ?銝?桀紡??
+                            紧急情况快速查找附近宠物医院，一键导航
                         </div>
-                        <div class="feature-badge">摰摰</div>
+                        <div class="feature-badge">安全守护</div>
                     </div>
                 </div>
 
-                <!-- ?亙熒蝏恣 -->
+                <!-- 健康统计 -->
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-icon"><i class="fas fa-heartbeat"></i></div>
                         <div class="stat-value no-data" id="health-index">--</div>
-                        <div class="stat-label">?港??亙熒?</div>
+                        <div class="stat-label">整体健康指数</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon"><i class="fas fa-utensils"></i></div>
                         <div class="stat-value no-data" id="diet-status">--</div>
-                        <div class="stat-label">擖桅??嗆?/div>
+                        <div class="stat-label">饮食状态</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon"><i class="fas fa-running"></i></div>
                         <div class="stat-value no-data" id="activity-level">--</div>
-                        <div class="stat-label">瘣餃瘞游像</div>
+                        <div class="stat-label">活动水平</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon"><i class="fas fa-weight"></i></div>
                         <div class="stat-value no-data" id="avg-weight">--</div>
-                        <div class="stat-label">撟喳?雿?</div>
+                        <div class="stat-label">平均体重</div>
                     </div>
                 </div>
 
-                <!-- ???怠 -->
+                <!-- 我的猫咪 -->
                 <div class="section-title">
-                    <i class="fas fa-paw"></i> ???怠
+                    <i class="fas fa-paw"></i> 我的猫咪
                 </div>
                 <div class="pets-grid" id="pets-container">
-                    <!-- ?怠?∠?隡????-->
+                    <!-- 猫咪卡片会动态生成 -->
                 </div>
             </div>
 
-            <!-- AI???拙??△??-->
+            <!-- AI排泄物分析页面 -->
             <div id="analysis-page" class="page-content">
                 <div class="welcome-banner">
-                    <h2>AI???拇?賢???/h2>
-                    <p>?箔?YOLOv8璅∪???質??恬?敹恍???芸摨瑞??/p>
+                    <h2>AI排泄物智能分析</h2>
+                    <p>基于YOLOv8模型的智能识别，快速分析猫咪健康状态</p>
                 </div>
 
                 <div class="analysis-section">
                     <div class="section-title">
-                        <i class="fas fa-robot"></i> 銝????曄?
+                        <i class="fas fa-robot"></i> 上传分析图片
                     </div>
                     <p style="margin-bottom: 20px; color: var(--gray);">
-                        銝??怠???拍??AI?芸???亙熒?嗆僎??銝?撱箄悅
+                        上传猫咪排泄物照片，AI自动分析健康状态并提供专业建议
                     </p>
                     
                     <div class="upload-area" id="upload-area">
                         <div class="upload-icon">
                             <i class="fas fa-cloud-upload-alt"></i>
                         </div>
-                        <h3>?孵銝????賢?甇文??/h3>
-                        <p>?舀? JPG?NG ?澆?嚗?憭?5MB</p>
+                        <h3>点击上传或拖拽图片到此区域</h3>
+                        <p>支持 JPG、PNG 格式，最大 5MB</p>
                         <input type="file" id="image-upload" accept="image/*" style="display: none;">
                         <button class="btn btn-primary" id="select-image-btn" style="margin-top: 20px;">
-                            <i class="fas fa-upload"></i> ??曄?
+                            <i class="fas fa-upload"></i> 选择图片
                         </button>
                     </div>
 
                     <div class="image-preview" id="image-preview">
-                        <img id="preview-img" src="" alt="?曄?憸?">
+                        <img id="preview-img" src="" alt="图片预览">
                     </div>
 
                     <div class="detection-results" id="detection-results">
-                        <!-- 蝏??捆隡?‵??-->
+                        <!-- 结果内容会动态填充 -->
                     </div>
                 </div>
             </div>
 
-            <!-- ?怠獢??憿菟 -->
+            <!-- 猫咪档案页面 -->
             <div id="pets-page" class="page-content">
                 <div class="welcome-banner">
-                    <h2>?怠獢??蝞∠?</h2>
-                    <p>蝞∠??函??梁靽⊥嚗???怠振摨?/p>
+                    <h2>猫咪档案管理</h2>
+                    <p>管理您的爱猫信息，支持多猫家庭</p>
                 </div>
 
-                <!-- 瘛餃??怠? -->
+                <!-- 添加猫咪按钮 -->
                 <div style="text-align: center; margin-bottom: 30px;">
                     <button class="btn btn-primary" onclick="openAddPetModal()" style="font-size: 1.1rem; padding: 12px 25px;">
-                        <i class="fas fa-plus"></i> 瘛餃??啁??
+                        <i class="fas fa-plus"></i> 添加新猫咪
                     </button>
                 </div>
 
                 <div class="pets-grid" id="pets-container">
-                    <!-- ?怠?∠?隡????-->
+                    <!-- 猫咪卡片会动态生成 -->
                 </div>
             </div>
 
-            <!-- ???駁憿菟 -->
+            <!-- 附近医院页面 -->
             <div id="hospital-page" class="page-content">
                 <div class="welcome-banner">
-                    <h2>??摰?駁</h2>
-                    <p>蝝扳交??菔窈蝡?頂?????拙??/p>
+                    <h2>附近宠物医院</h2>
+                    <p>紧急情况请立即联系附近的宠物医院</p>
                 </div>
 
                 <div class="features-grid">
@@ -1294,29 +1291,29 @@ const CLOUD_AI_URL = window.location.hostname === 'localhost' || window.location
                         <div class="feature-icon" style="color: #28a745;">
                             <i class="fas fa-hospital"></i>
                         </div>
-                        <div class="feature-title">蝏踹?摮?餃??/div>
+                        <div class="feature-title">绿十字兽医医院</div>
                         <div class="feature-desc">
                             <div style="text-align: left; margin: 15px 0;">
-                                <p><strong>?? ?菔?:</strong> 2883 7050</p>
-                                <p><strong>?? ?乩??園:</strong> 24撠?乩?</p>
-                                <p><strong>?? ?啣?嚗?/strong> 瞉喲?鈭?蝢?22??/p>
-                                <p><strong>?征 ?:</strong> ?亥??蝘?/p>
+                                <p><strong>📞 电话:</strong> 2883 7050</p>
+                                <p><strong>🕒 营业时间:</strong> 24小时营业</p>
+                                <p><strong>📍 地址：</strong> 澳門亞威羅街22號</p>
+                                <p><strong>🩺 服务:</strong> 急诊、全科</p>
                             </div>
                         </div>
-                        <div class="feature-badge" style="background: #28a745; color: white;">24撠</div>
+                        <div class="feature-badge" style="background: #28a745; color: white;">24小时</div>
                     </div>
 
                     <div class="feature-card hospital-card">
                         <div class="feature-icon" style="color: #17a2b8;">
                             <i class="fas fa-clinic-medical"></i>
                         </div>
-                        <div class="feature-title">蝢?勗??喟??函?駁</div>
+                        <div class="feature-title">美国爱屋申生动物医院</div>
                         <div class="feature-desc">
                             <div style="text-align: left; margin: 15px 0;">
-                                <p><strong>?? ?菔?:</strong> 2883 5371</p>
-                                <p><strong>?? ?乩??園:</strong> 10:00 - 20:00</p>
-                                <p><strong>?? ?啣?:</strong> 瞉喲?摮恍訾??ㄚ憭折收頝?44-E?之銝剛撱?蝬?撅銝摨?/p>
-                                <p><strong>?征 ?:</strong> ?函???蝘?/p>
+                                <p><strong>📞 电话:</strong> 2883 5371</p>
+                                <p><strong>🕒 营业时间:</strong> 10:00 - 20:00</p>
+                                <p><strong>📍 地址:</strong> 澳門孫逸仙博士大馬路544-E號大中華廣場綠湖居地下I座</p>
+                                <p><strong>🩺 服务:</strong> 全科、专科</p>
                             </div>
                         </div>
                         <div class="feature-badge" style="background: #17a2b8; color: white;">10:00-20:00</div>
@@ -1326,13 +1323,13 @@ const CLOUD_AI_URL = window.location.hostname === 'localhost' || window.location
                         <div class="feature-icon" style="color: #ffc107;">
                             <i class="fas fa-stethoscope"></i>
                         </div>
-                        <div class="feature-title">瞉喲摰?駁???砍</div>
+                        <div class="feature-title">澳门宠物医院有限公司</div>
                         <div class="feature-desc">
                             <div style="text-align: left; margin: 15px 0;">
-                                <p><strong>?? ?菔?:</strong> 2833 2262</p>
-                                <p><strong>?? ?乩??園:</strong> 09:00 - 22:00</p>
-                                <p><strong>?? ?啣?:</strong>瞉喲?鞈摩璅????3??摨瑁??? 3 靽曇蝧啗?瞉喲?</p>
-                                <p><strong>?征 ?:</strong> ?函?????/p>
+                                <p><strong>📞 电话:</strong> 2833 2262</p>
+                                <p><strong>🕒 营业时间:</strong> 09:00 - 22:00</p>
+                                <p><strong>📍 地址:</strong>澳門賈伯樂提督街3號富康花園J舖, 3 俾若翰街澳門</p>
+                                <p><strong>🩺 服务:</strong> 全科、手术</p>
                             </div>
                         </div>
                         <div class="feature-badge" style="background: #ffc107; color: black;">09:00-22:00</div>
@@ -1342,13 +1339,13 @@ const CLOUD_AI_URL = window.location.hostname === 'localhost' || window.location
                         <div class="feature-icon" style="color: #dc3545;">
                             <i class="fas fa-first-aid"></i>
                         </div>
-                        <div class="feature-title">瞉單?賢霂?</div>
+                        <div class="feature-title">澳栢兽医诊所</div>
                         <div class="feature-desc">
                             <div style="text-align: left; margin: 15px 0;">
-                                <p><strong>?? ?菔?:</strong> 2835 3888</p>
-                                <p><strong>?? ?乩??園:</strong> 12:00 - 22:00</p>
-                                <p><strong>?? ?啣?:</strong> 瞉喲??望?瘣銵?06-212??憡之撱?/p>
-                                <p><strong>?征 ?:</strong> ?函???蝘?/p>
+                                <p><strong>📞 电话:</strong> 2835 3888</p>
+                                <p><strong>🕒 营业时间:</strong> 12:00 - 22:00</p>
+                                <p><strong>📍 地址:</strong> 澳門東望洋新街206-212號定威大廈</p>
+                                <p><strong>🩺 服务:</strong> 全科、牙科</p>
                             </div>
                         </div>
                         <div class="feature-badge" style="background: #dc3545; color: white;">12:00-22:00</div>
@@ -1356,127 +1353,127 @@ const CLOUD_AI_URL = window.location.hostname === 'localhost' || window.location
                 </div>
 
                 <div style="background: #fff3cd; padding: 20px; border-radius: 10px; margin-top: 30px; border-left: 4px solid #ffc107;">
-                    <h4><i class="fas fa-exclamation-triangle"></i> 蝝扳交?蝷?/h4>
+                    <h4><i class="fas fa-exclamation-triangle"></i> 紧急提示</h4>
                     <p style="margin: 10px 0 0 0; color: #856404;">
-                        憒??怠?箇隞乩??嚗窈蝡?頂24撠?駁嚗?
-                        <strong>憸????噶銵?移蟡??～?詨?整??瘜?撠?/strong>
+                        如果猫咪出现以下情况，请立即联系24小时医院：
+                        <strong>频繁呕吐、便血、精神萎靡、呼吸困难、抽搐、无法排尿</strong>
                     </p>
                 </div>
             </div>
 
-            <!-- ?亙熒霂行?憿菟 -->
+            <!-- 健康详情页面 -->
             <div id="health-detail-page" class="page-content">
                 <div class="welcome-banner" style="position: relative;">
                     <button class="close-detail-btn" onclick="closeHealthDetail()" style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: var(--dark); font-size: 1.5rem; cursor: pointer;">
                         <i class="fas fa-times"></i>
                     </button>
-                    <h2>?亙熒霂行?</h2>
-                    <p>?亦??怠?祕蝏摨瑚縑??/p>
+                    <h2>健康详情</h2>
+                    <p>查看猫咪的详细健康信息</p>
                 </div>
 
                 <div class="analysis-section">
                     <div class="section-title">
-                        <i class="fas fa-edit"></i> 蝻??亙熒靽⊥
+                        <i class="fas fa-edit"></i> 编辑健康信息
                     </div>
                     
                     <div style="max-width: 500px; margin: 0 auto;">
                         <div class="form-group" style="margin-bottom: 20px;">
-                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--dark);">雿? (kg)</label>
-                            <input type="text" id="detail-weight" class="input-with-icon" placeholder="靘?: 4.2" style="width: 100%; padding: 12px; border: 1px solid var(--primary-light); border-radius: 8px;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--dark);">体重 (kg)</label>
+                            <input type="text" id="detail-weight" class="input-with-icon" placeholder="例如: 4.2" style="width: 100%; padding: 12px; border: 1px solid var(--primary-light); border-radius: 8px;">
                         </div>
                         
                         <div class="form-group" style="margin-bottom: 20px;">
-                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--dark);">??</label>
-                            <input type="text" id="detail-breed" class="input-with-icon" placeholder="靘?: ?勗?剜??? style="width: 100%; padding: 12px; border: 1px solid var(--primary-light); border-radius: 8px;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--dark);">品种</label>
+                            <input type="text" id="detail-breed" class="input-with-icon" placeholder="例如: 英国短毛猫" style="width: 100%; padding: 12px; border: 1px solid var(--primary-light); border-radius: 8px;">
                         </div>
                         
                         <div class="form-group" style="margin-bottom: 20px;">
-                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--dark);">撟湧?</label>
-                            <input type="text" id="detail-age" class="input-with-icon" placeholder="靘?: 3撗? style="width: 100%; padding: 12px; border: 1px solid var(--primary-light); border-radius: 8px;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--dark);">年龄</label>
+                            <input type="text" id="detail-age" class="input-with-icon" placeholder="例如: 3岁" style="width: 100%; padding: 12px; border: 1px solid var(--primary-light); border-radius: 8px;">
                         </div>
                         
                         <div class="form-group" style="margin-bottom: 30px;">
-                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--dark);">憭釣</label>
-                            <textarea id="detail-notes" class="input-with-icon" placeholder="?寞??瘙??脩?靽⊥" style="width: 100%; padding: 12px; border: 1px solid var(--primary-light); border-radius: 8px; height: 100px; resize: vertical;"></textarea>
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--dark);">备注</label>
+                            <textarea id="detail-notes" class="input-with-icon" placeholder="特殊需求、病史等信息" style="width: 100%; padding: 12px; border: 1px solid var(--primary-light); border-radius: 8px; height: 100px; resize: vertical;"></textarea>
                         </div>
                         
                         <button class="btn btn-primary" onclick="saveHealthDetail()" style="width: 100%; padding: 15px;">
-                            <i class="fas fa-save"></i> 靽??亙熒靽⊥
+                            <i class="fas fa-save"></i> 保存健康信息
                         </button>
                         
                         <button class="btn btn-secondary" onclick="closeHealthDetail()" style="width: 100%; padding: 15px; margin-top: 10px;">
-                            <i class="fas fa-times"></i> 餈??怠獢??
+                            <i class="fas fa-times"></i> 返回猫咪档案
                         </button>
                     </div>
                 </div>
             </div>
 
-            <!-- 瘛餃??怠璅⊥? -->
+            <!-- 添加猫咪模态框 -->
             <div id="add-pet-modal" class="modal">
                 <div class="modal-content">
                     <div class="modal-icon">
                         <i class="fas fa-cat"></i>
                     </div>
-                    <h2>瘛餃??啁??/h2>
+                    <h2>添加新猫咪</h2>
                     
                     <div style="text-align: left; margin: 20px 0;">
                         <div class="form-group">
-                            <label>?怠?? *</label>
-                            <input type="text" id="new-pet-name" class="input-with-icon" placeholder="颲?怠??" style="width: 100%; padding: 10px;" required>
+                            <label>猫咪名字 *</label>
+                            <input type="text" id="new-pet-name" class="input-with-icon" placeholder="输入猫咪名字" style="width: 100%; padding: 10px;" required>
                         </div>
                         <div class="form-group">
-                            <label>?怠?抒?</label>
+                            <label>猫咪照片</label>
                             <div class="upload-area" id="pet-photo-upload-area" style="margin: 10px 0; padding: 20px; border: 2px dashed var(--primary); border-radius: 8px; text-align: center; cursor: pointer;">
                                 <div class="upload-icon">
                                     <i class="fas fa-cloud-upload-alt"></i>
                                 </div>
-                                <h4>?孵銝??怠?抒?</h4>
-                                <p>?舀? JPG?NG ?澆?</p>
+                                <h4>点击上传猫咪照片</h4>
+                                <p>支持 JPG、PNG 格式</p>
                                 <input type="file" id="pet-photo-upload" accept="image/*" style="display: none;">
                             </div>
                             <div class="image-preview" id="pet-image-preview" style="display: none; margin-top: 10px;">
-                                <img id="pet-preview-img" src="" alt="?怠?抒?憸?" style="max-width: 200px; border-radius: 10px;">
+                                <img id="pet-preview-img" src="" alt="猫咪照片预览" style="max-width: 200px; border-radius: 10px;">
                             </div>
                         </div>
                         
                         <div class="form-group">
-                            <label>??</label>
-                            <input type="text" id="new-pet-breed" class="input-with-icon" placeholder="靘?: ?勗?剜??? style="width: 100%; padding: 10px;">
+                            <label>品种</label>
+                            <input type="text" id="new-pet-breed" class="input-with-icon" placeholder="例如: 英国短毛猫" style="width: 100%; padding: 10px;">
                         </div>
                         
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                             <div class="form-group">
-                                <label>撟湧?</label>
-                                <input type="text" id="new-pet-age" class="input-with-icon" placeholder="靘?: 3撗? style="width: 100%; padding: 10px;">
+                                <label>年龄</label>
+                                <input type="text" id="new-pet-age" class="input-with-icon" placeholder="例如: 3岁" style="width: 100%; padding: 10px;">
                             </div>
                             
                             <div class="form-group">
-                                <label>雿?</label>
-                                <input type="text" id="new-pet-weight" class="input-with-icon" placeholder="靘?: 4.2kg" style="width: 100%; padding: 10px;">
+                                <label>体重</label>
+                                <input type="text" id="new-pet-weight" class="input-with-icon" placeholder="例如: 4.2kg" style="width: 100%; padding: 10px;">
                             </div>
                         </div>
                         
                         <div class="form-group">
-                            <label>?批</label>
+                            <label>性别</label>
                             <select id="new-pet-gender" class="input-with-icon" style="width: 100%; padding: 10px;">
-                                <option value="">??批</option>
-                                <option value="??>??/option>
-                                <option value="瘥?>瘥?/option>
+                                <option value="">选择性别</option>
+                                <option value="公">公</option>
+                                <option value="母">母</option>
                             </select>
                         </div>
 
                         <div class="form-group">
-                            <label>憭釣</label>
-                            <textarea id="new-pet-notes" class="input-with-icon" placeholder="?寞??瘙??脩?" style="width: 100%; padding: 10px; height: 80px; resize: vertical;"></textarea>
+                            <label>备注</label>
+                            <textarea id="new-pet-notes" class="input-with-icon" placeholder="特殊需求、病史等" style="width: 100%; padding: 10px; height: 80px; resize: vertical;"></textarea>
                         </div>
                     </div>
 
                     <div class="modal-buttons">
                         <button class="btn btn-primary" onclick="addNewPet()">
-                            <i class="fas fa-save"></i> 瘛餃??怠
+                            <i class="fas fa-save"></i> 添加猫咪
                         </button>
                         <button class="btn btn-secondary" onclick="closeAddPetModal()">
-                            ??
+                            取消
                         </button>
                     </div>
                 </div>
@@ -1485,6 +1482,3 @@ const CLOUD_AI_URL = window.location.hostname === 'localhost' || window.location
     </div>
 </body>
 </html>
-
-
-
