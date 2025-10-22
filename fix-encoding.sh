@@ -1,0 +1,13 @@
+#!/bin/bash
+echo " ??????..."
+
+# ??HTML????
+for file in docs/*.html; do
+    if [ -f "$file" ]; then
+        # ??UTF-8??
+        iconv -f UTF-8 -t UTF-8 "$file" > "$file.tmp" && mv "$file.tmp" "$file"
+        echo "? ??: $file"
+    fi
+done
+
+echo "?? ??????"
