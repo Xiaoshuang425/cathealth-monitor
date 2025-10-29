@@ -690,6 +690,144 @@
                 grid-template-columns: 1fr;
             }
         }
+        /* 调查问卷样式 */
+.survey-section {
+    background: white;
+    padding: 25px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    border: 1px solid var(--primary-light);
+}
+
+.survey-question {
+    margin-bottom: 25px;
+}
+
+.survey-question label {
+    display: block;
+    margin-bottom: 15px;
+    font-weight: 600;
+    color: var(--dark);
+    font-size: 1.1rem;
+}
+
+.options-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+}
+
+.option-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 15px;
+    border: 2px solid var(--primary-light);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: var(--light-bg);
+}
+
+.option-item:hover {
+    border-color: var(--secondary);
+    background: var(--light);
+}
+
+.option-item input[type="radio"] {
+    margin-right: 12px;
+    margin-top: 2px;
+}
+
+.option-item span {
+    flex: 1;
+    color: var(--dark);
+}
+
+.option-item input[type="radio"]:checked + span {
+    font-weight: 600;
+    color: var(--secondary);
+}
+
+.option-item input[type="radio"]:checked ~ span {
+    font-weight: 600;
+    color: var(--secondary);
+}
+
+/* 健康报告样式 */
+.health-score {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.score-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: conic-gradient(var(--secondary) 0% var(--score-percent), var(--primary-light) var(--score-percent) 100%);
+    margin: 0 auto 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.score-circle::before {
+    content: '';
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    background: var(--light);
+    border-radius: 50%;
+}
+
+.score-value {
+    position: relative;
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--dark);
+}
+
+.recommendation-item {
+    background: #e8f5e8;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border-left: 4px solid var(--secondary);
+}
+
+.recommendation-item.warning {
+    background: #fff3cd;
+    border-left-color: #ffc107;
+}
+
+.recommendation-item.important {
+    background: #f8d7da;
+    border-left-color: #dc3545;
+}
+
+@media (max-width: 768px) {
+    .options-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .survey-section {
+        padding: 15px;
+    }
+    
+    .score-circle {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .score-circle::before {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .score-value {
+        font-size: 1.5rem;
+    }
+}
     </style>
     <script>
             
@@ -905,6 +1043,7 @@ function showPage(pageId) {
         'dashboard': '控制面板',
         'analysis': 'AI排泄物分析', 
         'pets': '猫咪档案',
+        'health-survey': '健康评估问卷', 
         'hospital': '附近医院'
     };
     
@@ -1416,6 +1555,226 @@ window.debugSystem = function() {
     console.log("YOLO功能:", typeof handleImageUpload);
     console.log("猫咪功能:", typeof openAddPetModal);
 };
+// ==================== 健康调查问卷功能 ====================
+function initHealthSurvey() {
+    const form = document.getElementById('health-survey-form');
+    const petSelect = document.getElementById('survey-pet-select');
+    
+    // 填充猫咪选择下拉框
+    function populatePetSelect() {
+        petSelect.innerHTML = '<option value="">请选择猫咪</option>';
+        allPets.forEach(pet => {
+            const option = document.createElement('option');
+            option.value = pet.id;
+            option.textContent = `${pet.name} (${pet.breed || '未知品种'})`;
+            petSelect.appendChild(option);
+        });
+    }
+    
+    // 表单提交处理
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        calculateHealthScore();
+    });
+    
+    // 猫咪选择变化时更新体重
+    petSelect.addEventListener('change', function() {
+        const petId = this.value;
+        const pet = allPets.find(p => p.id === petId);
+        if (pet && pet.weight) {
+            document.getElementById('survey-weight').value = pet.weight;
+        }
+    });
+    
+    populatePetSelect();
+}
+
+// 计算健康分数
+function calculateHealthScore() {
+    const formData = new FormData(document.getElementById('health-survey-form'));
+    const petId = document.getElementById('survey-pet-select').value;
+    const weight = parseFloat(document.getElementById('survey-weight').value);
+    
+    if (!petId) {
+        alert('请选择要评估的猫咪');
+        return;
+    }
+    
+    const pet = allPets.find(p => p.id === petId);
+    if (!pet) return;
+    
+    // 评分标准
+    const scoreMap = {
+        'excellent': 100,
+        'good': 80,
+        'fair': 60,
+        'poor': 40
+    };
+    
+    // 计算各项分数
+    const appetiteScore = scoreMap[formData.get('appetite')] || 0;
+    const waterScore = scoreMap[formData.get('water')] || 0;
+    const activityScore = scoreMap[formData.get('activity')] || 0;
+    const energyScore = scoreMap[formData.get('energy')] || 0;
+    const poopScore = scoreMap[formData.get('poop')] || 0;
+    const urineScore = scoreMap[formData.get('urine')] || 0;
+    const sleepScore = scoreMap[formData.get('sleep')] || 0;
+    const interactionScore = scoreMap[formData.get('interaction')] || 0;
+    
+    // 计算综合分数
+    const dietScore = Math.round((appetiteScore + waterScore) / 2);
+    const activityLevel = Math.round((activityScore + energyScore) / 2);
+    const overallHealth = Math.round((
+        appetiteScore + waterScore + activityScore + energyScore + 
+        poopScore + urineScore + sleepScore + interactionScore
+    ) / 8);
+    
+    // 更新主页数据
+    updateDashboardStats(overallHealth, dietScore, activityLevel, weight);
+    
+    // 显示结果
+    showSurveyResults(overallHealth, dietScore, activityLevel, weight, pet.name);
+}
+
+// 更新主页统计数据显示真实数据
+function updateDashboardStats(healthIndex, dietStatus, activityLevel, avgWeight) {
+    document.getElementById('health-index').textContent = healthIndex + '%';
+    document.getElementById('health-index').className = 'stat-value';
+    
+    document.getElementById('diet-status').textContent = dietStatus + '%';
+    document.getElementById('diet-status').className = 'stat-value';
+    
+    document.getElementById('activity-level').textContent = activityLevel + '%';
+    document.getElementById('activity-level').className = 'stat-value';
+    
+    document.getElementById('avg-weight').textContent = avgWeight + 'kg';
+    document.getElementById('avg-weight').className = 'stat-value';
+}
+
+// 显示调查结果
+function showSurveyResults(overallHealth, dietScore, activityLevel, weight, petName) {
+    const resultsDiv = document.getElementById('survey-results');
+    
+    // 生成建议
+    const recommendations = generateRecommendations(overallHealth, dietScore, activityLevel);
+    
+    resultsDiv.innerHTML = `
+        <h3 style="text-align: center; margin-bottom: 30px; color: var(--dark);">
+            <i class="fas fa-file-medical-alt"></i> ${petName}的健康评估报告
+        </h3>
+        
+        <div class="result-grid">
+            <div class="result-item">
+                <div class="result-value" style="color: ${getHealthColor(overallHealth)};">${overallHealth}%</div>
+                <div class="result-label">整体健康指数</div>
+            </div>
+            <div class="result-item">
+                <div class="result-value" style="color: ${getHealthColor(dietScore)};">${dietScore}%</div>
+                <div class="result-label">饮食状态</div>
+            </div>
+            <div class="result-item">
+                <div class="result-value" style="color: ${getHealthColor(activityLevel)};">${activityLevel}%</div>
+                <div class="result-label">活动水平</div>
+            </div>
+            <div class="result-item">
+                <div class="result-value">${weight}kg</div>
+                <div class="result-label">当前体重</div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 30px;">
+            <h4 style="margin-bottom: 15px; color: var(--dark);">
+                <i class="fas fa-lightbulb"></i> 健康建议
+            </h4>
+            ${recommendations.map(rec => `
+                <div class="recommendation-item ${rec.type || ''}">
+                    <strong>${rec.title}</strong>
+                    <p style="margin: 5px 0 0 0;">${rec.description}</p>
+                </div>
+            `).join('')}
+        </div>
+        
+        <div style="text-align: center; margin-top: 30px;">
+            <button class="btn btn-primary" onclick="showPage('dashboard')">
+                <i class="fas fa-home"></i> 返回主页查看数据
+            </button>
+        </div>
+    `;
+    
+    resultsDiv.style.display = 'block';
+    resultsDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+// 根据分数获取颜色
+function getHealthColor(score) {
+    if (score >= 80) return '#28a745';
+    if (score >= 60) return '#ffc107';
+    return '#dc3545';
+}
+
+// 生成个性化建议
+function generateRecommendations(overall, diet, activity) {
+    const recommendations = [];
+    
+    if (overall < 60) {
+        recommendations.push({
+            type: 'important',
+            title: '需要关注',
+            description: '建议尽快带猫咪去兽医处进行全面检查'
+        });
+    }
+    
+    if (diet < 70) {
+        recommendations.push({
+            type: 'warning',
+            title: '饮食改善',
+            description: '尝试更换猫粮品牌，确保食物新鲜，定时定量喂食'
+        });
+    }
+    
+    if (activity < 70) {
+        recommendations.push({
+            type: 'warning',
+            title: '增加活动',
+            description: '每天安排15-30分钟的互动游戏，使用逗猫棒等玩具激发兴趣'
+        });
+    }
+    
+    if (overall >= 80) {
+        recommendations.push({
+            title: '保持良好',
+            description: '猫咪状态很好，请继续保持当前的养护方式'
+        });
+    } else if (overall >= 60) {
+        recommendations.push({
+            title: '小幅调整',
+            description: '猫咪基本健康，建议关注饮食和活动量的改善'
+        });
+    }
+    
+    // 通用建议
+    recommendations.push({
+        title: '饮水提醒',
+        description: '确保猫咪有充足的清洁饮水，可以考虑使用流动饮水机'
+    });
+    
+    recommendations.push({
+        title: '环境丰富',
+        description: '提供猫抓板、爬架等环境设施，满足猫咪的天性需求'
+    });
+    
+    return recommendations;
+}
+
+// 在初始化函数中添加健康调查初始化
+document.addEventListener("DOMContentLoaded", function() {
+    // ... 其他初始化代码 ...
+    
+    // 初始化健康调查
+    initHealthSurvey();
+    
+    console.log("系统初始化完成");
+});
     </script>
 </head>
 <body>
@@ -1460,6 +1819,9 @@ window.debugSystem = function() {
                 </a>
                 <a class="nav-item" data-page="pets">
                     <i class="fas fa-cat"></i>猫咪档案
+                </a>
+                <a class="nav-item" data-page="health-survey">
+            <i class="fas fa-clipboard-check"></i>健康评估
                 </a>
                 <a class="nav-item" data-page="hospital">
                     <i class="fas fa-hospital"></i>附近医院
@@ -1509,15 +1871,15 @@ window.debugSystem = function() {
                         <div class="feature-badge">档案管理</div>
                     </div>
 
-                    <div class="feature-card">
+                    <div class="feature-card" onclick="showPage('health-survey')">
                         <div class="feature-icon">
                             <i class="fas fa-heartbeat"></i>
                         </div>
-                        <div class="feature-title">健康监测</div>
-                        <div class="feature-desc">
-                            实时追踪猫咪健康数据，生成健康报告和趋势分析
+                        <div class="feature-title">健康评估</div>
+                        <div class="feature-desc">s
+                            完成简单问卷，获取猫咪个性化健康评估报告和改善建议
                         </div>
-                        <div class="feature-badge">实时监测</div>
+                        <div class="feature-badge">专业评估</div>
                     </div>
 
                     <div class="feature-card" onclick="showPage('hospital')">
@@ -1823,5 +2185,255 @@ window.debugSystem = function() {
             </div>
         </div>
     </div>
+    <div id="health-survey-page" class="page-content">
+    <div class="welcome-banner">
+        <h2>猫咪健康评估问卷</h2>
+        <p>请根据您猫咪的实际情况填写，获取个性化健康报告</p>
+    </div>
+
+    <div class="analysis-section">
+        <form id="health-survey-form">
+            <!-- 基本信息 -->
+            <div class="survey-section">
+                <div class="section-title">
+                    <i class="fas fa-cat"></i>
+ 基本信息
+                </div>
+                
+                <div class="form-group">
+                    <label>选择要评估的猫咪</label>
+                    <select id="survey-pet-select" class="input-with-icon" style="width: 100%; padding: 12px;" required>
+                        <option value="">请选择猫咪</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>当前体重 (kg)</label>
+                    <input type="number" id="survey-weight" class="input-with-icon" placeholder="例如: 4.2" step="0.1" min="1" max="20" style="width: 100%; padding: 12px;" required>
+                </div>
+            </div>
+
+            <!-- 饮食状况 -->
+            <div class="survey-section">
+                <div class="section-title">
+                    <i class="fas fa-utensils"></i>
+ 饮食状况
+                </div>
+                
+                <div class="survey-question">
+                    <label>1. 猫咪的食欲如何？</label>
+                    <div class="options-grid">
+                        <label class="option-item">
+                            <input type="radio" name="appetite" value="excellent" required>
+                            <span>非常好（主动讨食，吃完所有食物）</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="radio" name="appetite" value="good">
+                            <span>良好（正常进食，偶尔剩食）</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="radio" name="appetite" value="fair">
+                            <span>一般（食欲减退，经常剩食）</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="radio" name="appetite" value="poor">
+                            <span>差（几乎不进食）</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="survey-question">
+                    <label>2. 每日饮水量如何？</label>
+                    <div class="options-grid">
+                        <label class="option-item">
+                            <input type="radio" name="water" value="excellent" required>
+                            <span>充足（主动频繁喝水）</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="radio" name="water" value="good">
+                            <span>正常（每天喝水数次）</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="radio" name="water" value="fair">
+                            <span>偏少（很少主动喝水）</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="radio" name="water" value="poor">
+                            <span>极少（几乎不喝水）</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 活动水平 -->
+            <div class="survey-section">
+                <div class="section-title">
+                    <i class="fas fa-running"></i>
+ 活动水平
+                </div>
+                
+                <div class="survey-question">
+                    <label>3. 猫咪的活动量如何？</label>
+                    <div class="options-grid">
+                        <label class="option-item">
+                            <input type="radio" name="activity" value="excellent" required>
+                            <span>非常活跃（经常跑跳玩耍）</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="radio" name="activity" value="good">
+                            <span>活跃（每天有固定活动时间）</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="radio" name="activity" value="fair">
+                            <span>一般（偶尔活动，大部分时间休息）</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="radio" name="activity" value="poor">
+                            <span>懒散（几乎不活动）</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="survey-question">
+                    <label>4. 玩耍时的精神状态？</label>
+                    <div class="options-grid">
+                        <label class="option-item">
+                            <input type="radio" name="energy" value="excellent" required>
+                            <span>精力充沛（玩耍时间长）</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="radio" name="energy" value="good">
+                            <span>精神良好（有兴趣玩耍）</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="radio" name="energy" value="fair">
+                            <span>精神一般（玩耍时间短）</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="radio" name="energy" value="poor">
+                            <span>精神萎靡（对玩耍没兴趣）</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 排泄状况 -->
+            <div class="survey-section">
+                <div class="section-title">
+                    <i class="fas fa-toilet"></i>
+ 排泄状况
+                </div>
+                
+                <div class="survey-question">
+                    <label>5. 排便情况如何？</label>
+                    <div class="options-grid">
+                        <label class="option-item">
+                            <input type="radio" name="poop" value="excellent" required>
+                            <span>正常（成型，颜色正常）</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="radio" name="poop" value="good">
+                            <span>基本正常（偶尔软便）</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="radio" name="poop" value="fair">
+                            <span>异常（经常软便或便秘）</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="radio" name="poop" value="poor">
+                            <span>严重异常（腹泻或便血）</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="survey-question">
+                    <label>6. 排尿情况如何？</label>
+                    <div class="options-grid">
+                        <label class="option-item">
+                            <input type="radio" name="urine" value="excellent" required>
+                            <span>正常（频率颜色正常）</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="radio" name="urine" value="good">
+                            <span>基本正常（偶尔异常）</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="radio" name="urine" value="fair">
+                            <span>异常（频率或颜色异常）</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="radio" name="urine" value="poor">
+                            <span>严重异常（尿血或排尿困难）</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 行为表现 -->
+            <div class="survey-section">
+                <div class="section-title">
+                    <i class="fas fa-heart"></i>
+ 行为表现
+                </div>
+                
+                <div class="survey-question">
+                    <label>7. 猫咪的睡眠质量？</label>
+                    <div class="options-grid">
+                        <label class="option-item">
+                            <input type="radio" name="sleep" value="excellent" required>
+                            <span>很好（睡眠安稳）</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="radio" name="sleep" value="good">
+                            <span>良好（偶尔惊醒）</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="radio" name="sleep" value="fair">
+                            <span>一般（睡眠不安）</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="radio" name="sleep" value="poor">
+                            <span>差（失眠或过度睡眠）</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="survey-question">
+                    <label>8. 与人的互动情况？</label>
+                    <div class="options-grid">
+                        <label class="option-item">
+                            <input type="radio" name="interaction" value="excellent" required>
+                            <span>非常友好（主动亲近）</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="radio" name="interaction" value="good">
+                            <span>友好（回应互动）</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="radio" name="interaction" value="fair">
+                            <span>一般（偶尔躲避）</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="radio" name="interaction" value="poor">
+                            <span>差（经常躲藏或攻击）</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px;">
+                <button type="submit" class="btn btn-primary" style="padding: 15px 30px; font-size: 1.1rem;">
+                    <i class="fas fa-chart-bar"></i>
+ 生成健康报告
+                </button>
+            </div>
+        </form>
+
+        <!-- 结果显示区域 -->
+        <div id="survey-results" class="detection-results" style="display: none;">
+            <!-- 结果会动态填充 -->
+        </div>
+    </div>
+</div>
 </body>
 </html>
