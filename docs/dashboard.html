@@ -828,6 +828,55 @@
         font-size: 1.5rem;
     }
 }
+.install-prompt {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--light);
+    border: 2px solid var(--primary);
+    border-radius: 15px;
+    padding: 20px;
+    max-width: 90%;
+    width: 400px;
+    z-index: 1002;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    text-align: center;
+}
+
+.install-prompt.active {
+    display: block;
+}
+
+.install-icon {
+    font-size: 3rem;
+    color: var(--primary);
+    margin-bottom: 15px;
+}
+
+.install-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.install-buttons .btn {
+    flex: 1;
+}
+
+/* 移动端安装弹窗优化 */
+@media (max-width: 768px) {
+    .install-prompt {
+        width: 90%;
+        bottom: 10px;
+        padding: 15px;
+    }
+    
+    .install-buttons {
+        flex-direction: column;
+    }
+}
     </style>
     <script>
             
@@ -1876,7 +1925,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             <i class="fas fa-heartbeat"></i>
                         </div>
                         <div class="feature-title">健康评估</div>
-                        <div class="feature-desc">s
+                        <div class="feature-desc">
                             完成简单问卷，获取猫咪个性化健康评估报告和改善建议
                         </div>
                         <div class="feature-badge">专业评估</div>
