@@ -2344,10 +2344,15 @@ document.addEventListener("DOMContentLoaded", function() {
             </div>
         </div>
     </div>
-    <div id="health-survey-page" class="page-content">
+     <div id="health-survey-page" class="page-content">
     <div class="welcome-banner">
-        <h2>猫咪健康评估问卷</h2>
-        <p>请根据您猫咪的实际情况填写，获取个性化健康报告</p>
+        <!-- 强制居中容器 -->
+        <div style="display: flex; justify-content: center; align-items: center; flex-direction: column; width: 100%;">
+            <h2 style="text-align: center; width: 100%; margin: 0 auto;">猫咪健康评估问卷</h2>
+            <p style="text-align: center; width: 100%; margin: 10px auto 0; max-width: 600px;">
+                请根据您猫咪的实际情况填写，获取个性化健康报告
+            </p>
+        </div>
     </div>
 
     <div class="analysis-section">
