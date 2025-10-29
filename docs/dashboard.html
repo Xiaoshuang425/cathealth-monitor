@@ -224,15 +224,33 @@
             background: var(--light-bg);
         }
 
-        .top-bar {
-            background: var(--light);
-            padding: 20px 30px;
-            border-bottom: 1px solid var(--primary-light);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--light);
+    padding: 15px 30px;
+    border-bottom: 1px solid var(--primary-light);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    position: relative;
+    min-height: 70px;
+}
+
+.top-bar-left {
+    width: 120px; /* 与用户信息区域宽度匹配 */
+    flex-shrink: 0;
+}
+
+#page-title {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    margin: 0;
+    font-size: 1.4rem;
+    color: var(--dark);
+    text-align: center;
+    white-space: nowrap;
+}
 
         .user-info {
             display: flex;
@@ -923,9 +941,38 @@
     }
 
     .top-bar {
-        padding-left: 140px; /* 为两个按钮留出空间 */
+        padding: 12px 15px;
+        padding-left: 140px; /* 为移动端按钮留出空间 */
+        min-height: 60px;
     }
 
+        
+.top-bar-left {
+        display: none; /* 在移动端隐藏左侧占位 */
+    }
+    
+    #page-title {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 1.2rem;
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    .user-info {
+        width: auto;
+        transform: scale(0.9);
+        margin-right: -5px;
+    }
+    
+    /* 在问卷页面进一步调整 */
+    #health-survey-page ~ .main-content .top-bar {
+        padding-left: 80px; /* 减少左侧padding */
+    }
+    
     .sidebar-overlay.active {
         display: block;
     }
@@ -1990,13 +2037,20 @@ document.addEventListener("DOMContentLoaded", function() {
     </div>
 
     <!-- 主内容区 -->
-    <div class="main-content">
-        <div class="top-bar">
-            <h2 id="page-title">控制面板</h2>
-            <div class="user-info">
-                <!-- 用户信息会动态更新 -->
+<!-- 主内容区 -->
+<div class="main-content">
+    <div class="top-bar">
+        <!-- 左侧占位，确保标题居中 -->
+        <div class="top-bar-left"></div>
+        
+        <!-- 居中标题 -->
+        <h2 id="page-title">控制面板</h2>
+        
+        <!-- 右侧用户信息 -->
+        <div class="user-info">
+            <div class="user-avatar">
+                <i class="fas fa-user"></i>
             </div>
-        </div>
 
         <div class="content-area">
             <!-- 仪表板页面 -->
