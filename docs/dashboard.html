@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="CatHealth">
+    <link rel="manifest" href="manifest.json">
     <title>猫咪健康管理中心 - CatHealth</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -24,6 +28,25 @@
             --gray: #8A7E6F;
             --sidebar-width: 280px;
         }
+
+/* 在这里添加 ↓↓↓ */
+/* 移动端菜单按钮 */
+.mobile-menu-btn {
+    display: none;
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1001;
+    background: var(--primary);
+    color: var(--dark);
+    border: none;
+    border-radius: 8px;
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
 
         /* 模态框样式 */
         .modal {
@@ -669,6 +692,161 @@
         }
     </style>
     <script>
+            
+let deferredPrompt = null;
+
+    // 移动端侧边栏控制
+    function initMobileMenu() {
+        const menuBtn = document.getElementById('mobile-menu-btn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        
+        function openSidebar() {
+            sidebar
+.classList.add('mobile-open');
+            overlay
+.style.display = 'block';
+            document
+.body.style.overflow = 'hidden';
+        }
+        
+        function closeSidebar() {
+            sidebar
+.classList.remove('mobile-open');
+            overlay
+.style.display = 'none';
+            document
+.body.style.overflow = '';
+        }
+        
+        menuBtn
+.addEventListener('click', openSidebar);
+        overlay
+.addEventListener('click', closeSidebar);
+        
+        // 点击导航项也关闭侧边栏
+        document
+.querySelectorAll('.nav-item').forEach(item => {
+            item
+.addEventListener('click', closeSidebar);
+        });
+    }
+
+    // 添加到桌面功能
+    function initInstallPrompt() {
+        const installPrompt = document.getElementById('install-prompt');
+        const installConfirm = document.getElementById('install-confirm');
+        const installCancel = document.getElementById('install-cancel');
+        
+        // 监听 beforeinstallprompt 事件
+        window
+.addEventListener('beforeinstallprompt', (e) => {
+            e
+.preventDefault();
+            deferredPrompt 
+= e;
+            
+            // 延迟显示安装提示，避免一打开就弹窗
+            setTimeout(() => {
+                // 检查是否已经安装
+                if (!localStorage.getItem('appInstalled')) {
+                    installPrompt
+.classList.add('active');
+                }
+            }, 3000);
+        });
+        
+        // 确认安装
+        installConfirm
+.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt
+.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                
+                if (outcome === 'accepted') {
+                    localStorage
+.setItem('appInstalled', 'true');
+                    installPrompt
+.classList.remove('active');
+                    alert('✅ 已成功添加到桌面！');
+                }
+                
+                deferredPrompt 
+= null;
+            }
+        });
+        
+        // 取消安装
+        installCancel
+.addEventListener('click', () => {
+            installPrompt
+.classList.remove('active');
+            // 1天内不再显示
+            localStorage
+.setItem('installPromptDismissed', Date.now().toString());
+        });
+        
+        // 检查是否已经拒绝过安装提示
+        const dismissedTime = localStorage.getItem('installPromptDismissed');
+        if (dismissedTime) {
+            const oneDay = 24 * 60 * 60 * 1000;
+            if (Date.now() - parseInt(dismissedTime) < oneDay) {
+                installPrompt
+.style.display = 'none';
+            }
+        }
+    }
+
+    // 检测设备类型
+    function detectDevice() {
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        if (isMobile) {
+            document
+.body.classList.add('mobile-device');
+            console
+.log('📱 移动端设备检测');
+        } else {
+            console
+.log('💻 桌面端设备检测');
+        }
+        return isMobile;
+    }
+
+    // ==================== 初始化所有功能 ====================
+    document
+.addEventListener("DOMContentLoaded", function() {
+        console
+.log("初始化猫咪健康管理系统...");
+        
+        // 检测设备类型
+        detectDevice();
+        
+        // 初始化移动端功能
+        initMobileMenu();
+        initInstallPrompt();
+        
+        // 更新用户信息
+        updateUserInfo();
+        
+        // 初始化侧边栏
+        document
+.querySelectorAll(".nav-item[data-page]").forEach(item => {
+            item
+.addEventListener("click", function(e) {
+                e
+.preventDefault();
+                showPage(this.getAttribute("data-page"));
+            });
+        });
+        
+        // 初始化功能
+        renderAllPets();
+        
+        console
+.log("✅ 系统初始化完成");
+    });
+
  // ==================== 核心配置 ====================
 const CLOUD_AI_URL = "http://127.0.0.1:10000";
 let allPets = JSON.parse(localStorage.getItem("allPets") || "[]");
@@ -1241,6 +1419,29 @@ window.debugSystem = function() {
     </script>
 </head>
 <body>
+        <button class="mobile-menu-btn" id="mobile-menu-btn">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- 移动端遮罩层 -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <!-- 添加到桌面提示 -->
+    <div class="install-prompt" id="install-prompt">
+        <div class="install-icon">
+            <i class="fas fa-download"></i>
+        </div>
+        <h3>添加到桌面</h3>
+        <p>将 CatHealth 添加到桌面，获得类似 App 的体验，快速访问猫咪健康管理功能</p>
+        <div class="install-buttons">
+            <button class="btn btn-primary" id="install-confirm">
+                <i class="fas fa-plus"></i> 添加到桌面
+            </button>
+            <button class="btn btn-secondary" id="install-cancel">
+                稍后再说
+            </button>
+        </div>
+    </div>
     <!-- 侧边栏 -->
     <div class="sidebar">
         <div class="sidebar-header">
