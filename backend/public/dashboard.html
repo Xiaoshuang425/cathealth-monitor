@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="CatHealth">
+    <link rel="manifest" href="manifest.json">
     <title>仪表盘 - CatHealth Monitor</title>
     <link rel="stylesheet" href="./docs/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -348,6 +352,61 @@
             background: rgba(0,0,0,0.5);
             z-index: 999;
         }
+
+        .mobile-menu-btn {
+             display: none;
+             position: fixed;
+             top: 20px;
+             left: 20px;
+             z-index: 1001;
+            background: #D4A574; /* 使用你现有的颜色 */
+            color: #5C4B37; /* 使用你现有的颜色 */
+            border: none;
+            border-radius: 8px;
+            width: 50px;
+           height: 50px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+/* 添加到桌面弹窗 */
+.install-prompt {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #F8F4E9; /* 使用你现有的颜色 */
+    border: 2px solid #D4A574; /* 使用你现有的颜色 */
+    border-radius: 15px;
+    padding: 20px;
+    max-width: 90%;
+    width: 400px;
+    z-index: 1002;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    text-align: center;
+}
+
+.install-prompt.active {
+    display: block;
+}
+
+.install-icon {
+    font-size: 3rem;
+    color: #D4A574; /* 使用你现有的颜色 */
+    margin-bottom: 15px;
+}
+
+.install-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.install-buttons .btn {
+    flex: 1;
+}
         
         /* 移动端响应式 */
         @media (max-width: 768px) {
@@ -429,6 +488,35 @@
     </style>
 </head>
 <body>
+    <!-- 添加在这里 ↓↓↓ -->
+    <!-- 移动端菜单按钮 -->
+    <button class="mobile-menu-btn" id="mobile-menu-btn">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- 移动端遮罩层 -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <!-- 添加到桌面提示 -->
+    <div class="install-prompt" id="install-prompt">
+        <div class="install-icon">
+            <i class="fas fa-download"></i>
+        </div>
+        <h3>添加到桌面</h3>
+        <p>将 CatHealth 添加到桌面，获得类似 App 的体验，快速访问猫咪健康管理功能</p>
+        <div class="install-buttons">
+            <button class="btn btn-primary" id="install-confirm">
+                <i class="fas fa-plus"></i>
+ 添加到桌面
+            </button>
+            <button class="btn btn-secondary" id="install-cancel">
+                稍后再说
+            </button>
+        </div>
+    </div>
+
+    <!-- 侧边栏 -->
+     <div class="sidebar" id="sidebar">
     <!-- 移动端顶部栏 -->
     <div class="mobile-header">
         <button class="menu-toggle" id="menuToggle">
