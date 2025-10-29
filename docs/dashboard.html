@@ -1635,6 +1635,35 @@ function initPetPhotoUpload() {
 document.addEventListener("DOMContentLoaded", function() {
     console.log("初始化猫咪健康管理系统...");
 
+        
+// 🎯 强制修复：确保所有页面在正确位置
+    function fixPagePositions() {
+        const contentArea = document.querySelector('.content-area');
+        if (!contentArea) return;
+        
+        const pages = [
+            'dashboard-page', 'analysis-page', 'pets-page', 
+            'health-survey-page', 'hospital-page', 'health-detail-page'
+        ];
+        
+        pages
+.forEach(pageId => {
+            const page = document.getElementById(pageId);
+            if (page && page.parentElement !== contentArea) {
+                console
+.log('🚨 修复页面位置:', pageId);
+                contentArea
+.appendChild(page);
+            }
+        });
+    }
+    
+    // 立即执行修复
+    fixPagePositions();
+    
+    // 延迟再次检查（确保所有动态内容加载完成）
+    setTimeout(fixPagePositions, 100);
+
     // 🎯 防止页面重复
     ensureNoDuplicatePages();
 
