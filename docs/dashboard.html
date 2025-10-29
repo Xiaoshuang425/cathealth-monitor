@@ -972,7 +972,7 @@
     #health-survey-page ~ .main-content .top-bar {
         padding-left: 80px; /* 减少左侧padding */
     }
-    
+
     .sidebar-overlay.active {
         display: block;
     }
@@ -1109,47 +1109,6 @@ let deferredPrompt = null;
         }
         return isMobile;
     }
-
-    // ==================== 初始化所有功能 ====================
-    document
-.addEventListener("DOMContentLoaded", function() {
-        console
-.log("初始化猫咪健康管理系统...");
-        
-        // 检测设备类型
-        detectDevice();
-        
-        // 初始化移动端功能
-        initMobileMenu();
-        initInstallPrompt();
-        
-        // 更新用户信息
-        updateUserInfo();
-        
-        // 初始化侧边栏
-        document
-.querySelectorAll(".nav-item[data-page]").forEach(item => {
-            item
-.addEventListener("click", function(e) {
-                e
-.preventDefault();
-                showPage(this.getAttribute("data-page"));
-            });
-        });
-        
-// 初始化功能
-if (typeof renderAllPets === 'function') {
-    renderAllPets();
-} else {
-    // 如果还没有 renderAllPets 函数，直接调用两个渲染函数
-    if (typeof renderDashboardPets === 'function') renderDashboardPets();
-    if (typeof renderPetsPage === 'function') renderPetsPage();
-}
-        
-        console
-.log("✅ 系统初始化完成");
-    });
-
  // ==================== 核心配置 ====================
 const CLOUD_AI_URL = "http://127.0.0.1:10000";
 let allPets = JSON.parse(localStorage.getItem("allPets") || "[]");
@@ -1190,7 +1149,16 @@ function goBackToDashboard() {
 }
 
 // 更新移动端按钮显示状态
-function updateMobileButtons() {
+ function updateMobileButtons(){
+        
+const dashboardPage = document.getElementById('dashboard-page');
+    
+    // 添加安全检查
+    if (!dashboardPage) {
+        console
+.log('❌ 找不到 dashboard-page 元素');
+        return;
+    }
     const isDashboard = document.getElementById('dashboard-page').classList.contains('active');
     
     if (isDashboard) {
@@ -1721,8 +1689,12 @@ function initPetPhotoUpload() {
 document.addEventListener("DOMContentLoaded", function() {
     console.log("初始化猫咪健康管理系统...");
 
-   // 初始化移动端功能
+    // 检测设备类型
+    detectDevice();
+    
+    // 初始化移动端功能
     initMobileMenu();
+    initInstallPrompt();
     
     // 更新用户信息
     updateUserInfo();
@@ -1736,8 +1708,14 @@ document.addEventListener("DOMContentLoaded", function() {
     });
     
     // 初始化功能
-    renderDashboardPets();
-    renderPetsPage();
+    if (typeof renderAllPets === 'function') {
+        renderAllPets();
+    } else {
+        // 如果还没有 renderAllPets 函数，直接调用两个渲染函数
+        if (typeof renderDashboardPets === 'function') renderDashboardPets();
+        if (typeof renderPetsPage === 'function') renderPetsPage();
+    }
+    
     initYOLOUpload();
     initPetPhotoUpload();
 
@@ -1966,17 +1944,6 @@ function generateRecommendations(overall, diet, activity) {
     
     return recommendations;
 }
-
-// 在初始化函数中添加健康调查初始化
-document.addEventListener("DOMContentLoaded", function() {
-    // ... 其他初始化代码 ...
-    
-    // 初始化健康调查
-    initHealthSurvey();
-    
-    console.log("系统初始化完成");
-});
-
     </script>
 </head>
 <body>
