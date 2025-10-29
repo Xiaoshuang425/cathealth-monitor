@@ -1063,46 +1063,6 @@ let deferredPrompt = null;
         return isMobile;
     }
 
-    // ==================== 初始化所有功能 ====================
-    document
-.addEventListener("DOMContentLoaded", function() {
-        console
-.log("初始化猫咪健康管理系统...");
-        
-        // 检测设备类型
-        detectDevice();
-        
-        // 初始化移动端功能
-        initMobileMenu();
-        initInstallPrompt();
-        
-        // 更新用户信息
-        updateUserInfo();
-        
-        // 初始化侧边栏
-        document
-.querySelectorAll(".nav-item[data-page]").forEach(item => {
-            item
-.addEventListener("click", function(e) {
-                e
-.preventDefault();
-                showPage(this.getAttribute("data-page"));
-            });
-        });
-        
-// 初始化功能
-if (typeof renderAllPets === 'function') {
-    renderAllPets();
-} else {
-    // 如果还没有 renderAllPets 函数，直接调用两个渲染函数
-    if (typeof renderDashboardPets === 'function') renderDashboardPets();
-    if (typeof renderPetsPage === 'function') renderPetsPage();
-}
-        
-        console
-.log("✅ 系统初始化完成");
-    });
-
  // ==================== 核心配置 ====================
 const CLOUD_AI_URL = "http://127.0.0.1:10000";
 let allPets = JSON.parse(localStorage.getItem("allPets") || "[]");
@@ -1145,23 +1105,24 @@ function goBackToDashboard() {
 // 更新移动端按钮显示状态
 function updateMobileButtons() {
     const isDashboard = document.getElementById('dashboard-page').classList.contains('active');
-    
-    if (isDashboard) {
-        document
+        
+        if (isDashboard) {
+            document
 .body.classList.add('on-dashboard');
-        document
+            document
 .body.classList.remove('on-other-page');
-    } else {
-        document
+        } else {
+            document
 .body.classList.add('on-other-page');
-        document
+            document
 .body.classList.remove('on-dashboard');
+        }
     }
-}
 
 function showPage(pageId) {
     console.log("切换到:", pageId);
-    
+
+     ensureNoDuplicatePages();
     // 隐藏所有页面
     const pages = document.querySelectorAll(".page-content");
     pages.forEach(page => page.classList.remove("active"));
@@ -1674,6 +1635,9 @@ function initPetPhotoUpload() {
 document.addEventListener("DOMContentLoaded", function() {
     console.log("初始化猫咪健康管理系统...");
 
+    // 🎯 防止页面重复
+    ensureNoDuplicatePages();
+
    // 初始化移动端功能
     initMobileMenu();
     
@@ -1696,6 +1660,10 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // 初始按钮状态
     updateMobileButtons();
+
+        
+// 🎯 再次检查防止重复
+    ensureNoDuplicatePages();
     
     console.log("✅ 系统初始化完成");
 });
@@ -1919,17 +1887,25 @@ function generateRecommendations(overall, diet, activity) {
     
     return recommendations;
 }
-
-// 在初始化函数中添加健康调查初始化
-document.addEventListener("DOMContentLoaded", function() {
-    // ... 其他初始化代码 ...
+// 防止页面重复创建
+function ensureNoDuplicatePages() {
+    const pageIds = ['dashboard', 'analysis', 'pets', 'health-survey', 'hospital', 'health-detail'];
     
-    // 初始化健康调查
-    initHealthSurvey();
-    
-    console.log("系统初始化完成");
-});
-
+    pageIds.forEach(pageId => {
+        const fullId = pageId + '-page';
+        const existingPages = document.querySelectorAll(`#${fullId}`);
+        
+        if (existingPages.length > 1) {
+            console.log(`🚨 发现重复的 ${fullId} 页面，数量:`, existingPages.length);
+            
+            // 保留第一个，删除其他的
+            for (let i = 1; i < existingPages.length; i++) {
+                existingPages[i].remove();
+                console.log(`✅ 已删除重复的 ${fullId} 页面`);
+            }
+        }
+    });
+}
     </script>
 </head>
 <body>
@@ -2344,25 +2320,25 @@ document.addEventListener("DOMContentLoaded", function() {
             </div>
         </div>
     </div>
-     <div id="health-survey-page" class="page-content">
-    <div class="welcome-banner">
+           <div id="health-survey-page" class="page-content">
+                        <div class="welcome-banner">
         <!-- 强制居中容器 -->
-        <div style="display: flex; justify-content: center; align-items: center; flex-direction: column; width: 100%;">
-            <h2 style="text-align: center; width: 100%; margin: 0 auto;">猫咪健康评估问卷</h2>
-            <p style="text-align: center; width: 100%; margin: 10px auto 0; max-width: 600px;">
-                请根据您猫咪的实际情况填写，获取个性化健康报告
-            </p>
-        </div>
-    </div>
+                  <div style="display: flex; justify-content: center; align-items: center; flex-direction: column; width: 100%;">
+                  <h2 style="text-align: center; width: 100%; margin: 0 auto;">猫咪健康评估问卷</h2>
+                  <p style="text-align: center; width: 100%; margin: 10px auto 0; max-width: 600px;">
+                      请根据您猫咪的实际情况填写，获取个性化健康报告
+                  </p>
+              </div>
+          </div>
 
-    <div class="analysis-section">
-        <form id="health-survey-form">
-            <!-- 基本信息 -->
-            <div class="survey-section">
+                    <div class="analysis-section">
+                   <form id="health-survey-form">
+                        <!-- 基本信息 -->
+                <div class="survey-section">
                 <div class="section-title">
                     <i class="fas fa-cat"></i>
- 基本信息
-                </div>
+                           基本信息
+                       </div>
                 
                 <div class="form-group">
                     <label>选择要评估的猫咪</label>
@@ -2381,7 +2357,7 @@ document.addEventListener("DOMContentLoaded", function() {
             <div class="survey-section">
                 <div class="section-title">
                     <i class="fas fa-utensils"></i>
- 饮食状况
+              饮食状况
                 </div>
                 
                 <div class="survey-question">
@@ -2433,7 +2409,7 @@ document.addEventListener("DOMContentLoaded", function() {
             <div class="survey-section">
                 <div class="section-title">
                     <i class="fas fa-running"></i>
- 活动水平
+              活动水平
                 </div>
                 
                 <div class="survey-question">
@@ -2485,7 +2461,7 @@ document.addEventListener("DOMContentLoaded", function() {
             <div class="survey-section">
                 <div class="section-title">
                     <i class="fas fa-toilet"></i>
- 排泄状况
+                   排泄状况
                 </div>
                 
                 <div class="survey-question">
