@@ -876,6 +876,69 @@
         flex-direction: column;
     }
 }
+.mobile-back-btn {
+    display: none;
+    position: fixed;
+    top: 20px;
+    left: 80px; /* 在菜单按钮右边 */
+    z-index: 1001;
+    background: var(--secondary);
+    color: var(--dark);
+    border: none;
+    border-radius: 8px;
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+/* 移动端样式优化 */
+@media (max-width: 768px) {
+    .mobile-menu-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .mobile-back-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        z-index: 1000;
+        width: 280px;
+    }
+
+    .sidebar.mobile-open {
+        transform: translateX(0);
+    }
+
+    .main-content {
+        margin-left: 0;
+    }
+
+    .top-bar {
+        padding-left: 140px; /* 为两个按钮留出空间 */
+    }
+
+    .sidebar-overlay.active {
+        display: block;
+    }
+    
+    /* 在非主页时隐藏菜单按钮，显示返回按钮 */
+    body:not(.on-dashboard) .mobile-menu-btn {
+        display: none;
+    }
+    
+    body:not(.on-dashboard) .mobile-back-btn {
+        display: flex;
+    }
+}
     </style>
     <script>
             
@@ -886,6 +949,7 @@ let deferredPrompt = null;
         const menuBtn = document.getElementById('mobile-menu-btn');
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('sidebar-overlay');
+        const backBtn = document.getElementById('mobile-back-btn');
         
         function openSidebar() {
             sidebar
@@ -1026,8 +1090,14 @@ let deferredPrompt = null;
             });
         });
         
-        // 初始化功能
-        renderAllPets();
+// 初始化功能
+if (typeof renderAllPets === 'function') {
+    renderAllPets();
+} else {
+    // 如果还没有 renderAllPets 函数，直接调用两个渲染函数
+    if (typeof renderDashboardPets === 'function') renderDashboardPets();
+    if (typeof renderPetsPage === 'function') renderPetsPage();
+}
         
         console
 .log("✅ 系统初始化完成");
@@ -1066,6 +1136,29 @@ function updateUserInfo() {
 }
 
 // ==================== 页面切换功能 ====================
+// 返回主页功能
+function goBackToDashboard() {
+    showPage('dashboard');
+    updateMobileButtons();
+}
+
+// 更新移动端按钮显示状态
+function updateMobileButtons() {
+    const isDashboard = document.getElementById('dashboard-page').classList.contains('active');
+    
+    if (isDashboard) {
+        document
+.body.classList.add('on-dashboard');
+        document
+.body.classList.remove('on-other-page');
+    } else {
+        document
+.body.classList.add('on-other-page');
+        document
+.body.classList.remove('on-dashboard');
+    }
+}
+
 function showPage(pageId) {
     console.log("切换到:", pageId);
     
@@ -1100,13 +1193,20 @@ function showPage(pageId) {
         titleElement.textContent = pageTitles[pageId];
     }
 
-    // 切换到猫咪档案页面时重新渲染
+        
+// 更新移动端按钮状态
+    updateMobileButtons();
+
+    // 页面特定初始化
     if (pageId === 'pets') {
         renderPetsPage();
     } else if (pageId === 'dashboard') {
         renderDashboardPets();
+    } else if (pageId === 'health-survey') {
+        initHealthSurvey();
     }
 }
+
 
 // ==================== 猫咪管理功能 ====================
 function openAddPetModal() {
@@ -1573,6 +1673,9 @@ function initPetPhotoUpload() {
 // ==================== 初始化所有功能 ====================
 document.addEventListener("DOMContentLoaded", function() {
     console.log("初始化猫咪健康管理系统...");
+
+   // 初始化移动端功能
+    initMobileMenu();
     
     // 更新用户信息
     updateUserInfo();
@@ -1590,6 +1693,9 @@ document.addEventListener("DOMContentLoaded", function() {
     renderPetsPage();
     initYOLOUpload();
     initPetPhotoUpload();
+
+    // 初始按钮状态
+    updateMobileButtons();
     
     console.log("✅ 系统初始化完成");
 });
@@ -1830,6 +1936,10 @@ document.addEventListener("DOMContentLoaded", function() {
         <button class="mobile-menu-btn" id="mobile-menu-btn">
         <i class="fas fa-bars"></i>
     </button>
+
+        <button class="mobile-back-btn" id="mobile-back-btn" onclick="goBackToDashboard()">
+        <i class="fas fa-arrow-left"></i>
+    </button>   
 
     <!-- 移动端遮罩层 -->
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
