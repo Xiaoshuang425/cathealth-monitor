@@ -5,6 +5,7 @@ import io
 import base64
 from ultralytics import YOLO
 import time
+import os
 
 class YOLODetector:
     def __init__(self, model_path):

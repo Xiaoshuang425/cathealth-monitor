@@ -6,7 +6,7 @@ import os
 
 # 添加src目录到Python路径
 current_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(current_dir, "models", "best.pt")
+sys.path.append(current_dir)
 
 try:
     from yolo.detector import YOLODetector
@@ -107,7 +107,7 @@ def test_model():
 
 # 重要：使用环境变量中的端口
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 10000))
+    port = int(os.environ.get('PORT', 5000))
     host = '0.0.0.0'  # 重要：必须绑定到 0.0.0.0
     print(f"🚀 YOLOv8服務啟動在 {host}:{port}")
     app.run(host=host, port=port, debug=False)
