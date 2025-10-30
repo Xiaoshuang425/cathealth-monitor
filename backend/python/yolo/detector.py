@@ -1,4 +1,5 @@
-﻿import cv2
+﻿
+import cv2
 import numpy as np
 from PIL import Image
 import io
@@ -24,6 +25,9 @@ class YOLODetector:
         try:
             print(" 加载YOLO模型...")
             self.model = YOLO(self.model_path)
+            # 验证模型是否正常加载
+            if hasattr(self.model, 'names'):
+                print(f" 模型类别: {self.model.names}")
             print(" YOLO模型加载成功")
         except Exception as e:
             print(f" 模型加载失败: {e}")
@@ -40,28 +44,32 @@ class YOLODetector:
             return None
     
     def detect_stool_features(self, image):
-        print(" 開始YOLO檢測...")
+        print(" 开始YOLO检测...")
         
-        # 保存輸入圖像用於調試
+        # 保存输入图像用于调试
         try:
             image.save("debug_input_image.jpg")
-            print(" 已保存調試圖像: debug_input_image.jpg")
+            print(" 已保存调试图像: debug_input_image.jpg")
         except Exception as e:
-            print(f"⚠️ 無法保存調試圖像: {e}")
-        print(" 开始检测...")
+            print(f"⚠️ 无法保存调试图像: {e}")
         
         if self.model is None:
             return self._get_fallback_result("模型未加载")
         
         try:
-            # 关键修复：使用极低的置信度阈值
-            results = self.model(image, conf=0.001, iou=0.05, imgsz=640, max_det=10)
+            # 修复：使用合理的置信度阈值
+            results = self.model(image, conf=0.25, iou=0.45, imgsz=640, max_det=10, augment=False)
+            
+            print(f" 原始检测结果数量: {len(results)}")
             
             if len(results) > 0 and results[0].boxes is not None and len(results[0].boxes) > 0:
-                # 有检测结果
                 boxes = results[0].boxes
                 confidences = boxes.conf.cpu().numpy()
                 class_ids = boxes.cls.cpu().numpy()
+                
+                print(f" 检测到 {len(boxes)} 个边界框")
+                print(f" 置信度分布: {confidences}")
+                print(f" 类别ID分布: {class_ids}")
                 
                 # 取置信度最高的
                 max_idx = np.argmax(confidences)
@@ -72,19 +80,22 @@ class YOLODetector:
                 
                 print(f" 检测成功: {class_info['name']} (置信度: {confidence:.3f})")
                 
+                # 修复：使用真实置信度，不强制提升
                 return {
                     "detection": {
-                        "confidence": round(max(confidence, 0.7), 3),  # 最低0.7
+                        "confidence": round(confidence, 3),
                         "class_id": class_id,
                         "class_name": class_info["name"],
                         "features": f"YOLO检测 - {class_info['name']}",
-                        "detection_count": len(boxes)
+                        "detection_count": len(boxes),
+                        "all_confidences": [round(float(c), 3) for c in confidences],
+                        "all_classes": [int(c) for c in class_ids]
                     },
                     "health_analysis": {
                         "risk_level": "normal" if class_info["risk"] <= 30 else "warning" if class_info["risk"] <= 50 else "danger",
                         "message": f"检测到: {class_info['name']}",
                         "description": "AI分析完成",
-                        "confidence": round(max(confidence, 0.7), 3),
+                        "confidence": round(confidence, 3),
                         "recommendation": class_info["advice"],
                         "detected_class": class_id
                     },
@@ -100,11 +111,14 @@ class YOLODetector:
                     }
                 }
             else:
+                print(" 未检测到任何目标，使用图像特征分析")
                 # 没有检测到，使用基于图像的分析
                 return self._analyze_by_image_features(image)
                 
         except Exception as e:
             print(f" 检测异常: {e}")
+            import traceback
+            traceback.print_exc()
             return self._get_fallback_result(f"检测异常: {e}")
     
     def _analyze_by_image_features(self, image):
@@ -116,8 +130,10 @@ class YOLODetector:
         avg_color = np.mean(img_np)
         color_std = np.std(img_np)
         
+        print(f" 图像特征 - 平均颜色: {avg_color:.2f}, 颜色标准差: {color_std:.2f}")
+        
         # 基于特征猜测
-        if color_std < 1000:
+        if color_std < 30:  # 调整阈值
             class_id = 3  # 便秘
         elif avg_color > 160:
             class_id = 2  # 拉稀
@@ -128,17 +144,17 @@ class YOLODetector:
         
         return {
             "detection": {
-                "confidence": 0.75,
+                "confidence": 0.65,  # 降低图像分析的置信度
                 "class_id": class_id,
                 "class_name": class_info["name"],
-                "features": "图像特征分析",
+                "features": f"图像特征分析 (avg_color: {avg_color:.1f}, std: {color_std:.1f})",
                 "detection_count": 0
             },
             "health_analysis": {
                 "risk_level": "warning",
                 "message": f"检测到: {class_info['name']}",
                 "description": "基于图像特征的AI分析",
-                "confidence": 0.75,
+                "confidence": 0.65,
                 "recommendation": class_info["advice"],
                 "detected_class": class_id
             },
@@ -157,10 +173,11 @@ class YOLODetector:
     
     def _get_fallback_result(self, reason):
         """备用结果"""
+        print(f" 使用备用分析: {reason}")
         class_info = self.class_mapping[0]  # 正常
         return {
             "detection": {
-                "confidence": 0.8,
+                "confidence": 0.5,  # 降低备用分析的置信度
                 "class_id": 0,
                 "class_name": class_info["name"],
                 "features": f"备用分析 - {reason}",
@@ -170,7 +187,7 @@ class YOLODetector:
                 "risk_level": "normal",
                 "message": "分析完成",
                 "description": "AI分析完成",
-                "confidence": 0.8,
+                "confidence": 0.5,
                 "recommendation": class_info["advice"],
                 "detected_class": 0
             },
@@ -186,5 +203,28 @@ class YOLODetector:
             }
         }
 
-
+    # 添加模型验证方法
+    def validate_model(self, test_image_path):
+        """验证模型是否正常工作"""
+        try:
+            test_image = Image.open(test_image_path)
+            print("=== 模型验证 ===")
+            print(f" 测试图像: {test_image_path}")
+            print(f" 图像尺寸: {test_image.size}")
+            
+            # 使用标准参数测试
+            results = self.model(test_image, conf=0.25, iou=0.45)
+            
+            if len(results) > 0 and results[0].boxes is not None:
+                boxes = results[0].boxes
+                print(f" 检测到边界框: {len(boxes)}")
+                for i, (conf, cls_id) in enumerate(zip(boxes.conf, boxes.cls)):
+                    print(f"  框 {i}: 类别 {int(cls_id)} (置信度: {float(conf):.3f})")
+            else:
+                print(" 未检测到任何目标")
+                
+            return True
+        except Exception as e:
+            print(f" 模型验证失败: {e}")
+            return False
 

@@ -1000,41 +1000,32 @@ let deferredPrompt = null;
             setTimeout(() => {
                 // 检查是否已经安装
                 if (!localStorage.getItem('appInstalled')) {
-                    installPrompt
-.classList.add('active');
+                    installPrompt.classList.add('active');
                 }
             }, 3000);
         });
         
         // 确认安装
-        installConfirm
-.addEventListener('click', async () => {
+        installConfirm.addEventListener('click', async () => {
             if (deferredPrompt) {
-                deferredPrompt
-.prompt();
+                deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
                 
                 if (outcome === 'accepted') {
-                    localStorage
-.setItem('appInstalled', 'true');
-                    installPrompt
-.classList.remove('active');
+                    localStorage.setItem('appInstalled', 'true');
+                    installPrompt.classList.remove('active');
                     alert('✅ 已成功添加到桌面！');
                 }
                 
-                deferredPrompt 
-= null;
+                deferredPrompt = null;
             }
         });
         
         // 取消安装
-        installCancel
-.addEventListener('click', () => {
-            installPrompt
-.classList.remove('active');
+        installCancel.addEventListener('click', () => {
+            installPrompt.classList.remove('active');
             // 1天内不再显示
-            localStorage
-.setItem('installPromptDismissed', Date.now().toString());
+            localStorage.setItem('installPromptDismissed', Date.now().toString());
         });
         
         // 检查是否已经拒绝过安装提示
@@ -1068,6 +1059,40 @@ const CLOUD_AI_URL = "http://127.0.0.1:10000";
 let allPets = JSON.parse(localStorage.getItem("allPets") || "[]");
 let currentPetPhoto = null;
 
+async function testBackendConnection() {
+    console.log("🔍 测试后端连接...");
+    console.log("目标URL:", CLOUD_AI_URL + "/health");
+    
+    try {
+        const response = await fetch(CLOUD_AI_URL + "/health", {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            mode: 'cors'  // 明确指定CORS模式
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP错误: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log("✅ 后端连接成功:", data);
+        
+        return {
+            success: true,
+            data: data,
+            message: `后端服务正常 | 模型加载: ${data.model_loaded ? '是' : '否'}`
+        };
+    } catch (error) {
+        console.error("❌ 后端连接失败:", error);
+        return {
+            success: false,
+            error: error.message,
+            message: `连接失败: ${error.message}`
+        };
+    }
+}
 // ==================== 用户信息功能 ====================
 function updateUserInfo() {
     const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
@@ -1105,19 +1130,15 @@ function goBackToDashboard() {
 // 更新移动端按钮显示状态
 function updateMobileButtons() {
     const isDashboard = document.getElementById('dashboard-page').classList.contains('active');
-        
-        if (isDashboard) {
-            document
-.body.classList.add('on-dashboard');
-            document
-.body.classList.remove('on-other-page');
-        } else {
-            document
-.body.classList.add('on-other-page');
-            document
-.body.classList.remove('on-dashboard');
-        }
+    
+    if (isDashboard) {
+        document.body.classList.add('on-dashboard');
+        document.body.classList.remove('on-other-page');
+    } else {
+        document.body.classList.add('on-other-page');
+        document.body.classList.remove('on-dashboard');
     }
+}
 
 function showPage(pageId) {
     console.log("切换到:", pageId);
@@ -1421,6 +1442,8 @@ function saveHealthDetail() {
 }
 
 // ==================== YOLO分析功能 ====================
+
+// 初始化YOLO上传功能
 function initYOLOUpload() {
     const uploadArea = document.getElementById("upload-area");
     const imageUpload = document.getElementById("image-upload");
@@ -1447,10 +1470,37 @@ function initYOLOUpload() {
     }
 }
 
+// 处理图片上传和分析
 async function handleImageUpload(file) {
     console.log("开始真实YOLO分析:", file.name);
+
+    // 1. 先测试后端连接
+    try {
+        console.log("测试后端连接...");
+        const healthCheck = await fetch(CLOUD_AI_URL + "/health", {
+            method: "GET"
+        });
+        
+        if (!healthCheck.ok) {
+            throw new Error(`后端服务不可用: ${healthCheck.status}`);
+        }
+        
+        const healthData = await healthCheck.json();
+        console.log("✅ 后端服务状态:", healthData);
+        
+        if (!healthData.model_loaded) {
+            throw new Error("YOLO模型未加载，请检查后端服务");
+        }
+        
+    } catch (error) {
+        console.error("❌ 后端连接测试失败:", error);
+        showAnalysisError(`无法连接到AI分析服务: ${error.message}`);
+        return;
+    }
     
-    // 显示预览
+    console.log("✅ 连接和模型检查通过");
+
+    // 2. 显示图片预览
     const reader = new FileReader();
     reader.onload = function(e) {
         document.getElementById("preview-img").src = e.target.result;
@@ -1458,14 +1508,14 @@ async function handleImageUpload(file) {
     };
     reader.readAsDataURL(file);
     
-    // 显示分析中状态
+    // 3. 显示分析中状态
     const uploadArea = document.getElementById("upload-area");
     if (uploadArea) {
         uploadArea.innerHTML = `
             <div class="upload-icon">
                 <i class="fas fa-spinner fa-spin"></i>
             </div>
-            <h3> YOLOv8 AI分析中...</h3>
+            <h3>YOLOv8 AI分析中...</h3>
             <p>正在使用真实YOLO模型分析排泄物特征</p>
             <div style="margin-top: 15px;">
                 <div style="background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%); height: 4px; border-radius: 2px; width: 80%; margin: 0 auto;"></div>
@@ -1473,17 +1523,23 @@ async function handleImageUpload(file) {
         `;
     }
     
+    // 4. 执行YOLO分析
     try {
         // 转换为base64
-        const base64Image = await new Promise((resolve) => {
+        console.log("开始转换图片为base64...");
+        const base64Image = await new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
             reader.readAsDataURL(file);
         });
         
         const imageData = base64Image.split(',')[1];
+        console.log("图片base64长度:", imageData.length);
         
-        console.log("调用真实YOLO后端API...");
+        // 发送分析请求
+        console.log("发送分析请求到:", CLOUD_AI_URL + "/analyze/stool");
+        
         const response = await fetch(CLOUD_AI_URL + "/analyze/stool", {
             method: "POST",
             headers: {
@@ -1494,12 +1550,15 @@ async function handleImageUpload(file) {
             })
         });
         
+        console.log("收到响应状态:", response.status);
+        
         if (!response.ok) {
-            throw new Error(`HTTP错误: ${response.status}`);
+            const errorText = await response.text();
+            throw new Error(`HTTP ${response.status}: ${errorText}`);
         }
         
         const result = await response.json();
-        console.log("✅ 真实分析结果:", result);
+        console.log("✅ 分析结果:", result);
         
         if (result.success) {
             showAnalysisResult(result);
@@ -1508,25 +1567,12 @@ async function handleImageUpload(file) {
         }
         
     } catch (error) {
-        console.error("❌ API调用失败:", error);
-        
-        // 显示错误信息
-        const detectionResults = document.getElementById("detection-results");
-        if (detectionResults) {
-            detectionResults.innerHTML = `
-                <h3 style="color: #dc3545; text-align: center;">
-                    <i class="fas fa-exclamation-triangle"></i> 分析失败
-                </h3>
-                <p style="text-align: center;">${error.message}</p>
-                <div style="text-align: center; margin-top: 20px;">
-                    <button class="btn btn-primary" onclick="analyzeNewImage()">重新尝试</button>
-                </div>
-            `;
-            detectionResults.style.display = "block";
-        }
+        console.error("❌ 分析过程失败:", error);
+        showAnalysisError(`分析失败: ${error.message}`);
     }
 }
 
+// 显示分析结果
 function showAnalysisResult(result) {
     const detectionResults = document.getElementById("detection-results");
     const uploadArea = document.getElementById("upload-area");
@@ -1577,9 +1623,37 @@ function showAnalysisResult(result) {
     `;
     
     detectionResults.style.display = "block";
+    // 隐藏上传区域，显示结果区域
     if (uploadArea) uploadArea.style.display = "none";
 }
 
+// 显示分析错误
+function showAnalysisError(errorMessage) {
+    const detectionResults = document.getElementById("detection-results");
+    if (detectionResults) {
+        detectionResults.innerHTML = `
+            <h3 style="color: #dc3545; text-align: center;">
+                <i class="fas fa-exclamation-triangle"></i> 分析失败
+            </h3>
+            <p style="text-align: center; color: var(--gray);">${errorMessage}</p>
+            <div style="background: #f8d7da; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #dc3545;">
+                <h4 style="color: #721c24; margin-bottom: 10px;">故障排除:</h4>
+                <ul style="color: #721c24; text-align: left; margin: 0;">
+                    <li>确保后端服务正在运行 (端口 10000)</li>
+                    <li>检查模型文件是否存在</li>
+                    <li>查看浏览器控制台获取详细错误信息</li>
+                </ul>
+            </div>
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="btn btn-primary" onclick="analyzeNewImage()">重新尝试</button>
+                <button class="btn btn-secondary" onclick="testBackendConnection()" style="margin-left: 10px;">测试连接</button>
+            </div>
+        `;
+        detectionResults.style.display = "block";
+    }
+}
+
+// 重置界面，分析新图片
 function analyzeNewImage() {
     const detectionResults = document.getElementById("detection-results");
     const imagePreview = document.getElementById("image-preview");
@@ -1602,6 +1676,29 @@ function analyzeNewImage() {
         
         // 重新初始化上传功能
         setTimeout(initYOLOUpload, 100);
+    }
+}
+
+// 测试后端连接
+async function testBackendConnection() {
+    try {
+        const response = await fetch(CLOUD_AI_URL + "/health");
+        const data = await response.json();
+        
+        alert(`✅ 后端连接正常\n状态: ${data.status}\n模型加载: ${data.model_loaded ? '是' : '否'}`);
+    } catch (error) {
+        alert(`❌ 后端连接失败: ${error.message}`);
+    }
+}
+
+// 页面加载时测试后端连接
+async function testBackendOnLoad() {
+    try {
+        const response = await fetch(CLOUD_AI_URL + "/health");
+        const data = await response.json();
+        console.log("✅ 后端服务状态:", data);
+    } catch (error) {
+        console.warn("⚠️ 后端服务未启动:", error.message);
     }
 }
 
@@ -1634,7 +1731,9 @@ function initPetPhotoUpload() {
 // ==================== 初始化所有功能 ====================
 document.addEventListener("DOMContentLoaded", function() {
     console.log("初始化猫咪健康管理系统...");
+    console.log("后端服务地址:", CLOUD_AI_URL);
 
+    testBackendOnLoad();
         
 // 🎯 强制修复：确保所有页面在正确位置
     function fixPagePositions() {
@@ -1693,6 +1792,16 @@ document.addEventListener("DOMContentLoaded", function() {
         
 // 🎯 再次检查防止重复
     ensureNoDuplicatePages();
+
+    async function testBackendOnLoad() {
+    try {
+        const response = await fetch(CLOUD_AI_URL + "/health");
+        const data = await response.json();
+        console.log("✅ 后端服务状态:", data);
+    } catch (error) {
+        console.warn("⚠️ 后端服务未启动:", error.message);
+    }
+}
     
     console.log("✅ 系统初始化完成");
 });

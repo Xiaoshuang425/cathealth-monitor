@@ -1,9 +1,10 @@
 ﻿services:
   - type: web
-    name: cathealth-backend1
-    env: node
-    buildCommand: npm install
-    startCommand: npm start
+    name: cathealth-backend
+    env: python
+    plan: free
+    buildCommand: pip install -r backend/python/requirements.txt
+    startCommand: cd backend/python && python main1.py
     envVars:
-      - key: NODE_VERSION
-        value: 18.17.0
+      - key: PYTHON_VERSION
+        value: 3.9.0
