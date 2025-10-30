@@ -52,9 +52,8 @@ def health_check():
     return jsonify({
         "status": "healthy", 
         "service": "CatHealth YOLO Service",
-        "model_loaded": True,  # 直接返回True，让前端认为模型已加载
+        "model_loaded": yolo_detector.model is not None,
         "model_path": model_path,
-        "mode": "fixed_sequence_demo"
     })
 
 @app.route('/analyze/stool', methods=['POST'])
