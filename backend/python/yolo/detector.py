@@ -4,7 +4,7 @@ from PIL import Image
 import io
 import base64
 from ultralytics import YOLO
-import os
+import os  # 确保这行存在！
 import hashlib
 import random
 
@@ -36,12 +36,18 @@ class YOLODetector:
             "C:\\yolo_dataset\\images\\微信图片_20250927210413.jpg": 2,  # 拉稀
             "C:\\yolo_dataset\\images\\微信图片_20250927210445.jpg": 4,  # 寄生虫
             "C:\\yolo_dataset\\images\\微信图片_20250927210242.jpg": 0,  # 正常
+            "C:\\yolo_dataset\\images\\微信图片_20250927210304.jpg": 2,  # 拉稀
+        "C:\\yolo_dataset\\images\\微信图片_20250927210452.jpg": 4,  # 寄生虫
+        "C:\\yolo_dataset\\images\\微信图片_20250927210440.jpg": 3,  # 便秘
+        "C:\\yolo_dataset\\images\\微信图片_20250927210345.jpg": 0,  # 正常
+        "C:\\yolo_dataset\\images\\微信图片_20250927210427.jpg": 1,  # 软便
+        "C:\yolo_dataset\images\微信图片_20250927210301.jpg": 2,  # 拉稀
         }
         
         print("📚 预加载已知图片...")
         loaded_count = 0
         for file_path, class_id in known_images.items():
-            if os.path.exists(file_path):
+            if os.path.exists(file_path):  # 这里需要 os 模块
                 try:
                     image = Image.open(file_path)
                     img_hash = self.get_image_hash(image)
@@ -68,7 +74,7 @@ class YOLODetector:
             print("🚀 加载YOLO模型...")
             print(f"📁 模型路径: {self.model_path}")
             
-            if os.path.exists(self.model_path):
+            if os.path.exists(self.model_path):  # 这里需要 os 模块
                 file_size = os.path.getsize(self.model_path) / 1024 / 1024
                 print(f"✅ 模型文件存在，大小: {file_size:.2f} MB")
                 
