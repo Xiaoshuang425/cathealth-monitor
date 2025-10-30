@@ -22,13 +22,39 @@ class YOLODetector:
             4: {"name": "寄生虫感染", "risk": 75, "color": "#dc3545", "advice": "建议立即就医进行专业检查"}
         }
     
-    def load_model(self):
-        try:
-            print(" 加载YOLO模型...")
+def load_model(self):
+    try:
+        print(f" 加载YOLO模型...")
+        print(f" 模型路径: {self.model_path}")
+        
+        # 检查文件是否存在
+        if os.path.exists(self.model_path):
+            file_size = os.path.getsize(self.model_path)
+            print(f" ✅ 模型文件存在，大小: {file_size} bytes")
+            
             self.model = YOLO(self.model_path)
-            print(" YOLO模型加载成功")
-        except Exception as e:
-            print(f" 模型加载失败: {e}")
+            print(" ✅ YOLO模型加载成功")
+            
+            # 验证模型
+            if hasattr(self.model, 'names'):
+                print(f" 模型类别: {self.model.names}")
+        else:
+            print(f" ❌ 模型文件不存在: {self.model_path}")
+            # 尝试查找其他可能的路径
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            print(f" 当前目录: {current_dir}")
+            print(" 搜索模型文件...")
+            for root, dirs, files in os.walk(current_dir):
+                for file in files:
+                    if file.endswith('.pt'):
+                        print(f"  找到: {os.path.join(root, file)}")
+            self.model = None
+            
+    except Exception as e:
+        print(f" ❌ 模型加载失败: {e}")
+        import traceback
+        traceback.print_exc()
+        self.model = None
     
     def base64_to_image(self, base64_string):
         try:

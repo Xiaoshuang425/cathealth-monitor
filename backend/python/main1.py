@@ -6,7 +6,7 @@ import os
 
 # 添加src目录到Python路径
 current_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(current_dir)
+sys.path.append(current_dir, "models", "best.pt")
 
 try:
     from yolo.detector import YOLODetector
@@ -35,6 +35,15 @@ if os.path.exists(model_path):
     print(f"模型大小: {os.path.getsize(model_path)} bytes")
 else:
     print(f" ❌ 模型文件不存在: {model_path}")
+    
+    print("搜索模型文件...")
+    for root, dirs, files in os.walk(current_dir):
+        level = root.replace(current_dir, '').count(os.sep)
+        indent = ' ' * 2 * level
+        print(f'{indent}{os.path.basename(root)}/')
+        subindent = ' ' * 2 * (level + 1)
+        for file in files:
+            print(f'{subindent}{file}')
 
 yolo_detector = YOLODetector(model_path=model_path)
 
