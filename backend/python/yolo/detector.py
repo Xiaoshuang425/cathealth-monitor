@@ -18,7 +18,7 @@ class YOLODetector:
         # 类别映射
         self.class_mapping = {
             0: {"name": "正常", "risk": 5, "color": "#28a745", "advice": "猫咪排泄物形态正常，建议保持当前饮食"},
-            1: {"name": "软便", "risk": 25, "color": "#ffc107", "advice": "建议观察饮食，避免过多零食"},
+            1: {"name": "软便", "risk": 25, "color": "#ffc107", "advice": "建议观察饮食，避免过多零食，暫無貓瘟等疾病風險"},
             2: {"name": "拉稀", "risk": 65, "color": "#fd7e14", "advice": "建议及时就医检查"},
             3: {"name": "便秘", "risk": 40, "color": "#17a2b8", "advice": "建议增加水分摄入"},
             4: {"name": "寄生虫感染", "risk": 75, "color": "#dc3545", "advice": "建议立即就医进行专业检查"}
