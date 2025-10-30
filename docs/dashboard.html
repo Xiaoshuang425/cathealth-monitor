@@ -1071,7 +1071,40 @@ let currentPetPhoto = null;
 console.log("运行环境:", isDevelopment ? "开发环境" : "生产环境");
 console.log("后端服务地址:", CLOUD_AI_URL);
 
-
+async function testBackendConnection() {
+    console.log("🔍 测试后端连接...");
+    console.log("目标URL:", CLOUD_AI_URL + "/health");
+    
+    try {
+        const response = await fetch(CLOUD_AI_URL + "/health", {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            mode: 'cors'  // 明确指定CORS模式
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP错误: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log("✅ 后端连接成功:", data);
+        
+        return {
+            success: true,
+            data: data,
+            message: `后端服务正常 | 模型加载: ${data.model_loaded ? '是' : '否'}`
+        };
+    } catch (error) {
+        console.error("❌ 后端连接失败:", error);
+        return {
+            success: false,
+            error: error.message,
+            message: `连接失败: ${error.message}`
+        };
+    }
+}
 // ==================== 用户信息功能 ====================
 function updateUserInfo() {
     const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
@@ -1712,7 +1745,28 @@ function analyzeNewImage() {
     }
 }
 
+// 测试后端连接
+async function testBackendConnection() {
+    try {
+        const response = await fetch(CLOUD_AI_URL + "/health");
+        const data = await response.json();
+        
+        alert(`✅ 后端连接正常\n状态: ${data.status}\n模型加载: ${data.model_loaded ? '是' : '否'}`);
+    } catch (error) {
+        alert(`❌ 后端连接失败: ${error.message}`);
+    }
+}
 
+// 页面加载时测试后端连接
+async function testBackendOnLoad() {
+    try {
+        const response = await fetch(CLOUD_AI_URL + "/health");
+        const data = await response.json();
+        console.log("✅ 后端服务状态:", data);
+    } catch (error) {
+        console.warn("⚠️ 后端服务未启动:", error.message);
+    }
+}
 
 // ==================== 初始化宠物照片上传 ====================
 function initPetPhotoUpload() {
