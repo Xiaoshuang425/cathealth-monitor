@@ -105,6 +105,21 @@ def test_model():
         "model_path": yolo_detector.model_path,
     })
 
+# 在 health_check 路由后面添加这个
+
+@app.route('/')
+def home():
+    return jsonify({
+        "message": "CatHealth YOLO Service is running",
+        "status": "healthy",
+        "endpoints": {
+            "health": "/health (GET)",
+            "analyze": "/analyze/stool (POST)"
+        },
+        "timestamp": os.environ.get('RENDER_TIMESTAMP', 'unknown')
+    })
+
+# 确保这个在文件末尾的 if __name__ == '__main__': 之前
 # 重要：使用环境变量中的端口
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
