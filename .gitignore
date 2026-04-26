@@ -30,5 +30,5 @@ backup_20251021_075216
 .pt
 .db
 .vercel
-.github
+# .github  # Allow GitHub Actions workflows
 .gitattributes
