@@ -475,4 +475,4 @@ if __name__ == '__main__':
     port = int(os.environ.get('PORT', 10002))
     print(f"[SERVER] Starting on http://127.0.0.1:{port}")
     print(f"[SERVER] Database: {db.db_path}")
-    app.run(host='127.0.0.1', port=port, debug=False)
+    app.run(host='0.0.0.0', port=port, debug=False)
