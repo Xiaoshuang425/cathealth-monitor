@@ -4,13 +4,11 @@ yolo_service.py.backup
 yolo_service.py
 yolo_detection_code.js
 yolo_config.yaml
-vercel.json
 test-api.js
 simple-server.py
 server.js.backup.20251020_002743
 server.js.backup.20251020_001435
 server.js.backup
-render.yaml
 netlify-deploy.zip
 manifest.json
 hello.js
@@ -28,7 +26,7 @@ deploy-to-netlify
 deploy-backend
 backup_20251021_075216
 .env
-.yaml
+# .yaml  # Allow render.yaml
 .pt
 .db
 .vercel
