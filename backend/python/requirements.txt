@@ -7,4 +7,3 @@ numpy==1.23.5
 torch==1.13.1
 torchvision==0.14.1
 pyjwt>=2.8.0
-flask-cors>=4.0.0
