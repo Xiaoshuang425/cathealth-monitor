@@ -4,7 +4,7 @@ services:
     runtime: python
     plan: free
     buildCommand: pip install -r requirements.txt
-    startCommand: cd backend/flask && gunicorn app:app --bind 0.0.0.0:$PORT --timeout 120
+    startCommand: gunicorn backend.flask.app:app --bind 0.0.0.0:$PORT --timeout 120
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
@@ -12,6 +12,8 @@ services:
         generateValue: true
       - key: RENDER
         value: "true"
+      - key: PYTHONPATH
+        value: /opt/render/project/src
     disk:
       name: cathealth-data
       mountPath: /data
