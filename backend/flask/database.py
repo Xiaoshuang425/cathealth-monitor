@@ -192,10 +192,10 @@ class Database:
         if updates:
             set_clause = ', '.join([f"{k} = ?" for k in updates.keys()])
             values = list(updates.values()) + [cat_id]
-            cursor.execute(f''
-                UPDATE cats SET {set_clause}, updated_at = CURRENT_TIMESTAMP
-                WHERE id = ?
-            ''', values)
+            cursor.execute(
+                f"UPDATE cats SET {set_clause}, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+                values
+            )
             conn.commit()
 
         conn.close()
