@@ -1,149 +1,137 @@
-﻿import os
+import os
 import sys
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
-import base64
 
 app = Flask(__name__)
 CORS(app)
 
-# 云部署配置
-is_render = 'RENDER' in os.environ
-current_dir = os.path.dirname(os.path.abspath(__file__))
-
-print(f"运行环境: {'Render' if is_render else '本地'}")
-
-# YOLO服务状态
+# YOLO状态
 yolo_available = False
 yolo_detector = None
 
-if is_render:
-    # Render环境 - 尝试加载YOLO
+def init_yolo():
+    """初始化YOLO模型"""
+    global yolo_available, yolo_detector
+    if yolo_available:
+        return True
     try:
-        backend_dir = os.path.join(current_dir, "backend", "python")
-        sys.path.append(backend_dir)
-        
-        src_dir = os.path.join(backend_dir, "src")
-        sys.path.append(src_dir)
-        
-        from yolo.detector import YOLODetector
-        
-        # 在Render上检查模型文件
-        model_path = os.path.join(backend_dir, "models", "best.pt")
-        if os.path.exists(model_path):
-            print(f" 找到模型文件: {model_path}")
-            yolo_detector = YOLODetector(model_path=model_path)
-            yolo_available = yolo_detector.model is not None
-            print(f" YOLO加载: {'成功' if yolo_available else '失败'}")
-        else:
-            print(f" 模型文件不存在: {model_path}")
-            print(" 建议: 确保模型文件已提交到Git仓库")
-            
-    except Exception as e:
-        print(f" YOLO初始化失败: {e}")
-        yolo_available = False
-else:
-    # 本地环境
-    try:
-        backend_dir = os.path.join(current_dir, "backend", "python")
-        sys.path.append(backend_dir)
-        
-        src_dir = os.path.join(backend_dir, "src")
-        sys.path.append(src_dir)
-        
-        from yolo.detector import YOLODetector
-        
-        model_path = os.path.join(backend_dir, "models", "best.pt")
-        yolo_detector = YOLODetector(model_path=model_path)
-        yolo_available = yolo_detector.model is not None
-        print(f" 本地YOLO加载: {'成功' if yolo_available else '失败'}")
-        
-    except Exception as e:
-        print(f" 本地YOLO初始化失败: {e}")
-        yolo_available = False
+        # 清除可能的缓存
+        import importlib
+        if 'yolo.detector' in sys.modules:
+            del sys.modules['yolo.detector']
+        if 'yolo' in sys.modules:
+            del sys.modules['yolo']
 
+        backend_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "backend", "python")
+        sys.path.insert(0, backend_dir)
+        sys.path.insert(0, os.path.join(backend_dir, "src"))
+
+        from yolo.detector import YOLODetector
+        import yolo.detector as detector_module
+        print(f"[INIT] Loaded detector from: {detector_module.__file__}")
+
+        # Verify it's the correct file
+        with open(detector_module.__file__, 'r', encoding='utf-8') as f:
+            content = f.read()
+            if 'self.model(image, conf=self.conf_threshold' in content:
+                print("[INIT] Detector version: FIXED (PIL Image passed to model)")
+            elif 'np.array(image)' in content:
+                print("[INIT] Detector version: BUGGY (numpy array passed)")
+            else:
+                print("[INIT] Detector version: UNKNOWN")
+
+        model_path = os.path.join(backend_dir, "models", "best.pt")
+        print(f"[INIT] Model path: {model_path}")
+        print(f"[INIT] Model exists: {os.path.exists(model_path)}")
+        if os.path.exists(model_path):
+            yolo_detector = YOLODetector(model_path)
+            yolo_available = yolo_detector.model is not None
+            print(f"[INIT] YOLO loaded: {yolo_available}")
+            print(f"[INIT] Conf threshold: {yolo_detector.conf_threshold}")
+            return yolo_available
+    except Exception as e:
+        print(f"[INIT] Error: {e}")
+        import traceback
+        traceback.print_exc()
+    return False
+
+# 前端路由
 @app.route('/')
 def home():
-    return jsonify({
-        "service": "CatHealth Full Stack",
-        "status": "running",
-        "yolo_available": yolo_available,
-        "environment": "render" if is_render else "local"
-    })
+    return send_from_directory('.', 'index.html')
 
+@app.route('/<path:filename>')
+def serve_file(filename):
+    if filename in ['index.html', 'dashboard.html', 'manifest.json', 'service-worker.js']:
+        return send_from_directory('.', filename)
+    return jsonify({"error": "Not found"}), 404
+
+# API路由
 @app.route('/api/health')
 def health():
-    return jsonify({
-        "status": "healthy",
-        "yolo": "available" if yolo_available else "unavailable",
-        "model_loaded": yolo_detector is not None and yolo_detector.model is not None
-    })
+    return jsonify({"status": "healthy", "yolo_available": yolo_available})
+
+@app.route('/api/init', methods=['POST'])
+def api_init():
+    success = init_yolo()
+    return jsonify({"success": success, "yolo_available": yolo_available})
 
 @app.route('/api/ai/analyze', methods=['POST'])
-def analyze_stool():
-    """智能分析端点 - 自动处理YOLO可用性"""
-    try:
-        data = request.get_json()
-        
-        if not data or 'image' not in data:
-            return jsonify({"success": False, "error": "没有图像数据"}), 400
-        
-        print(f" 收到分析请求 - YOLO状态: {'可用' if yolo_available else '不可用'}")
-        
-        if not yolo_available or yolo_detector is None:
-            # YOLO不可用，返回模拟结果但标明状态
-            return jsonify({
-                "success": True,
-                "detection": {
-                    "color": "模拟", "texture": "模拟", "shape": "模拟",
-                    "confidence": 0.85, "class_name": "normal"
-                },
-                "health_analysis": {
-                    "risk_level": "normal", "message": "模拟分析",
-                    "description": "AI服务准备中，当前使用模拟数据",
-                    "confidence": 0.85,
-                    "recommendation": "YOLOv8服务配置中，请稍后重试真实检测",
-                    "detected_class": "normal"
-                },
-                "simulation": True,
-                "yolo_available": False
-            })
-        
-        # 使用真实YOLO检测
-        image = yolo_detector.base64_to_image(data['image'])
-        if image is None:
-            return jsonify({"success": False, "error": "图像解码失败"}), 400
-        
-        result = yolo_detector.detect_stool_features(image)
-        result["yolo_available"] = True
-        result["simulation"] = False
-        
-        return jsonify({"success": True, **result})
-        
-    except Exception as e:
-        print(f" 分析失败: {e}")
-        return jsonify({
-            "success": False, 
-            "error": str(e),
-            "yolo_available": yolo_available
-        }), 500
+def analyze():
+    """分析端点"""
+    print("\n[API] ====== New Request ======")
 
-@app.route('/api/debug/yolo-status')
-def debug_yolo():
-    """调试YOLO状态"""
-    return jsonify({
-        "yolo_available": yolo_available,
-        "model_loaded": yolo_detector is not None and yolo_detector.model is not None,
-        "environment": "render" if is_render else "local",
-        "current_dir": current_dir,
-        "model_path": yolo_detector.model_path if yolo_detector else None,
-        "model_exists": os.path.exists(yolo_detector.model_path) if yolo_detector else False
-    })
+    try:
+        # 确保YOLO已加载
+        if not yolo_available:
+            print("[API] Initializing YOLO...")
+            init_yolo()
+
+        if not yolo_available:
+            print("[API] YOLO not available")
+            return jsonify({"success": False, "error": "YOLO not available"}), 503
+
+        # 获取数据
+        data = request.get_json()
+        print(f"[API] Request data type: {type(data)}")
+
+        if not data or 'image' not in data:
+            print("[API] No image data")
+            return jsonify({"success": False, "error": "No image data"}), 400
+
+        img_data = data['image']
+        print(f"[API] Image data length: {len(str(img_data))}")
+        print(f"[API] Image data type: {type(img_data)}")
+        print(f"[API] Image data first 100 chars: {str(img_data)[:100]}")
+
+        # 解码图片
+        image = yolo_detector.base64_to_image(img_data)
+        if image is None:
+            print("[API] Decode failed")
+            return jsonify({"success": False, "error": "Decode failed"}), 400
+
+        print(f"[API] Decoded image: {image.size}, mode: {image.mode}")
+
+        # 检查detector中的模型状态
+        print(f"[API] Detector model: {yolo_detector.model}")
+        print(f"[API] Detector model path: {yolo_detector.model_path}")
+
+        # 运行检测
+        result = yolo_detector.detect_stool_features(image)
+        print(f"[API] Result: {result['detection']['class_name']} (count: {result['detection']['detection_count']})")
+        print(f"[API] Analysis info: {result.get('analysis_info', {})}")
+
+        result["success"] = True
+        return jsonify(result)
+
+    except Exception as e:
+        import traceback
+        print(f"[API] ERROR: {e}")
+        traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 500
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 10000))
-    print(f" 服务启动在端口 {port}")
-    print(f" YOLO可用: {yolo_available}")
-    print(f" 环境: {'Render' if is_render else '本地'}")
-    
-    app.run(host='0.0.0.0', port=port, debug=not is_render)
+    port = int(os.environ.get('PORT', 10002))
+    print(f"[SERVER] Starting on http://127.0.0.1:{port}")
+    app.run(host='127.0.0.1', port=port, debug=False)

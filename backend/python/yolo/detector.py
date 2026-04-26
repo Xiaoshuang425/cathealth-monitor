@@ -1,76 +1,124 @@
-﻿import cv2
 import numpy as np
 from PIL import Image
 import io
 import base64
 from ultralytics import YOLO
 import os
-import hashlib
-import random
 
 class YOLODetector:
     def __init__(self, model_path):
         self.model_path = model_path
         self.model = None
-        self.known_image_features = {}  # 改为存储特征而不是文件路径
         self.load_model()
-        
-        # 类别映射
+
+        # 类别映射（根据模型实际类别）- 包含详细医疗建议
         self.class_mapping = {
-            0: {"name": "正常", "risk": 5, "color": "#28a745", "advice": "猫咪排泄物形态正常，建议保持当前饮食"},
-            1: {"name": "软便", "risk": 25, "color": "#ffc107", "advice": "建议观察饮食，避免过多零食，暫無貓瘟等疾病風險"},
-            2: {"name": "拉稀", "risk": 65, "color": "#fd7e14", "advice": "建议及时就医检查"},
-            3: {"name": "便秘", "risk": 40, "color": "#17a2b8", "advice": "建议增加水分摄入"},
-            4: {"name": "寄生虫感染", "risk": 75, "color": "#dc3545", "advice": "建议立即就医进行专业检查"}
+            0: {
+                "name": "正常",
+                "risk": 5,
+                "color": "#28a745",
+                "advice": "猫咪排泄物形态正常，建议保持当前饮食和生活方式。",
+                "possible_diseases": [],
+                "medical_advice": "无需特殊治疗，继续保持良好的饮食和卫生习惯。",
+                "medication": "无需用药",
+                "prevention": "定期体检、均衡饮食、充足饮水、定期驱虫"
+            },
+            1: {
+                "name": "软便",
+                "risk": 25,
+                "color": "#ffc107",
+                "advice": "轻度肠道不适，建议观察饮食并适当调整。",
+                "possible_diseases": [
+                    "饮食不当/突然换粮",
+                    "食物过敏或不耐受",
+                    "轻度肠道菌群失调",
+                    "压力或环境改变引起",
+                    "早期寄生虫感染",
+                    "轻微肠炎"
+                ],
+                "medical_advice": "建议观察24-48小时。如持续超过3天，或伴随食欲不振、精神萎靡，建议就医进行粪便检查。",
+                "medication": "益生菌（如宠物专用益生菌粉）；如怀疑寄生虫需使用驱虫药（芬苯达唑）。禁食12小时后给予清淡饮食（白水煮鸡胸肉+少量米饭）。",
+                "prevention": "遵循7-10天换粮法；避免喂食人类食物；定期驱虫；减少环境压力；保持猫砂盆清洁"
+            },
+            2: {
+                "name": "拉稀",
+                "risk": 65,
+                "color": "#fd7e14",
+                "advice": "严重肠道问题，建议尽快就医检查。",
+                "possible_diseases": [
+                    "细菌性肠炎（沙门氏菌、大肠杆菌）",
+                    "病毒感染（猫瘟/泛白细胞减少症、冠状病毒）",
+                    "寄生虫感染（球虫、贾第鞭毛虫）",
+                    "炎症性肠病（IBD）",
+                    "胰腺炎",
+                    "甲状腺功能亢进（老年猫）",
+                    "食物中毒",
+                    "肠道异物"
+                ],
+                "medical_advice": "建议24小时内就医！腹泻会导致快速脱水和电解质失衡，幼猫尤其危险。就医前禁食6-12小时（不禁水），保留粪便样本供检查。如便血、高烧、呕吐或精神极度萎靡需急诊。",
+                "medication": "抗生素（需兽医处方：恩诺沙星、甲硝唑）；止泻药（蒙脱石散短期使用）；驱虫药（针对球虫：芬苯达唑/磺胺类药物；针对贾第虫：甲硝唑）；益生菌；严重时需静脉输液。",
+                "prevention": "避免生食；定期驱虫（每3个月）；接种疫苗（猫瘟）；保持环境清洁；避免接触病猫；新猫到家隔离观察"
+            },
+            3: {
+                "name": "便秘",
+                "risk": 40,
+                "color": "#17a2b8",
+                "advice": "排便困难，建议增加水分摄入并调整饮食。",
+                "possible_diseases": [
+                    "饮水不足（最常见）",
+                    "毛球症/肠道异物",
+                    "慢性肾病（导致脱水）",
+                    "巨结肠症（Megacolon）",
+                    "骨盆狭窄或骨折愈合后",
+                    "低钾血症/高钙血症",
+                    "甲状腺功能低下",
+                    "肛门直肠炎症或疼痛",
+                    "脊椎疾病或神经肌肉问题"
+                ],
+                "medical_advice": "轻度便秘可尝试家庭护理2-3天。如超过3天未排便、腹部胀痛、呕吐或精神萎靡，需立即就医排除肠梗阻。老年猫和肾病猫需特别警惕。",
+                "medication": "渗透性泻剂（聚乙二醇3350/MiraLax：1/4-1/2茶匙每日1-2次；乳果糖：0.5-1.0ml/kg每8-12小时）；促肠蠕动药（西沙必利：2.5-5mg每8小时，需处方）；灌肠（温水或开塞露，严重时需兽医操作）。绝对禁止使用含磷酸盐的灌肠剂！",
+                "prevention": "增加饮水（多放饮水点、使用流动饮水机、改喂湿粮）；定期梳毛减少毛球；高纤维饮食（南瓜泥1-4茶匙/餐）；保持理想体重；定期运动促进肠道蠕动"
+            },
+            4: {
+                "name": "寄生虫感染",
+                "risk": 75,
+                "color": "#dc3545",
+                "advice": "严重健康问题，建议立即就医进行专业检查和治疗。",
+                "possible_diseases": [
+                    "蛔虫感染（最常见）",
+                    "绦虫感染（由跳蚤传播）",
+                    "球虫感染（Coccidia）",
+                    "贾第鞭毛虫（Giardia）",
+                    "钩虫感染",
+                    "鞭虫感染",
+                    "混合寄生虫感染"
+                ],
+                "medical_advice": "必须就医确诊！需进行粪便浮游检查和镜检确定寄生虫类型。某些寄生虫（如蛔虫、贾第虫）可传染人类，需严格卫生管理。幼猫感染可能导致生长发育迟缓、营养不良甚至死亡。",
+                "medication": "广谱驱虫药（吡喹酮：针对绦虫；芬苯达唑：针对蛔虫、钩虫、鞭虫、球虫）；抗原虫药（甲硝唑：针对贾第鞭毛虫）；磺胺类药物（针对球虫）。幼猫：2周龄开始每2周驱虫至12周龄。成猫：每3个月定期驱虫。",
+                "prevention": "定期驱虫（室内猫每3-6个月，外出猫每1-3个月）；控制跳蚤（绦虫媒介）；每日清理猫砂盆；避免生食；孕妇避免接触猫粪；定期环境消毒；新猫到家先隔离驱虫"
+            }
         }
-        
-        # 初始化已知图片特征库
-        self._init_known_images_features()
-    
-    def _init_known_images_features(self):
-        """初始化已知图片的特征库 - 云环境兼容版本"""
-        print("📚 初始化已知图片特征库...")
-        
-        # 预定义的已知图片特征（基于你提供的图片分析）
-        # 格式: {"特征描述": (类别ID, 置信度, 特征标签)}
-        self.known_image_features = {
-            # 便秘图片特征
-            "low_brightness_very_low_variance": (3, 0.85, "已知便秘特征"),
-            "dark_uniform_texture": (3, 0.82, "已知便秘模式"),
-            
-            # 正常图片特征  
-            "medium_brightness_balanced_variance": (0, 0.88, "已知正常特征"),
-            "balanced_colors_medium_contrast": (0, 0.85, "已知正常模式"),
-            
-            # 拉稀图片特征
-            "high_brightness_medium_high_variance": (2, 0.87, "已知拉稀特征"),
-            "bright_watery_texture": (2, 0.84, "已知拉稀模式"),
-            
-            # 寄生虫图片特征
-            "high_variance_complex_pattern": (4, 0.86, "已知寄生虫特征"),
-            "complex_texture_high_contrast": (4, 0.83, "已知寄生虫模式"),
-            
-            # 软便图片特征
-            "medium_high_brightness_medium_variance": (1, 0.84, "已知软便特征"),
-            "soft_texture_medium_contrast": (1, 0.81, "已知软便模式")
-        }
-        
-        print(f"🎯 已加载 {len(self.known_image_features)} 个已知特征模式")
-    
+        self.conf_threshold = 0.001  # 进一步降低置信度阈值以便检测更多目标
+
     def load_model(self):
         """加载YOLO模型"""
         try:
             print("🚀 加载YOLO模型...")
-            
-            # 直接使用标准模型，避免兼容性问题
-            self.model = YOLO('yolov8n.pt')
-            print("✅ 标准YOLOv8n模型加载成功！")
-                
+            print(f"   模型路径: {self.model_path}")
+
+            if os.path.exists(self.model_path):
+                file_size = os.path.getsize(self.model_path)
+                print(f"   模型文件存在，大小: {file_size/1024/1024:.1f} MB")
+                self.model = YOLO(self.model_path)
+                print("✅ YOLO模型加载成功！")
+            else:
+                print(f"❌ 模型文件不存在: {self.model_path}")
+                self.model = None
+
         except Exception as e:
             print(f"❌ 模型加载失败: {e}")
-            print("💡 系统将使用智能特征分析")
             self.model = None
-    
+
     def base64_to_image(self, base64_string):
         """Base64转图片"""
         try:
@@ -83,190 +131,75 @@ class YOLODetector:
             print(f"❌ 图像解码失败: {e}")
             return None
 
-    def extract_image_features(self, image):
-        """提取图片的标准化特征"""
-        try:
-            img_np = np.array(image)
-            
-            # 提取核心特征
-            avg_brightness = np.mean(img_np)
-            color_variance = np.std(img_np)
-            
-            # 生成特征描述
-            if color_variance < 20:
-                if avg_brightness < 90:
-                    return "low_brightness_very_low_variance"
-                elif avg_brightness > 170:
-                    return "high_brightness_very_low_variance"
-                else:
-                    return "medium_brightness_very_low_variance"
-            elif color_variance > 70:
-                if avg_brightness > 160:
-                    return "high_brightness_high_variance"
-                else:
-                    return "medium_brightness_high_variance"
-            elif 40 <= color_variance <= 60:
-                if 120 <= avg_brightness <= 150:
-                    return "medium_brightness_balanced_variance"
-                elif avg_brightness > 150:
-                    return "high_brightness_medium_variance"
-                else:
-                    return "low_brightness_medium_variance"
-            else:
-                return "balanced_features"
-                
-        except Exception as e:
-            print(f"❌ 特征提取失败: {e}")
-            return None
-
-    def match_known_features(self, image):
-        """匹配已知图片特征"""
-        try:
-            feature_key = self.extract_image_features(image)
-            if feature_key and feature_key in self.known_image_features:
-                class_id, confidence, feature_desc = self.known_image_features[feature_key]
-                class_info = self.class_mapping[class_id]
-                print(f"🎯 已知特征匹配: {class_info['name']} (特征: {feature_desc})")
-                return class_id, confidence, f"已知特征匹配: {feature_desc}"
-            
-            # 宽松匹配：基于特征相似度
-            img_np = np.array(image)
-            avg_brightness = np.mean(img_np)
-            color_variance = np.std(img_np)
-            
-            # 与已知特征进行相似度匹配
-            best_match = None
-            best_similarity = 0
-            
-            for feature_desc, (class_id, base_confidence, desc) in self.known_image_features.items():
-                # 基于特征描述进行匹配
-                similarity = 0
-                
-                if "low_brightness" in feature_desc and avg_brightness < 100:
-                    similarity += 0.4
-                if "high_brightness" in feature_desc and avg_brightness > 160:
-                    similarity += 0.4
-                if "medium_brightness" in feature_desc and 100 <= avg_brightness <= 160:
-                    similarity += 0.4
-                    
-                if "low_variance" in feature_desc and color_variance < 30:
-                    similarity += 0.4
-                if "high_variance" in feature_desc and color_variance > 60:
-                    similarity += 0.4
-                if "medium_variance" in feature_desc and 30 <= color_variance <= 60:
-                    similarity += 0.4
-                if "balanced_variance" in feature_desc and 40 <= color_variance <= 50:
-                    similarity += 0.4
-                
-                if similarity > best_similarity:
-                    best_similarity = similarity
-                    best_match = (class_id, base_confidence * min(similarity, 1.0), f"特征相似匹配: {desc}")
-            
-            if best_match and best_similarity > 0.6:  # 相似度阈值
-                class_id, confidence, desc = best_match
-                class_info = self.class_mapping[class_id]
-                print(f"🔍 特征相似匹配: {class_info['name']} (相似度: {best_similarity:.2f})")
-                return class_id, confidence, desc
-                
-            return None, None, None
-            
-        except Exception as e:
-            print(f"❌ 特征匹配失败: {e}")
-            return None, None, None
-
-    def analyze_image_features(self, image):
-        """分析图片特征，智能判断类别"""
-        try:
-            img_np = np.array(image)
-            
-            # 提取图像特征
-            avg_brightness = np.mean(img_np)
-            color_variance = np.std(img_np)
-            
-            print(f"   📊 图像特征分析:")
-            print(f"     平均亮度: {avg_brightness:.1f}")
-            print(f"     颜色方差: {color_variance:.1f}")
-            
-            # 基于特征判断
-            if color_variance < 25:
-                if avg_brightness < 100:
-                    return 3, 0.78, "特征: 暗色低对比度 (便秘)" 
-                elif avg_brightness > 170:
-                    return 2, 0.75, "特征: 高亮度低对比度 (拉稀)"
-                else:
-                    return 0, 0.72, "特征: 中等亮度低对比度 (正常)"
-                    
-            elif color_variance > 65:
-                if avg_brightness > 160:
-                    return 2, 0.82, "特征: 高亮度高对比度 (拉稀)"
-                elif color_variance > 85:
-                    return 4, 0.79, "特征: 极高对比度复杂纹理 (寄生虫)"
-                else:
-                    return 1, 0.76, "特征: 中等亮度高对比度 (软便)"
-                    
-            else:
-                if 130 <= avg_brightness <= 160:
-                    return 1, 0.74, "特征: 中等亮度中等对比度 (软便)"
-                else:
-                    return 0, 0.70, "特征: 平衡特征范围 (正常)"
-                
-        except Exception as e:
-            print(f"❌ 图像特征分析失败: {e}")
-            return None, None, None
-
     def detect_stool_features(self, image):
-        """主要的检测函数"""
+        """主要的检测函数 - 仅使用真实YOLO检测"""
+        import traceback
         print("\n" + "="*50)
-        print("🔍 开始智能图片分析...")
-        
-        # 1. 首先尝试已知特征匹配
-        print("🎯 尝试已知特征匹配...")
-        known_class_id, known_confidence, known_features = self.match_known_features(image)
-        if known_class_id is not None:
-            class_info = self.class_mapping[known_class_id]
-            print(f"🎯 已知特征匹配成功: {class_info['name']} (置信度: {known_confidence:.3f})")
-            return self._create_smart_result(known_class_id, known_confidence, class_info, known_features)
-        
-        # 2. 尝试YOLO检测
-        if self.model is not None:
-            try:
-                print("🤖 尝试YOLO物体检测...")
-                results = self.model(image, conf=0.25, iou=0.5, imgsz=640, augment=False)
-                
-                if len(results) > 0 and results[0].boxes is not None and len(results[0].boxes) > 0:
-                    boxes = results[0].boxes
-                    confidences = boxes.conf.cpu().numpy()
-                    class_ids = boxes.cls.cpu().numpy()
-                    
-                    print(f"   YOLO检测到 {len(boxes)} 个目标")
-                    max_idx = np.argmax(confidences)
-                    class_id = int(class_ids[max_idx])
-                    confidence = float(confidences[max_idx])
-                    
-                    if confidence > 0.4:
-                        class_info = self.class_mapping.get(class_id, self.class_mapping[0])
-                        print(f"🎯 YOLO检测成功: {class_info['name']} (置信度: {confidence:.3f})")
-                        return self._create_real_result(class_id, confidence, class_info, len(boxes))
-                    else:
-                        print(f"⚠️ YOLO检测置信度过低: {confidence:.3f}")
-                        
-            except Exception as e:
-                print(f"⚠️ YOLO检测异常: {e}")
-        
-        # 3. 智能特征分析
-        print("🧠 进行智能特征分析...")
-        smart_class_id, smart_confidence, smart_features = self.analyze_image_features(image)
-        if smart_class_id is not None:
-            class_info = self.class_mapping[smart_class_id]
-            print(f"🤖 智能特征分析: {class_info['name']} (置信度: {smart_confidence:.3f})")
-            return self._create_smart_result(smart_class_id, smart_confidence, class_info, smart_features)
-        
-        # 4. 智能随机回退
-        print("🎲 使用智能随机回退分析")
-        return self._get_smart_fallback_result()
+        print("🔍 开始YOLO检测...")
+        print(f"   输入图片尺寸: {image.size}")
+        print(f"   输入图片模式: {image.mode}")
+
+        # 保存调试图片
+        try:
+            debug_path = "debug_last_input.jpg"
+            image.save(debug_path)
+            print(f"   已保存调试图片: {debug_path}")
+        except Exception as e:
+            print(f"   保存调试图片失败: {e}")
+
+        if self.model is None:
+            print("❌ YOLO模型未加载")
+            return self._create_error_result("Model not loaded")
+
+        try:
+            print("   运行YOLO推理...")
+            # YOLO可以直接接收PIL图像，不需要转换为numpy
+            print(f"   输入图像: {image.size}, mode: {image.mode}")
+
+            results = self.model(image, conf=self.conf_threshold, iou=0.5, imgsz=640, augment=False, verbose=True)
+            print(f"   YOLO推理完成，结果数量: {len(results)}")
+
+            if len(results) > 0 and results[0].boxes is not None and len(results[0].boxes) > 0:
+                boxes = results[0].boxes
+                confidences = boxes.conf.cpu().numpy()
+                class_ids = boxes.cls.cpu().numpy()
+
+                print(f"   YOLO检测到 {len(boxes)} 个目标")
+                print(f"   所有检测结果:")
+                for i, (conf, cls_id) in enumerate(zip(confidences, class_ids)):
+                    cls_name = self.class_mapping.get(int(cls_id), {"name": f"类别{int(cls_id)}"})["name"]
+                    print(f"     [{i}] 类别: {cls_name} (ID:{int(cls_id)}), 置信度: {conf:.3f}")
+
+                max_idx = np.argmax(confidences)
+                class_id = int(class_ids[max_idx])
+                confidence = float(confidences[max_idx])
+
+                # 获取类别信息
+                class_info = self.class_mapping.get(class_id, self.class_mapping[0])
+
+                # 如果最高置信度也低于 0.4，认为是低置信度检测
+                if confidence < 0.4:
+                    print(f"⚠️ 低置信度检测: {confidence:.3f} < 0.4，但仍返回检测类别")
+                    return self._create_low_confidence_result(class_id, confidence, class_info, len(boxes))
+                print(f"🎯 YOLO检测成功: {class_info['name']} (置信度: {confidence:.3f})")
+                return self._create_real_result(class_id, confidence, class_info, len(boxes))
+            else:
+                print("⚠️ YOLO未检测到任何目标")
+                print(f"   调试信息: results长度={len(results)}, boxes={results[0].boxes if len(results)>0 else 'N/A'}")
+                return self._create_no_detection_result()
+
+        except Exception as e:
+            print(f"❌ YOLO检测异常: {e}")
+            traceback.print_exc()
+            return self._create_error_result(str(e))
 
     def _create_real_result(self, class_id, confidence, class_info, detection_count):
         """创建真实的YOLO检测结果"""
+        risk_level = "normal" if class_info["risk"] <= 30 else "warning" if class_info["risk"] <= 50 else "danger"
+
+        # 构建详细的医疗建议
+        detailed_advice = self._build_detailed_advice(class_info, confidence)
+
         return {
             "detection": {
                 "confidence": round(confidence, 3),
@@ -277,12 +210,13 @@ class YOLODetector:
                 "is_real_detection": True
             },
             "health_analysis": {
-                "risk_level": "normal" if class_info["risk"] <= 30 else "warning" if class_info["risk"] <= 50 else "danger",
+                "risk_level": risk_level,
                 "message": f"检测到: {class_info['name']}",
-                "description": "YOLOv8 AI分析完成",
+                "description": detailed_advice["description"],
                 "confidence": round(confidence, 3),
                 "recommendation": class_info["advice"],
-                "detected_class": class_id
+                "detected_class": class_id,
+                "detailed_advice": detailed_advice
             },
             "risk_metrics": {
                 "risk_level": class_info["risk"],
@@ -290,31 +224,99 @@ class YOLODetector:
                 "color": class_info["color"]
             },
             "analysis_info": {
-                "type": "YOLOv8模型分析",
-                "model": "yolov8n.pt",
+                "type": "YOLOv8真实检测",
+                "model": os.path.basename(self.model_path),
                 "detection_method": "YOLOv8物体检测",
                 "is_real_ai": True
             }
         }
 
-    def _create_smart_result(self, class_id, confidence, class_info, features):
-        """创建智能分析结果"""
+    def _build_detailed_advice(self, class_info, confidence):
+        """构建详细的医疗建议"""
+        risk = class_info["risk"]
+
+        if risk <= 10:
+            urgency = "无需担忧"
+            visit_advice = "无需就医，继续观察即可"
+        elif risk <= 30:
+            urgency = "轻度关注"
+            visit_advice = "暂时无需就医，但需持续观察2-3天。如症状持续或加重，建议就医。"
+        elif risk <= 50:
+            urgency = "建议就医"
+            visit_advice = "建议3天内就医检查，特别是症状持续或伴随其他异常时。"
+        elif risk <= 70:
+            urgency = "尽快就医"
+            visit_advice = "建议24-48小时内就医，进行专业检查和治疗。"
+        else:
+            urgency = "紧急就医"
+            visit_advice = "建议立即就医！此情况可能危及生命，需紧急处理。"
+
+        return {
+            "description": f"AI分析结果为{class_info['name']}，风险指数{risk}%。{class_info['advice']}",
+            "possible_diseases": class_info.get("possible_diseases", []),
+            "medical_advice": class_info.get("medical_advice", "请咨询兽医师"),
+            "medication": class_info.get("medication", "需兽医处方"),
+            "prevention": class_info.get("prevention", "保持健康生活习惯"),
+            "urgency_level": urgency,
+            "visit_advice": visit_advice,
+            "risk_assessment": f"风险指数: {risk}% - {'低风险' if risk <= 30 else '中风险' if risk <= 60 else '高风险'}"
+        }
+
+    def _create_no_detection_result(self):
+        """没有检测到目标时的结果"""
         return {
             "detection": {
-                "confidence": round(confidence, 3),
-                "class_id": class_id,
-                "class_name": class_info["name"],
-                "features": features,
+                "confidence": 0,
+                "class_id": -1,
+                "class_name": "未检测到",
+                "features": "YOLOv8未在图像中检测到目标",
                 "detection_count": 0,
-                "is_smart_analysis": True
+                "is_real_detection": False
             },
             "health_analysis": {
-                "risk_level": "normal" if class_info["risk"] <= 30 else "warning" if class_info["risk"] <= 50 else "danger",
-                "message": f"检测到: {class_info['name']}",
-                "description": "基于图像特征的智能分析",
-                "confidence": round(confidence, 3),
-                "recommendation": class_info["advice"],
-                "detected_class": class_id
+                "risk_level": "unknown",
+                "message": "未检测到目标",
+                "description": "YOLOv8未在图像中检测到猫咪排泄物，请确保图片清晰可见",
+                "confidence": 0,
+                "recommendation": "请上传更清晰的猫咪排泄物照片",
+                "detected_class": -1
+            },
+            "risk_metrics": {
+                "risk_level": 0,
+                "cure_rate": 0,
+                "color": "#808080"
+            },
+            "analysis_info": {
+                "type": "YOLOv8真实检测",
+                "model": os.path.basename(self.model_path),
+                "detection_method": "未检测到目标",
+                "is_real_ai": True
+            }
+        }
+
+    def _create_low_confidence_result(self, class_id, actual_confidence, class_info, detection_count):
+        """低置信度时的结果 - 返回检测到的类别但提示用户"""
+        risk_level = "normal" if class_info["risk"] <= 30 else "warning" if class_info["risk"] <= 50 else "danger"
+        detailed_advice = self._build_detailed_advice(class_info, actual_confidence)
+
+        return {
+            "detection": {
+                "confidence": round(actual_confidence, 3),
+                "class_id": class_id,
+                "class_name": class_info["name"],
+                "features": f"AI检测到{class_info['name']}，但置信度较低，建议上传更清晰的图片",
+                "detection_count": detection_count,
+                "is_real_detection": True,
+                "low_confidence": True
+            },
+            "health_analysis": {
+                "risk_level": risk_level,
+                "message": f"{class_info['name']} ({actual_confidence:.1%})",
+                "description": f"AI检测到{class_info['name']}，置信度{actual_confidence:.1%}。建议上传更清晰的猫咪排泄物照片以获得更准确的结果。",
+                "confidence": round(actual_confidence, 3),
+                "recommendation": class_info["advice"] + " (建议上传更清晰的图片以确认)",
+                "detected_class": class_id,
+                "detailed_advice": detailed_advice
             },
             "risk_metrics": {
                 "risk_level": class_info["risk"],
@@ -322,20 +324,43 @@ class YOLODetector:
                 "color": class_info["color"]
             },
             "analysis_info": {
-                "type": "智能图像分析",
-                "model": "特征识别算法",
-                "detection_method": "智能特征分析",
-                "is_smart_ai": True
+                "type": "YOLOv8低置信度检测",
+                "model": os.path.basename(self.model_path),
+                "detection_method": "YOLOv8物体检测(置信度<0.1)",
+                "is_real_ai": True,
+                "actual_confidence": round(actual_confidence, 3)
             }
         }
 
-    def _get_smart_fallback_result(self):
-        """智能随机回退分析"""
-        weights = [45, 25, 15, 10, 5]
-        class_id = random.choices([0, 1, 2, 3, 4], weights=weights)[0]
-        class_info = self.class_mapping[class_id]
-        confidence = 0.62 + random.random() * 0.18
-        
-        print(f"🎲 智能随机分析: {class_info['name']} (置信度: {confidence:.3f})")
-        
-        return self._create_smart_result(class_id, confidence, class_info, "智能概率分析")
+    def _create_error_result(self, error_msg):
+        """检测出错时的结果"""
+        return {
+            "detection": {
+                "confidence": 0,
+                "class_id": -1,
+                "class_name": "检测失败",
+                "features": f"检测出错: {error_msg}",
+                "detection_count": 0,
+                "is_real_detection": False
+            },
+            "health_analysis": {
+                "risk_level": "error",
+                "message": "检测失败",
+                "description": f"YOLO检测过程中出现错误: {error_msg}",
+                "confidence": 0,
+                "recommendation": "请稍后重试或联系管理员",
+                "detected_class": -1
+            },
+            "risk_metrics": {
+                "risk_level": 0,
+                "cure_rate": 0,
+                "color": "#dc3545"
+            },
+            "analysis_info": {
+                "type": "YOLOv8检测失败",
+                "model": os.path.basename(self.model_path) if self.model_path else "none",
+                "detection_method": "检测异常",
+                "is_real_ai": False,
+                "error": error_msg
+            }
+        }
