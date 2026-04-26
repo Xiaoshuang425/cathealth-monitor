@@ -9,7 +9,13 @@ from database import Database
 
 app = Flask(__name__)
 # 允許所有來源（開發階段）
-CORS(app, origins="*", supports_credentials=True)
+CORS(app, resources={
+    r"/api/*": {
+        "origins": ["*", "https://xiaoshuang425.github.io", "http://localhost", "http://127.0.0.1"],
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"]
+    }
+})
 
 # 配置
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'cathealth-secret-key-change-in-production')
