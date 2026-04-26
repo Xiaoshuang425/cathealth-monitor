@@ -1,38 +1,14 @@
 {
   "version": 2,
-  "builds": [
+  "buildCommand": null,
+  "devCommand": null,
+  "installCommand": null,
+  "framework": null,
+  "outputDirectory": ".",
+  "rewrites": [
     {
-      "src": "index.html",
-      "use": "@vercel/static"
+      "source": "/dashboard.html",
+      "destination": "/dashboard.html"
     }
-  ],
-  "routes": [
-    {
-      "src": "/dashboard.html",
-      "dest": "/dashboard.html"
-    },
-    {
-      "src": "/auth.js",
-      "dest": "/auth.js"
-    },
-    {
-      "src": "/hospital-map.js",
-      "dest": "/hospital-map.js"
-    },
-    {
-      "src": "/manifest.json",
-      "dest": "/manifest.json"
-    },
-    {
-      "src": "/service-worker.js",
-      "dest": "/service-worker.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
-  ],
-  "github": {
-    "enabled": false
-  }
+  ]
 }
