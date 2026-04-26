@@ -8,7 +8,8 @@ from flask_cors import CORS
 from database import Database
 
 app = Flask(__name__)
-CORS(app)
+# 允許所有來源（開發階段）
+CORS(app, origins="*", supports_credentials=True)
 
 # 配置
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'cathealth-secret-key-change-in-production')
