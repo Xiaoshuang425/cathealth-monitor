@@ -10,3 +10,9 @@ services:
         value: 3.11.0
       - key: PORT
         value: 10002
+      - key: SECRET_KEY
+        generateValue: true
+    disk:
+      name: cathealth-data
+      mountPath: /data
+      sizeGB: 1

@@ -957,7 +957,131 @@
         display: flex;
     }
 }
+
+/* ========== 認證模態框樣式 ========== */
+.auth-modal .modal-content {
+    max-width: 450px;
+    padding: 30px;
+}
+
+.auth-tabs {
+    display: flex;
+    margin-bottom: 25px;
+    border-bottom: 2px solid var(--primary-light);
+}
+
+.auth-tab {
+    flex: 1;
+    padding: 12px;
+    background: none;
+    border: none;
+    color: var(--gray);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+}
+
+.auth-tab.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+    font-weight: 600;
+}
+
+.auth-tab:hover {
+    color: var(--primary);
+}
+
+.auth-form {
+    text-align: left;
+}
+
+.auth-form .form-group {
+    margin-bottom: 20px;
+}
+
+.auth-form label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--dark);
+    font-weight: 500;
+}
+
+.auth-form input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid var(--primary-light);
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+}
+
+.auth-form input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.auth-error {
+    color: #dc3545;
+    font-size: 0.9rem;
+    margin-top: 10px;
+    text-align: center;
+}
+
+.auth-submit-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background 0.3s;
+    margin-top: 10px;
+}
+
+.auth-submit-btn:hover {
+    background: var(--dark);
+}
+
+.user-menu {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.logout-btn {
+    background: none;
+    border: 1px solid var(--primary);
+    color: var(--primary);
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.logout-btn:hover {
+    background: var(--primary);
+    color: white;
+}
+
+.login-btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.login-btn:hover {
+    background: var(--dark);
+}
     </style>
+    <script src="auth.js"></script>
     <script>
             
 let deferredPrompt = null;
@@ -1080,8 +1204,63 @@ const isLocalhost = window.location.hostname === 'localhost' || window.location.
 const CLOUD_AI_URL = isLocalhost
     ? "http://127.0.0.1:10002"
     : "https://cathealth-monitor-fn41.onrender.com";  // Render 后端地址
-let allPets = JSON.parse(localStorage.getItem("allPets") || "[]");
+// ========== 數據存儲（使用 API 而非 localStorage）==========
+let allPets = [];
 let currentPetPhoto = null;
+
+/**
+ * 從服務器加載用戶數據
+ */
+async function loadUserData() {
+    try {
+        // 檢查是否已登錄
+        if (!isLoggedIn()) {
+            console.log('用戶未登錄，顯示登錄提示');
+            showLoginPrompt();
+            return;
+        }
+
+        // 加載貓咪數據
+        const catsResult = await getCats();
+        if (catsResult.success) {
+            allPets = catsResult.cats;
+            console.log('✅ 貓咪數據已同步:', allPets.length, '只貓咪');
+        }
+
+        // 刷新 UI
+        renderDashboardPets();
+        renderPetsPage();
+
+    } catch (error) {
+        console.error('❌ 加載數據失敗:', error);
+        if (error.message.includes('登錄') || error.message.includes('Token')) {
+            showLoginPrompt();
+        }
+    }
+}
+
+/**
+ * 顯示登錄提示
+ */
+function showLoginPrompt() {
+    allPets = [];
+    renderDashboardPets();
+    renderPetsPage();
+
+    const container = document.getElementById('dashboard-pets-container');
+    if (container) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 30px; color: var(--gray);">
+                <i class="fas fa-user-lock" style="font-size: 3rem; margin-bottom: 15px;"></i>
+                <h4>請先登錄</h4>
+                <p>登錄後可以同步和保存您的貓咪數據</p>
+                <button class="btn btn-primary" onclick="showLoginModal()" style="margin-top: 15px;">
+                    <i class="fas fa-sign-in-alt"></i> 立即登錄
+                </button>
+            </div>
+        `;
+    }
+}
 
 async function testBackendConnection() {
     console.log("🔍 测试后端连接...");
@@ -1235,34 +1414,45 @@ function closeAddPetModal() {
     document.getElementById("pet-photo-upload-area").style.display = "block";
 }
 
-function addNewPet() {
+async function addNewPet() {
     const name = document.getElementById("new-pet-name").value.trim();
     if (!name) {
         alert("请输入猫咪名字");
         return;
     }
 
+    // 檢查是否已登錄
+    if (!isLoggedIn()) {
+        alert("請先登錄再添加貓咪");
+        showLoginModal();
+        return;
+    }
+
     const newPet = {
-        id: Date.now().toString(),
         name: name,
         breed: document.getElementById("new-pet-breed").value,
         age: document.getElementById("new-pet-age").value,
         weight: document.getElementById("new-pet-weight").value,
         gender: document.getElementById("new-pet-gender").value,
         notes: document.getElementById("new-pet-notes").value,
-        photo: currentPetPhoto,
-        createdAt: new Date().toISOString()
+        photo: currentPetPhoto
     };
 
-    allPets.push(newPet);
-    localStorage.setItem("allPets", JSON.stringify(allPets));
-    closeAddPetModal();
-    
-    // 重新渲染两个页面的猫咪列表
-    renderDashboardPets();
-    renderPetsPage();
-    
-    alert("✅ 猫咪添加成功！");
+    try {
+        const result = await createCat(newPet);
+        if (result.success) {
+            allPets.push(result.cat);
+            closeAddPetModal();
+            renderDashboardPets();
+            renderPetsPage();
+            alert("✅ 猫咪添加成功！");
+        } else {
+            alert("添加失敗: " + result.error);
+        }
+    } catch (error) {
+        console.error("添加貓咪失敗:", error);
+        alert("添加失敗，請檢查網絡連接");
+    }
 }
 
 // 渲染主页面的猫咪
@@ -1387,12 +1577,21 @@ function getAvatarColor(id) {
     return colors[index];
 }
 
-function deletePet(petId) {
+async function deletePet(petId) {
     if (confirm("确定要删除这只猫咪吗？此操作无法撤销。")) {
-        allPets = allPets.filter(p => p.id !== petId);
-        localStorage.setItem("allPets", JSON.stringify(allPets));
-        renderDashboardPets();
-        renderPetsPage();
+        try {
+            const result = await deleteCatAPI(petId);
+            if (result.success) {
+                allPets = allPets.filter(p => p.id !== petId);
+                renderDashboardPets();
+                renderPetsPage();
+            } else {
+                alert("刪除失敗: " + result.error);
+            }
+        } catch (error) {
+            console.error("刪除貓咪失敗:", error);
+            alert("刪除失敗，請檢查網絡連接");
+        }
     }
 }
 
@@ -1400,26 +1599,36 @@ function changePetPhoto(petId) {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
-    
-    input.onchange = function(e) {
+
+    input.onchange = async function(e) {
         const file = e.target.files[0];
         if (file) {
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = async function(e) {
                 const photoUrl = e.target.result;
                 const petIndex = allPets.findIndex(p => p.id === petId);
                 if (petIndex !== -1) {
-                    allPets[petIndex].photo = photoUrl;
-                    localStorage.setItem("allPets", JSON.stringify(allPets));
-                    renderDashboardPets();
-                    renderPetsPage();
-                    alert("✅ 猫咪照片更新成功！");
+                    try {
+                        // 使用 API 更新
+                        const result = await updateCatAPI(petId, { photo: photoUrl });
+                        if (result.success) {
+                            allPets[petIndex].photo = photoUrl;
+                            renderDashboardPets();
+                            renderPetsPage();
+                            alert("✅ 猫咪照片更新成功！");
+                        } else {
+                            alert("更新失敗: " + result.error);
+                        }
+                    } catch (error) {
+                        console.error("更新照片失敗:", error);
+                        alert("更新失敗，請檢查網絡連接");
+                    }
                 }
             };
             reader.readAsDataURL(file);
         }
     };
-    
+
     input.click();
 }
 
@@ -1447,21 +1656,34 @@ function closeHealthDetail() {
     showPage("pets");
 }
 
-function saveHealthDetail() {
+async function saveHealthDetail() {
     const petId = window.currentEditingPetId;
     const petIndex = allPets.findIndex(p => p.id === petId);
-    
+
     if (petIndex !== -1) {
-        allPets[petIndex].weight = document.getElementById("detail-weight").value;
-        allPets[petIndex].breed = document.getElementById("detail-breed").value;
-        allPets[petIndex].age = document.getElementById("detail-age").value;
-        allPets[petIndex].notes = document.getElementById("detail-notes").value;
-        
-        localStorage.setItem("allPets", JSON.stringify(allPets));
-        renderDashboardPets();
-        renderPetsPage();
-        showPage("pets");
-        alert("✅ 健康信息更新成功！");
+        const updates = {
+            weight: document.getElementById("detail-weight").value,
+            breed: document.getElementById("detail-breed").value,
+            age: document.getElementById("detail-age").value,
+            notes: document.getElementById("detail-notes").value
+        };
+
+        try {
+            const result = await updateCatAPI(petId, updates);
+            if (result.success) {
+                // 更新本地數據
+                allPets[petIndex] = { ...allPets[petIndex], ...updates };
+                renderDashboardPets();
+                renderPetsPage();
+                showPage("pets");
+                alert("✅ 健康信息更新成功！");
+            } else {
+                alert("更新失敗: " + result.error);
+            }
+        } catch (error) {
+            console.error("更新健康信息失敗:", error);
+            alert("更新失敗，請檢查網絡連接");
+        }
     }
 }
 
@@ -1725,11 +1947,14 @@ function initPetPhotoUpload() {
 }
 
 // ==================== 初始化所有功能 ====================
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", async function() {
     console.log("初始化猫咪健康管理系统...");
     console.log("后端服务地址:", CLOUD_AI_URL);
 
     testBackendOnLoad();
+
+    // 加載用戶數據（需要登錄）
+    await loadUserData();
         
 // 🎯 强制修复：确保所有页面在正确位置
     function fixPagePositions() {
@@ -1800,6 +2025,10 @@ document.addEventListener("DOMContentLoaded", function() {
 }
     
     console.log("✅ 系统初始化完成");
+
+    // 初始化認證並加載數據
+    initAuth();
+    await loadUserData();
 });
 
 // ==================== 调试命令 ====================
@@ -2103,8 +2332,16 @@ function ensureNoDuplicatePages() {
     <div class="main-content">
         <div class="top-bar">
             <h2 id="page-title">控制面板</h2>
-            <div class="user-info">
-                <!-- 用户信息会动态更新 -->
+            <div class="user-menu">
+                <div class="user-info">
+                    <!-- 用户信息会动态更新 -->
+                </div>
+                <button id="login-btn" class="login-btn" style="display: none;">
+                    <i class="fas fa-sign-in-alt"></i> 登錄
+                </button>
+                <button id="logout-btn" class="logout-btn" style="display: none;">
+                    <i class="fas fa-sign-out-alt"></i> 登出
+                </button>
             </div>
         </div>
 
@@ -2379,6 +2616,66 @@ function ensureNoDuplicatePages() {
                             <i class="fas fa-times"></i> 返回猫咪档案
                         </button>
                     </div>
+                </div>
+            </div>
+
+            <!-- 認證模態框（登錄/註冊） -->
+            <div id="auth-modal" class="modal auth-modal">
+                <div class="modal-content">
+                    <button id="auth-modal-close" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 1.5rem; color: var(--gray); cursor: pointer;">
+                        <i class="fas fa-times"></i>
+                    </button>
+
+                    <div class="modal-icon">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <h2>歡迎使用 CatHealth</h2>
+                    <p>登錄或註冊以同步您的貓咪數據</p>
+
+                    <div class="auth-tabs">
+                        <button class="auth-tab active" id="login-tab">登錄</button>
+                        <button class="auth-tab" id="register-tab">註冊</button>
+                    </div>
+
+                    <!-- 登錄表單 -->
+                    <form id="login-form-element" class="auth-form">
+                        <div id="login-form">
+                            <div class="form-group">
+                                <label><i class="fas fa-envelope"></i> 電子郵箱</label>
+                                <input type="email" id="login-email" placeholder="your@email.com" required>
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-lock"></i> 密碼</label>
+                                <input type="password" id="login-password" placeholder="請輸入密碼" required>
+                            </div>
+                            <div class="auth-error" id="login-error"></div>
+                            <button type="submit" class="auth-submit-btn">
+                                <i class="fas fa-sign-in-alt"></i> 登錄
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- 註冊表單 -->
+                    <form id="register-form-element" class="auth-form">
+                        <div id="register-form" style="display: none;">
+                            <div class="form-group">
+                                <label><i class="fas fa-user"></i> 姓名</label>
+                                <input type="text" id="register-name" placeholder="您的名字" required>
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-envelope"></i> 電子郵箱</label>
+                                <input type="email" id="register-email" placeholder="your@email.com" required>
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-lock"></i> 密碼</label>
+                                <input type="password" id="register-password" placeholder="至少6個字符" required>
+                            </div>
+                            <div class="auth-error" id="register-error"></div>
+                            <button type="submit" class="auth-submit-btn">
+                                <i class="fas fa-user-plus"></i> 註冊
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
 
