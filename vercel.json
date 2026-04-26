@@ -2,8 +2,7 @@
   "version": 2,
   "routes": [
     {
-      "src": "/dashboard.html",
-      "dest": "/dashboard.html"
+      "handle": "filesystem"
     },
     {
       "src": "/(.*)",
