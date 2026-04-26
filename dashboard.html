@@ -952,14 +952,52 @@
     body:not(.on-dashboard) .mobile-menu-btn {
         display: none;
     }
-    
+
     body:not(.on-dashboard) .mobile-back-btn {
         display: flex;
     }
 }
 
+/* ========== 醫院地圖樣式 ========== */
+#hospital-map-container {
+    width: 100%;
+    height: 100%;
+    min-height: 400px;
+}
+
+.hospital-list-item {
+    transition: background 0.3s;
+}
+
+.hospital-list-item:hover {
+    background: #f9f9f9;
+}
+
+/* 響應式：移動端地圖和列表堆疊 */
+@media (max-width: 768px) {
+    #hospital-page .page-content > div[style*="grid"] {
+        grid-template-columns: 1fr !important;
+        height: auto !important;
+    }
+
+    #hospital-map-container {
+        min-height: 300px;
+        height: 300px;
+    }
+
+    #hospital-list-container {
+        max-height: 400px;
+    }
+}
+
     </style>
+    <script src="auth.js"></script>
+    <script src="hospital-map.js"></script>
     <script>
+        // ==================== 騰訊地圖配置 ====================
+        // ⚠️ 請在部署前替換為您的騰訊地圖 API Key
+        // 申請地址：https://lbs.qq.com/dev/console/application/mine
+        const TENCENT_MAP_KEY = 'YOUR_TENCENT_MAP_KEY';
             
 let deferredPrompt = null;
 
@@ -1247,6 +1285,16 @@ function showPage(pageId) {
         renderDashboardPets();
     } else if (pageId === 'health-survey') {
         initHealthSurvey();
+    } else if (pageId === 'hospital') {
+        // 初始化騰訊地圖
+        initHospitalMap('hospital-map-container', TENCENT_MAP_KEY);
+        renderHospitalList('hospital-list-container');
+
+        // 如果 API Key 未設置，顯示提示
+        if (TENCENT_MAP_KEY === 'YOUR_TENCENT_MAP_KEY') {
+            const notice = document.getElementById('map-api-notice');
+            if (notice) notice.style.display = 'block';
+        }
     }
 }
 
@@ -2340,84 +2388,49 @@ function ensureNoDuplicatePages() {
                 </div>
             </div>
 
-            <!-- 附近医院页面 -->
+            <!-- 附近医院页面 - 騰訊地圖版 -->
             <div id="hospital-page" class="page-content">
                 <div class="welcome-banner">
-                    <h2>附近宠物医院</h2>
-                    <p>紧急情况请立即联系附近的宠物医院</p>
+                    <h2><i class="fas fa-map-marked-alt"></i> 附近宠物医院</h2>
+                    <p>澳門境內寵物醫院地圖，點擊標記查看詳情</p>
                 </div>
 
-                <div class="features-grid">
-                    <div class="feature-card hospital-card">
-                        <div class="feature-icon" style="color: #28a745;">
-                            <i class="fas fa-hospital"></i>
-                        </div>
-                        <div class="feature-title">绿十字兽医医院</div>
-                        <div class="feature-desc">
-                            <div style="text-align: left; margin: 15px 0;">
-                                <p><strong>📞 电话:</strong> 2883 7050</p>
-                                <p><strong>🕒 营业时间:</strong> 24小时营业</p>
-                                <p><strong>📍 地址：</strong> 澳門亞威羅街22號</p>
-                                <p><strong>🩺 服务:</strong> 急诊、全科</p>
-                            </div>
-                        </div>
-                        <div class="feature-badge" style="background: #28a745; color: white;">24小时</div>
+                <!-- API Key 設置提示（未設置時顯示） -->
+                <div id="map-api-notice" style="background: #e3f2fd; padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #2196F3; display: none;">
+                    <p style="margin: 0; color: #1976D2;">
+                        <i class="fas fa-info-circle"></i> <strong>提示：</strong>請在 dashboard.html 中設置您的騰訊地圖 API Key 以啟用地圖功能
+                    </p>
+                </div>
+
+                <!-- 地圖和列表容器 -->
+                <div style="display: grid; grid-template-columns: 1fr 350px; gap: 20px; height: 600px;">
+                    <!-- 地圖區域 -->
+                    <div style="background: #f5f5f5; border-radius: 10px; overflow: hidden; position: relative;">
+                        <div id="hospital-map-container" style="width: 100%; height: 100%;"></div>
                     </div>
 
-                    <div class="feature-card hospital-card">
-                        <div class="feature-icon" style="color: #17a2b8;">
-                            <i class="fas fa-clinic-medical"></i>
+                    <!-- 醫院列表 -->
+                    <div style="background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; flex-direction: column;">
+                        <div style="background: linear-gradient(to right, var(--primary), var(--primary-light)); padding: 15px; color: var(--dark);">
+                            <h3 style="margin: 0; font-size: 1.1rem;"><i class="fas fa-list"></i> 醫院列表</h3>
+                            <p style="margin: 5px 0 0 0; font-size: 0.85rem; opacity: 0.9;">點擊查看位置詳情</p>
                         </div>
-                        <div class="feature-title">美国爱屋申生动物医院</div>
-                        <div class="feature-desc">
-                            <div style="text-align: left; margin: 15px 0;">
-                                <p><strong>📞 电话:</strong> 2883 5371</p>
-                                <p><strong>🕒 营业时间:</strong> 10:00 - 20:00</p>
-                                <p><strong>📍 地址:</strong> 澳門孫逸仙博士大馬路544-E號大中華廣場綠湖居地下I座</p>
-                                <p><strong>🩺 服务:</strong> 全科、专科</p>
-                            </div>
+                        <div id="hospital-list-container" style="flex: 1; overflow-y: auto;">
+                            <!-- 列表內容由 JS 生成 -->
                         </div>
-                        <div class="feature-badge" style="background: #17a2b8; color: white;">10:00-20:00</div>
-                    </div>
-
-                    <div class="feature-card hospital-card">
-                        <div class="feature-icon" style="color: #ffc107;">
-                            <i class="fas fa-stethoscope"></i>
-                        </div>
-                        <div class="feature-title">澳门宠物医院有限公司</div>
-                        <div class="feature-desc">
-                            <div style="text-align: left; margin: 15px 0;">
-                                <p><strong>📞 电话:</strong> 2833 2262</p>
-                                <p><strong>🕒 营业时间:</strong> 09:00 - 22:00</p>
-                                <p><strong>📍 地址:</strong>澳門賈伯樂提督街3號富康花園J舖, 3 俾若翰街澳門</p>
-                                <p><strong>🩺 服务:</strong> 全科、手术</p>
-                            </div>
-                        </div>
-                        <div class="feature-badge" style="background: #ffc107; color: black;">09:00-22:00</div>
-                    </div>
-
-                    <div class="feature-card hospital-card">
-                        <div class="feature-icon" style="color: #dc3545;">
-                            <i class="fas fa-first-aid"></i>
-                        </div>
-                        <div class="feature-title">澳栢兽医诊所</div>
-                        <div class="feature-desc">
-                            <div style="text-align: left; margin: 15px 0;">
-                                <p><strong>📞 电话:</strong> 2835 3888</p>
-                                <p><strong>🕒 营业时间:</strong> 12:00 - 22:00</p>
-                                <p><strong>📍 地址:</strong> 澳門東望洋新街206-212號定威大廈</p>
-                                <p><strong>🩺 服务:</strong> 全科、牙科</p>
-                            </div>
-                        </div>
-                        <div class="feature-badge" style="background: #dc3545; color: white;">12:00-22:00</div>
                     </div>
                 </div>
 
-                <div style="background: #fff3cd; padding: 20px; border-radius: 10px; margin-top: 30px; border-left: 4px solid #ffc107;">
-                    <h4><i class="fas fa-exclamation-triangle"></i> 紧急提示</h4>
-                    <p style="margin: 10px 0 0 0; color: #856404;">
-                        如果猫咪出现以下情况，请立即联系24小时医院：
-                        <strong>频繁呕吐、便血、精神萎靡、呼吸困难、抽搐、无法排尿</strong>
+                <!-- 24小時急診提示 -->
+                <div style="background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%); padding: 20px; border-radius: 10px; margin-top: 20px; border-left: 4px solid #ffc107;">
+                    <h4 style="color: #856404; margin-bottom: 10px;">
+                        <i class="fas fa-exclamation-triangle"></i> 24小時急診熱線
+                    </h4>
+                    <p style="margin: 0; color: #856404;">
+                        如遇緊急情況，請立即撥打：<strong style="font-size: 1.2rem;">2883 7050</strong>（綠十字獸醫醫院）
+                    </p>
+                    <p style="margin: 10px 0 0 0; color: #856404; font-size: 0.9rem;">
+                        緊急症狀：頻繁嘔吐、便血、精神萎靡、呼吸困難、抽搐、無法排尿
                     </p>
                 </div>
             </div>
