@@ -958,130 +958,7 @@
     }
 }
 
-/* ========== 認證模態框樣式 ========== */
-.auth-modal .modal-content {
-    max-width: 450px;
-    padding: 30px;
-}
-
-.auth-tabs {
-    display: flex;
-    margin-bottom: 25px;
-    border-bottom: 2px solid var(--primary-light);
-}
-
-.auth-tab {
-    flex: 1;
-    padding: 12px;
-    background: none;
-    border: none;
-    color: var(--gray);
-    font-size: 1rem;
-    cursor: pointer;
-    transition: all 0.3s;
-    border-bottom: 2px solid transparent;
-    margin-bottom: -2px;
-}
-
-.auth-tab.active {
-    color: var(--primary);
-    border-bottom-color: var(--primary);
-    font-weight: 600;
-}
-
-.auth-tab:hover {
-    color: var(--primary);
-}
-
-.auth-form {
-    text-align: left;
-}
-
-.auth-form .form-group {
-    margin-bottom: 20px;
-}
-
-.auth-form label {
-    display: block;
-    margin-bottom: 8px;
-    color: var(--dark);
-    font-weight: 500;
-}
-
-.auth-form input {
-    width: 100%;
-    padding: 12px 15px;
-    border: 2px solid var(--primary-light);
-    border-radius: 8px;
-    font-size: 1rem;
-    transition: border-color 0.3s;
-}
-
-.auth-form input:focus {
-    outline: none;
-    border-color: var(--primary);
-}
-
-.auth-error {
-    color: #dc3545;
-    font-size: 0.9rem;
-    margin-top: 10px;
-    text-align: center;
-}
-
-.auth-submit-btn {
-    width: 100%;
-    padding: 14px;
-    background: var(--primary);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 1.1rem;
-    cursor: pointer;
-    transition: background 0.3s;
-    margin-top: 10px;
-}
-
-.auth-submit-btn:hover {
-    background: var(--dark);
-}
-
-.user-menu {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.logout-btn {
-    background: none;
-    border: 1px solid var(--primary);
-    color: var(--primary);
-    padding: 8px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.logout-btn:hover {
-    background: var(--primary);
-    color: white;
-}
-
-.login-btn {
-    background: var(--primary);
-    color: white;
-    border: none;
-    padding: 8px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background 0.3s;
-}
-
-.login-btn:hover {
-    background: var(--dark);
-}
     </style>
-    <script src="auth.js"></script>
     <script>
             
 let deferredPrompt = null;
@@ -1213,10 +1090,11 @@ let currentPetPhoto = null;
  */
 async function loadUserData() {
     try {
-        // 檢查是否已登錄
-        if (!isLoggedIn()) {
-            console.log('用戶未登錄，顯示登錄提示');
-            showLoginPrompt();
+        // 檢查是否已登錄（直接檢查 token）
+        const token = localStorage.getItem('cathealth_token');
+        if (!token) {
+            console.log('用戶未登錄，跳轉到登錄頁面');
+            window.location.href = 'index.html';
             return;
         }
 
@@ -1233,32 +1111,12 @@ async function loadUserData() {
 
     } catch (error) {
         console.error('❌ 加載數據失敗:', error);
-        if (error.message.includes('登錄') || error.message.includes('Token')) {
-            showLoginPrompt();
+        if (error.message.includes('登錄') || error.message.includes('Token') || error.message.includes('401')) {
+            // Token 無效，清除並跳轉到登錄頁
+            localStorage.removeItem('cathealth_token');
+            localStorage.removeItem('currentUser');
+            window.location.href = 'index.html';
         }
-    }
-}
-
-/**
- * 顯示登錄提示
- */
-function showLoginPrompt() {
-    allPets = [];
-    renderDashboardPets();
-    renderPetsPage();
-
-    const container = document.getElementById('dashboard-pets-container');
-    if (container) {
-        container.innerHTML = `
-            <div style="text-align: center; padding: 30px; color: var(--gray);">
-                <i class="fas fa-user-lock" style="font-size: 3rem; margin-bottom: 15px;"></i>
-                <h4>請先登錄</h4>
-                <p>登錄後可以同步和保存您的貓咪數據</p>
-                <button class="btn btn-primary" onclick="showLoginModal()" style="margin-top: 15px;">
-                    <i class="fas fa-sign-in-alt"></i> 立即登錄
-                </button>
-            </div>
-        `;
     }
 }
 
@@ -1422,9 +1280,10 @@ async function addNewPet() {
     }
 
     // 檢查是否已登錄
-    if (!isLoggedIn()) {
+    const token = localStorage.getItem('cathealth_token');
+    if (!token) {
         alert("請先登錄再添加貓咪");
-        showLoginModal();
+        window.location.href = 'index.html';
         return;
     }
 
@@ -2026,8 +1885,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     
     console.log("✅ 系统初始化完成");
 
-    // 初始化認證並加載數據
-    initAuth();
+    // 加載用戶數據
     await loadUserData();
 });
 
@@ -2332,16 +2190,8 @@ function ensureNoDuplicatePages() {
     <div class="main-content">
         <div class="top-bar">
             <h2 id="page-title">控制面板</h2>
-            <div class="user-menu">
-                <div class="user-info">
-                    <!-- 用户信息会动态更新 -->
-                </div>
-                <button id="login-btn" class="login-btn" style="display: none;">
-                    <i class="fas fa-sign-in-alt"></i> 登錄
-                </button>
-                <button id="logout-btn" class="logout-btn" style="display: none;">
-                    <i class="fas fa-sign-out-alt"></i> 登出
-                </button>
+            <div class="user-info">
+                <!-- 用户信息会动态更新 -->
             </div>
         </div>
 
@@ -2616,66 +2466,6 @@ function ensureNoDuplicatePages() {
                             <i class="fas fa-times"></i> 返回猫咪档案
                         </button>
                     </div>
-                </div>
-            </div>
-
-            <!-- 認證模態框（登錄/註冊） -->
-            <div id="auth-modal" class="modal auth-modal">
-                <div class="modal-content">
-                    <button id="auth-modal-close" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 1.5rem; color: var(--gray); cursor: pointer;">
-                        <i class="fas fa-times"></i>
-                    </button>
-
-                    <div class="modal-icon">
-                        <i class="fas fa-user-circle"></i>
-                    </div>
-                    <h2>歡迎使用 CatHealth</h2>
-                    <p>登錄或註冊以同步您的貓咪數據</p>
-
-                    <div class="auth-tabs">
-                        <button class="auth-tab active" id="login-tab">登錄</button>
-                        <button class="auth-tab" id="register-tab">註冊</button>
-                    </div>
-
-                    <!-- 登錄表單 -->
-                    <form id="login-form-element" class="auth-form">
-                        <div id="login-form">
-                            <div class="form-group">
-                                <label><i class="fas fa-envelope"></i> 電子郵箱</label>
-                                <input type="email" id="login-email" placeholder="your@email.com" required>
-                            </div>
-                            <div class="form-group">
-                                <label><i class="fas fa-lock"></i> 密碼</label>
-                                <input type="password" id="login-password" placeholder="請輸入密碼" required>
-                            </div>
-                            <div class="auth-error" id="login-error"></div>
-                            <button type="submit" class="auth-submit-btn">
-                                <i class="fas fa-sign-in-alt"></i> 登錄
-                            </button>
-                        </div>
-                    </form>
-
-                    <!-- 註冊表單 -->
-                    <form id="register-form-element" class="auth-form">
-                        <div id="register-form" style="display: none;">
-                            <div class="form-group">
-                                <label><i class="fas fa-user"></i> 姓名</label>
-                                <input type="text" id="register-name" placeholder="您的名字" required>
-                            </div>
-                            <div class="form-group">
-                                <label><i class="fas fa-envelope"></i> 電子郵箱</label>
-                                <input type="email" id="register-email" placeholder="your@email.com" required>
-                            </div>
-                            <div class="form-group">
-                                <label><i class="fas fa-lock"></i> 密碼</label>
-                                <input type="password" id="register-password" placeholder="至少6個字符" required>
-                            </div>
-                            <div class="auth-error" id="register-error"></div>
-                            <button type="submit" class="auth-submit-btn">
-                                <i class="fas fa-user-plus"></i> 註冊
-                            </button>
-                        </div>
-                    </form>
                 </div>
             </div>
 

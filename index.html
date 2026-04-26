@@ -626,6 +626,115 @@
             console.log('页面初始化完成，用户可以自由注册和登录');
         });
     </script>
+    <script>
+        // 後端 API 地址
+        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://127.0.0.1:10002'
+            : 'https://cathealth-monitor-fn41.onrender.com';
+
+        // 更新登錄表單處理
+        document.getElementById('login-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            // 顯示加載狀態
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 登錄中...';
+            submitBtn.disabled = true;
+
+            try {
+                const response = await fetch(`${API_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // 保存 token 和用戶信息
+                    localStorage.setItem('cathealth_token', data.token);
+                    localStorage.setItem('currentUser', JSON.stringify(data.user));
+                    console.log('登錄成功:', data.user);
+                    alert(`歡迎回來，${data.user.name}！`);
+                    window.location.href = 'dashboard.html';
+                } else {
+                    alert(data.error || '登錄失敗');
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }
+            } catch (error) {
+                console.error('登錄錯誤:', error);
+                alert('網絡錯誤，請稍後再試');
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+
+        // 更新註冊表單處理
+        document.getElementById('register-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('register-name').value;
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            const confirmPassword = document.getElementById('register-confirm-password').value;
+            const agreeTerms = document.getElementById('agree-terms').checked;
+
+            // 驗證表單
+            if (password !== confirmPassword) {
+                alert('兩次輸入的密碼不一致');
+                return;
+            }
+
+            if (password.length < 6) {
+                alert('密碼長度至少6位');
+                return;
+            }
+
+            if (!agreeTerms) {
+                alert('請同意服務條款和隱私政策');
+                return;
+            }
+
+            // 顯示加載狀態
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 註冊中...';
+            submitBtn.disabled = true;
+
+            try {
+                const response = await fetch(`${API_URL}/api/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password, name })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // 保存 token 和用戶信息
+                    localStorage.setItem('cathealth_token', data.token);
+                    localStorage.setItem('currentUser', JSON.stringify(data.user));
+                    console.log('註冊成功:', data.user);
+                    alert('註冊成功！歡迎使用 CatHealth Monitor');
+                    window.location.href = 'dashboard.html';
+                } else {
+                    alert(data.error || '註冊失敗');
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }
+            } catch (error) {
+                console.error('註冊錯誤:', error);
+                alert('網絡錯誤，請稍後再試');
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
 </body>
 </html>
 
