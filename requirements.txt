@@ -8,3 +8,4 @@ torch>=2.0.0
 torchvision>=0.15.0
 pyjwt>=2.8.0
 werkzeug>=3.0.0
+gunicorn>=21.0.0
