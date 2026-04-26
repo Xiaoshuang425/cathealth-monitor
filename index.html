@@ -501,7 +501,7 @@
                 }
             } catch (error) {
                 console.error('登錄錯誤:', error);
-                alert('網絡錯誤，請稍後再試');
+                if (error.name === 'TypeError' && error.message === 'Failed to fetch') { alert('無法連接到服務器。可能是：\\n1. 服務器正在啟動，請等待 30 秒後重試\\n2. 網絡連接問題\\n\\n請檢查後端服務狀態或稍後再試。'); } else { alert('網絡錯誤: ' + error.message); }
                 submitBtn.innerHTML = originalText;
                 submitBtn.disabled = false;
             }
@@ -562,7 +562,7 @@
                 }
             } catch (error) {
                 console.error('註冊錯誤:', error);
-                alert('網絡錯誤，請稍後再試');
+                if (error.name === 'TypeError' && error.message === 'Failed to fetch') { alert('無法連接到服務器。可能是：\\n1. 服務器正在啟動，請等待 30 秒後重試\\n2. 網絡連接問題\\n\\n請檢查後端服務狀態或稍後再試。'); } else { alert('網絡錯誤: ' + error.message); }
                 submitBtn.innerHTML = originalText;
                 submitBtn.disabled = false;
             }
