@@ -1672,11 +1672,15 @@ async function handleImageUpload(file) {
         console.log("[DEBUG] Image data length:", imageData.length);
 
         console.log("[DEBUG] Calling API:", CLOUD_AI_URL + "/api/ai/analyze");
-        
+
+        // 获取 token
+        const token = localStorage.getItem('cathealth_token');
+
         const response = await fetch(CLOUD_AI_URL + "/api/ai/analyze", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
             },
             body: JSON.stringify({
                 image: imageData
