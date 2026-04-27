@@ -14,7 +14,8 @@
       "Bash(pkill -f python)",
       "Bash(git pull *)",
       "Bash(git push *)",
-      "Bash(vercel *)"
+      "Bash(vercel *)",
+      "Bash(curl *)"
     ]
   }
 }
