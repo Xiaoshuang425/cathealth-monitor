@@ -3,9 +3,8 @@
  * 注意：登錄/註冊 UI 在 index.html 中處理
  */
 
-const AUTH_API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? 'http://127.0.0.1:10002'
-    : 'https://cathealth-monitor-fn41.onrender.com';
+// 始終使用 Render 後端
+const AUTH_API_URL = 'https://cathealth-monitor-fn41.onrender.com';
 
 // Token 存儲鍵名
 const TOKEN_KEY = 'cathealth_token';

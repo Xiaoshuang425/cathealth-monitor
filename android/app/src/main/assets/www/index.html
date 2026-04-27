@@ -464,10 +464,8 @@
         });
 
         // 注册表单处理 - 保留原有功能
-        // 後端 API 地址
-        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-            ? 'http://127.0.0.1:10002'
-            : 'https://cathealth-monitor-fn41.onrender.com';
+        // 後端 API 地址 - 始終使用 Render 後端
+        const API_URL = 'https://cathealth-monitor-fn41.onrender.com';
 
         // 更新登錄表單處理
         document.getElementById('login-form').addEventListener('submit', async function(e) {
