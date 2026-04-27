@@ -197,7 +197,12 @@ def token_required(f):
 
 @app.route('/')
 def home():
-    return send_from_directory('.', 'index.html')
+    return jsonify({
+        "service": "CatHealth API",
+        "status": "running",
+        "version": "1.0",
+        "endpoints": ["/api/health", "/api/auth/login", "/api/auth/register", "/api/ai/analyze"]
+    })
 
 @app.route('/<path:filename>')
 def serve_file(filename):
