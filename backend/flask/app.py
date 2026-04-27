@@ -116,6 +116,34 @@ def analyze_with_backup_ai():
 yolo_available = False
 yolo_detector = None
 
+def download_model():
+    """從 Hugging Face 下載模型"""
+    import urllib.request
+    import os
+
+    model_url = os.environ.get('MODEL_URL', 'https://huggingface.co/datasets/lingshuang/maomaoyolo/resolve/main/best.pt')
+    backend_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "backend", "python")
+    model_path = os.path.join(backend_dir, "models", "best.pt")
+
+    # 確保目錄存在
+    os.makedirs(os.path.dirname(model_path), exist_ok=True)
+
+    if os.path.exists(model_path):
+        print(f"[DOWNLOAD] Model already exists: {model_path}")
+        return model_path
+
+    print(f"[DOWNLOAD] Downloading model from: {model_url}")
+    print(f"[DOWNLOAD] Saving to: {model_path}")
+
+    try:
+        # 下載文件
+        urllib.request.urlretrieve(model_url, model_path)
+        print(f"[DOWNLOAD] Success! File size: {os.path.getsize(model_path)} bytes")
+        return model_path
+    except Exception as e:
+        print(f"[DOWNLOAD] Error: {e}")
+        return None
+
 def init_yolo():
     """初始化YOLO模型"""
     global yolo_available, yolo_detector
@@ -150,7 +178,13 @@ def init_yolo():
         model_path = os.path.join(backend_dir, "models", "best.pt")
         print(f"[INIT] Model path: {model_path}")
         print(f"[INIT] Model exists: {os.path.exists(model_path)}")
-        if os.path.exists(model_path):
+
+        # 如果模型不存在，嘗試下載
+        if not os.path.exists(model_path):
+            print("[INIT] Model not found, trying to download...")
+            model_path = download_model()
+
+        if model_path and os.path.exists(model_path):
             yolo_detector = YOLODetector(model_path)
             yolo_available = yolo_detector.model is not None
             print(f"[INIT] YOLO loaded: {yolo_available}")
