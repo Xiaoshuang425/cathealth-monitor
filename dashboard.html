@@ -965,6 +965,19 @@
     min-height: 400px;
 }
 
+/* 醫院頁面容器高度 */
+#hospital-page {
+    min-height: calc(100vh - 100px);
+}
+
+/* 地圖和列表網格容器 */
+.hospital-grid-container {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 20px;
+    height: 600px;
+}
+
 .hospital-list-item {
     transition: background 0.3s;
 }
@@ -1084,19 +1097,26 @@
 
 /* 響應式：移動端地圖和列表堆疊 */
 @media (max-width: 768px) {
-    #hospital-page .page-content > div[style*="grid"] {
+    .hospital-grid-container {
         grid-template-columns: 1fr !important;
         height: auto !important;
+        min-height: auto !important;
+    }
+
+    .hospital-grid-container > div:first-child {
+        min-height: 50vh !important;
+        height: 50vh !important;
     }
 
     #hospital-map-container {
-        min-height: 50vh;
-        height: 50vh;
+        min-height: 50vh !important;
+        height: 50vh !important;
     }
 
     #hospital-list-container {
         max-height: 300px;
         height: 300px;
+        min-height: 200px !important;
     }
 
     /* 手機端側邊欄全寬 */
@@ -1406,15 +1426,17 @@ function showPage(pageId) {
     } else if (pageId === 'health-survey') {
         initHealthSurvey();
     } else if (pageId === 'hospital') {
-        // 初始化騰訊地圖
-        initHospitalMap('hospital-map-container', TENCENT_MAP_KEY);
-        renderHospitalList('hospital-list-container');
+        // 延遲初始化地圖，確保容器可見
+        setTimeout(() => {
+            initHospitalMap('hospital-map-container', TENCENT_MAP_KEY);
+            renderHospitalList('hospital-list-container');
 
-        // 如果 API Key 未設置，顯示提示
-        if (TENCENT_MAP_KEY === 'YOUR_TENCENT_MAP_KEY') {
-            const notice = document.getElementById('map-api-notice');
-            if (notice) notice.style.display = 'block';
-        }
+            // 如果 API Key 未設置，顯示提示
+            if (TENCENT_MAP_KEY === 'YOUR_TENCENT_MAP_KEY' || !TENCENT_MAP_KEY) {
+                const notice = document.getElementById('map-api-notice');
+                if (notice) notice.style.display = 'block';
+            }
+        }, 100);
     }
 }
 
@@ -2584,19 +2606,19 @@ function ensureNoDuplicatePages() {
                 </div>
 
                 <!-- 地圖和列表容器 -->
-                <div style="display: grid; grid-template-columns: 1fr 350px; gap: 20px; height: 600px;">
+                <div class="hospital-grid-container">
                     <!-- 地圖區域 -->
-                    <div style="background: #f5f5f5; border-radius: 10px; overflow: hidden; position: relative;">
-                        <div id="hospital-map-container" style="width: 100%; height: 100%;"></div>
+                    <div style="background: #f5f5f5; border-radius: 10px; overflow: hidden; position: relative; min-height: 400px;">
+                        <div id="hospital-map-container" style="width: 100%; height: 100%; min-height: 400px;"></div>
                     </div>
 
                     <!-- 醫院列表 -->
-                    <div style="background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; flex-direction: column;">
+                    <div style="background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; flex-direction: column; min-height: 200px;">
                         <div style="background: linear-gradient(to right, var(--primary), var(--primary-light)); padding: 15px; color: var(--dark);">
                             <h3 style="margin: 0; font-size: 1.1rem;"><i class="fas fa-list"></i> 醫院列表</h3>
                             <p style="margin: 5px 0 0 0; font-size: 0.85rem; opacity: 0.9;">點擊查看位置詳情</p>
                         </div>
-                        <div id="hospital-list-container" style="flex: 1; overflow-y: auto;">
+                        <div id="hospital-list-container" style="flex: 1; overflow-y: auto; min-height: 200px;">
                             <!-- 列表內容由 JS 生成 -->
                         </div>
                     </div>

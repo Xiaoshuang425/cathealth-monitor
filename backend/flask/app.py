@@ -288,18 +288,28 @@ def register():
 def login():
     """用戶登錄"""
     data = request.get_json()
+    print(f"[LOGIN] Received data: {data}")
 
     if not data:
         return jsonify({'success': False, 'error': 'No data provided'}), 400
 
     email = data.get('email', '').strip().lower()
     password = data.get('password', '')
+    print(f"[LOGIN] Email: {email}, Password length: {len(password)}")
 
     if not email or not password:
         return jsonify({'success': False, 'error': 'Email and password are required'}), 400
 
     user = db.get_user_by_email(email)
-    if not user or not db.verify_password(user, password):
+    print(f"[LOGIN] User found: {user is not None}")
+
+    if not user:
+        return jsonify({'success': False, 'error': 'Invalid email or password'}), 401
+
+    password_valid = db.verify_password(user, password)
+    print(f"[LOGIN] Password valid: {password_valid}")
+
+    if not password_valid:
         return jsonify({'success': False, 'error': 'Invalid email or password'}), 401
 
     # 生成 token
