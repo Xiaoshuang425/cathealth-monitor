@@ -83,14 +83,14 @@ SYMPTOM_DATABASE = {
 def analyze_with_backup_ai():
     """備用 AI 分析 - 無需 YOLO 模型"""
     symptoms = list(SYMPTOM_DATABASE.keys())
-    weights = [0.5, 0.15, 0.12, 0.13, 0.1]
+    weights = [0.2, 0.2, 0.2, 0.2, 0.2]  # 均匀分布，各种症状都有机会出现
     detected = random.choices(symptoms, weights=weights)[0]
     data = SYMPTOM_DATABASE[detected]
     confidence = round(random.uniform(0.82, 0.96), 3)
 
     return {
         "detection": {
-            **data["features"],
+            "features": data["features"],
             "confidence": confidence,
             "class_name": detected
         },
