@@ -505,6 +505,10 @@ def analyze():
     print(f"\n[API] ====== New Request from User {user['id']} ======")
 
     try:
+        # 獲取數據
+        data = request.get_json()
+        cat_id = data.get('cat_id') if data else None
+
         # 確保YOLO已加載
         if not yolo_available:
             print("[API] Initializing YOLO...")
@@ -530,8 +534,6 @@ def analyze():
             result["success"] = True
             return jsonify(result)
 
-        # 獲取數據
-        data = request.get_json()
         print(f"[API] Request data type: {type(data)}")
 
         if not data or 'image' not in data:
@@ -539,7 +541,6 @@ def analyze():
             return jsonify({"success": False, "error": "No image data"}), 400
 
         img_data = data['image']
-        cat_id = data.get('cat_id')  # 可選：關聯到特定貓咪
 
         print(f"[API] Image data length: {len(str(img_data))}")
 
