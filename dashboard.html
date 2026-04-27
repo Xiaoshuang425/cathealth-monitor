@@ -973,6 +973,115 @@
     background: #f9f9f9;
 }
 
+/* 醫院詳情側邊欄 */
+.hospital-detail-drawer {
+    position: fixed;
+    top: 0;
+    right: -350px;
+    width: 350px;
+    height: 100%;
+    background: white;
+    box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+    z-index: 1000;
+    transition: right 0.3s ease;
+    overflow-y: auto;
+}
+
+.hospital-detail-drawer.open {
+    right: 0;
+}
+
+.hospital-detail-drawer .drawer-header {
+    background: linear-gradient(to right, var(--primary), var(--primary-light));
+    padding: 20px;
+    color: var(--dark);
+    position: relative;
+}
+
+.hospital-detail-drawer .drawer-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--dark);
+}
+
+.hospital-detail-drawer .drawer-content {
+    padding: 20px;
+}
+
+.hospital-detail-drawer .info-row {
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.hospital-detail-drawer .info-row:last-child {
+    border-bottom: none;
+}
+
+.hospital-detail-drawer .info-label {
+    font-weight: 600;
+    color: var(--gray);
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+}
+
+.hospital-detail-drawer .info-value {
+    color: var(--dark);
+    font-size: 1rem;
+}
+
+.hospital-detail-drawer .services-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 5px;
+}
+
+.hospital-detail-drawer .service-tag {
+    background: var(--light);
+    color: var(--dark);
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 0.85rem;
+}
+
+.hospital-detail-drawer .nav-btn {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    background: var(--primary);
+    color: var(--dark);
+    text-align: center;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 20px;
+    text-decoration: none;
+}
+
+/* 遮罩層 */
+.drawer-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 999;
+    display: none;
+}
+
+.drawer-overlay.open {
+    display: block;
+}
+
 /* 響應式：移動端地圖和列表堆疊 */
 @media (max-width: 768px) {
     #hospital-page .page-content > div[style*="grid"] {
@@ -981,12 +1090,23 @@
     }
 
     #hospital-map-container {
-        min-height: 300px;
-        height: 300px;
+        min-height: 50vh;
+        height: 50vh;
     }
 
     #hospital-list-container {
-        max-height: 400px;
+        max-height: 300px;
+        height: 300px;
+    }
+
+    /* 手機端側邊欄全寬 */
+    .hospital-detail-drawer {
+        width: 100%;
+        right: -100%;
+    }
+
+    .hospital-detail-drawer.open {
+        right: 0;
     }
 }
 
@@ -1433,7 +1553,7 @@ function renderPetsPage() {
             <button class="upload-pet-btn" onclick="changePetPhoto('${pet.id}')" title="更换照片">
                 <i class="fas fa-camera"></i>
             </button>
-            <button class="delete-pet-btn" onclick="deletePet('${pet.id}')" title="删除猫咪">
+            <button class="delete-pet-btn" onclick="deletePet(${pet.id})" title="删除猫咪">
                 <i class="fas fa-times"></i>
             </button>
             <div class="pet-header">
@@ -2028,7 +2148,7 @@ function calculateHealthScore() {
     updateDashboardStats(overallHealth, dietScore, activityLevel, weight);
     
     // 显示结果
-    showSurveyResults(overallHealth, dietScore, activityLevel, weight, pet.name);
+    showSurveyResults(overallHealth, dietScore, activityLevel, weight, pet.name, pet.id);
 }
 
 // 更新主页统计数据显示真实数据
@@ -2046,18 +2166,33 @@ function updateDashboardStats(healthIndex, dietStatus, activityLevel, avgWeight)
     document.getElementById('avg-weight').className = 'stat-value';
 }
 
+// 全局變量存儲當前評估數據
+let currentSurveyData = null;
+
 // 显示调查结果
-function showSurveyResults(overallHealth, dietScore, activityLevel, weight, petName) {
+function showSurveyResults(overallHealth, dietScore, activityLevel, weight, petName, petId) {
     const resultsDiv = document.getElementById('survey-results');
-    
+
     // 生成建议
     const recommendations = generateRecommendations(overallHealth, dietScore, activityLevel);
-    
+
+    // 保存到全局變量
+    currentSurveyData = {
+        petId: petId,
+        petName: petName,
+        overallHealth: overallHealth,
+        dietScore: dietScore,
+        activityLevel: activityLevel,
+        weight: weight,
+        recommendations: recommendations,
+        timestamp: new Date().toISOString()
+    };
+
     resultsDiv.innerHTML = `
         <h3 style="text-align: center; margin-bottom: 30px; color: var(--dark);">
             <i class="fas fa-file-medical-alt"></i> ${petName}的健康评估报告
         </h3>
-        
+
         <div class="result-grid">
             <div class="result-item">
                 <div class="result-value" style="color: ${getHealthColor(overallHealth)};">${overallHealth}%</div>
@@ -2076,7 +2211,7 @@ function showSurveyResults(overallHealth, dietScore, activityLevel, weight, petN
                 <div class="result-label">当前体重</div>
             </div>
         </div>
-        
+
         <div style="margin-top: 30px;">
             <h4 style="margin-bottom: 15px; color: var(--dark);">
                 <i class="fas fa-lightbulb"></i> 健康建议
@@ -2088,16 +2223,58 @@ function showSurveyResults(overallHealth, dietScore, activityLevel, weight, petN
                 </div>
             `).join('')}
         </div>
-        
-        <div style="text-align: center; margin-top: 30px;">
-            <button class="btn btn-primary" onclick="showPage('dashboard')">
-                <i class="fas fa-home"></i> 返回主页查看数据
+
+        <div style="text-align: center; margin-top: 30px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+            <button class="btn btn-primary" onclick="saveHealthSurvey()">
+                <i class="fas fa-save"></i> 保存评估报告
+            </button>
+            <button class="btn btn-secondary" onclick="showPage('dashboard')" style="background: var(--gray); color: white;">
+                <i class="fas fa-home"></i> 返回主页
             </button>
         </div>
     `;
-    
+
     resultsDiv.style.display = 'block';
     resultsDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+// 保存健康評估到後端
+async function saveHealthSurvey() {
+    if (!currentSurveyData) {
+        alert('沒有評估數據可保存');
+        return;
+    }
+
+    try {
+        const recordData = {
+            cat_id: currentSurveyData.petId,
+            record_type: 'health_survey',
+            result_data: JSON.stringify({
+                overall_score: currentSurveyData.overallHealth,
+                diet_score: currentSurveyData.dietScore,
+                activity_score: currentSurveyData.activityLevel,
+                weight: currentSurveyData.weight,
+                recommendations: currentSurveyData.recommendations,
+                timestamp: currentSurveyData.timestamp
+            }),
+            risk_level: 100 - currentSurveyData.overallHealth, // 風險等級與健康分數相反
+            confidence: currentSurveyData.overallHealth / 100,
+            notes: `健康評估報告 - 整體健康指數: ${currentSurveyData.overallHealth}%`
+        };
+
+        const result = await createHealthRecord(recordData);
+
+        if (result.success) {
+            alert('✅ 健康評估報告保存成功！');
+            // 同時更新貓咪體重
+            await updateCatAPI(currentSurveyData.petId, { weight: currentSurveyData.weight });
+        } else {
+            alert('保存失敗: ' + (result.error || '未知錯誤'));
+        }
+    } catch (error) {
+        console.error('保存健康評估失敗:', error);
+        alert('保存失敗，請檢查網絡連接');
+    }
 }
 
 // 根据分数获取颜色
@@ -2422,6 +2599,41 @@ function ensureNoDuplicatePages() {
                         <div id="hospital-list-container" style="flex: 1; overflow-y: auto;">
                             <!-- 列表內容由 JS 生成 -->
                         </div>
+                    </div>
+                </div>
+
+                <!-- 醫院詳情側邊欄 -->
+                <div class="drawer-overlay" id="hospital-drawer-overlay" onclick="closeHospitalDrawer()"></div>
+                <div class="hospital-detail-drawer" id="hospital-detail-drawer">
+                    <div class="drawer-header">
+                        <button class="drawer-close" onclick="closeHospitalDrawer()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        <h3 style="margin: 0; font-size: 1.2rem;" id="drawer-hospital-name">醫院名稱</h3>
+                        <p style="margin: 5px 0 0 0; font-size: 0.9rem; opacity: 0.9;" id="drawer-hospital-name-en">Hospital Name</p>
+                    </div>
+                    <div class="drawer-content">
+                        <div class="info-row">
+                            <div class="info-label"><i class="fas fa-map-marker-alt"></i> 地址</div>
+                            <div class="info-value" id="drawer-hospital-address">-</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label"><i class="fas fa-phone"></i> 電話</div>
+                            <div class="info-value" id="drawer-hospital-phone">-</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label"><i class="fas fa-clock"></i> 營業時間</div>
+                            <div class="info-value" id="drawer-hospital-hours">-</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label"><i class="fas fa-stethoscope"></i> 服務項目</div>
+                            <div class="services-list" id="drawer-hospital-services">
+                                <!-- 動態生成 -->
+                            </div>
+                        </div>
+                        <a href="#" class="nav-btn" id="drawer-nav-btn" target="_blank">
+                            <i class="fas fa-directions"></i> 開始導航
+                        </a>
                     </div>
                 </div>
 
@@ -2813,5 +3025,69 @@ function ensureNoDuplicatePages() {
         </div>
     </div>
 </div>
+
+<script>
+// ==================== 醫院詳情側邊欄控制 ====================
+
+/**
+ * 打開醫院詳情側邊欄
+ * @param {Object} hospital - 醫院數據對象
+ */
+function openHospitalDrawer(hospital) {
+    if (!hospital) return;
+
+    // 填充數據
+    document.getElementById('drawer-hospital-name').textContent = hospital.name || '醫院名稱';
+    document.getElementById('drawer-hospital-name-en').textContent = hospital.nameEn || '';
+    document.getElementById('drawer-hospital-address').textContent = hospital.address || '-';
+    document.getElementById('drawer-hospital-phone').textContent = hospital.phone || '-';
+    document.getElementById('drawer-hospital-hours').textContent = hospital.hours || '-';
+
+    // 填充服務標籤
+    const servicesContainer = document.getElementById('drawer-hospital-services');
+    servicesContainer.innerHTML = '';
+    if (hospital.services && hospital.services.length > 0) {
+        hospital.services.forEach(service => {
+            const tag = document.createElement('span');
+            tag.className = 'service-tag';
+            tag.textContent = service;
+            servicesContainer.appendChild(tag);
+        });
+    }
+
+    // 設置導航鏈接
+    const navBtn = document.getElementById('drawer-nav-btn');
+    if (hospital.location) {
+        const lat = hospital.location.lat;
+        const lng = hospital.location.lng;
+        // 使用騰訊地圖導航鏈接
+        navBtn.href = `https://apis.map.qq.com/uri/v1/marker?marker=coord:${lat},${lng};title=${encodeURIComponent(hospital.name)};addr=${encodeURIComponent(hospital.address)}`;
+    } else {
+        navBtn.href = '#';
+    }
+
+    // 顯示側邊欄和遮罩
+    document.getElementById('hospital-detail-drawer').classList.add('open');
+    document.getElementById('hospital-drawer-overlay').classList.add('open');
+    document.body.style.overflow = 'hidden'; // 防止背景滾動
+}
+
+/**
+ * 關閉醫院詳情側邊欄
+ */
+function closeHospitalDrawer() {
+    document.getElementById('hospital-detail-drawer').classList.remove('open');
+    document.getElementById('hospital-drawer-overlay').classList.remove('open');
+    document.body.style.overflow = ''; // 恢復滾動
+}
+
+// 監聽 ESC 鍵關閉側邊欄
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeHospitalDrawer();
+    }
+});
+</script>
+
 </body>
 </html>

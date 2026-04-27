@@ -183,43 +183,16 @@ function addHospitalMarkers() {
  * 顯示醫院詳情
  */
 function showHospitalInfo(hospital, position) {
-    const content = `
-        <div style="padding: 15px; max-width: 300px; font-family: 'Segoe UI', sans-serif;">
-            <h3 style="margin: 0 0 10px 0; color: #5C4B37; font-size: 1.1rem;">
-                <i class="fas fa-hospital" style="color: #D4A574;"></i> ${hospital.name}
-            </h3>
-            ${hospital.is24Hour ? '<span style="background: #28a745; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem;">24小時</span>' : ''}
-            <p style="margin: 10px 0; color: #666; font-size: 0.9rem;">
-                <i class="fas fa-map-marker-alt" style="color: #D4A574; width: 20px;"></i> ${hospital.address}
-            </p>
-            <p style="margin: 8px 0; color: #666; font-size: 0.9rem;">
-                <i class="fas fa-phone" style="color: #D4A574; width: 20px;"></i>
-                <a href="tel:${hospital.phone.replace(/\s/g, '')}" style="color: #D4A574; text-decoration: none;">${hospital.phone}</a>
-            </p>
-            <p style="margin: 8px 0; color: #666; font-size: 0.9rem;">
-                <i class="fas fa-clock" style="color: #D4A574; width: 20px;"></i> ${hospital.hours}
-            </p>
-            <p style="margin: 8px 0; color: #666; font-size: 0.9rem;">
-                <i class="fas fa-stethoscope" style="color: #D4A574; width: 20px;"></i> ${hospital.services.join(', ')}
-            </p>
-            <div style="margin-top: 12px; display: flex; gap: 8px;">
-                <a href="tel:${hospital.phone.replace(/\s/g, '')}"
-                   style="flex: 1; background: #D4A574; color: white; text-align: center; padding: 8px;
-                          border-radius: 5px; text-decoration: none; font-size: 0.9rem;">
-                    <i class="fas fa-phone"></i> 撥打電話
-                </a>
-                <button onclick="getDirections(${hospital.location.lat}, ${hospital.location.lng})"
-                        style="flex: 1; background: #8DB596; color: white; border: none; padding: 8px;
-                               border-radius: 5px; cursor: pointer; font-size: 0.9rem;">
-                    <i class="fas fa-directions"></i> 導航
-                </button>
-            </div>
-        </div>
-    `;
+    // 使用側邊欄顯示詳情
+    if (typeof openHospitalDrawer === 'function') {
+        openHospitalDrawer(hospital);
+    }
 
-    infoWindow.setPosition(position);
-    infoWindow.setContent(content);
-    infoWindow.open();
+    // 同時將地圖中心移到該醫院
+    if (map && position) {
+        map.setCenter(position);
+        map.setZoom(16);
+    }
 }
 
 /**
@@ -382,35 +355,42 @@ function renderHospitalList(containerId) {
     if (!container) return;
 
     container.innerHTML = MACAU_PET_HOSPITALS.map(hospital => `
-        <div class="hospital-list-item" onclick="focusHospital(${hospital.id})"
+        <div class="hospital-list-item" onclick="openHospitalDrawerById(${hospital.id})"
              style="padding: 15px; border-bottom: 1px solid #eee; cursor: pointer;
                     transition: background 0.3s;"
              onmouseover="this.style.background='#f9f9f9'"
              onmouseout="this.style.background='white'">
             <div style="display: flex; justify-content: space-between; align-items: start;">
-                <div>
+                <div style="flex: 1;">
                     <h4 style="margin: 0 0 8px 0; color: #5C4B37; font-size: 1rem;">
                         ${hospital.name}
                         ${hospital.is24Hour ? '<span style="background: #28a745; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; margin-left: 8px;">24H</span>' : ''}
                     </h4>
-                    <p style="margin: 5px 0; color: #666; font-size: 0.85rem;">
+                    <p style="margin: 5px 0; color: #666; font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                         <i class="fas fa-map-marker-alt" style="color: #D4A574; width: 18px;"></i> ${hospital.address}
                     </p>
                     <p style="margin: 5px 0; color: #666; font-size: 0.85rem;">
                         <i class="fas fa-phone" style="color: #D4A574; width: 18px;"></i> ${hospital.phone}
                     </p>
-                    <p style="margin: 5px 0; color: #666; font-size: 0.85rem;">
-                        <i class="fas fa-clock" style="color: #D4A574; width: 18px;"></i> ${hospital.hours}
-                    </p>
                 </div>
-                <a href="tel:${hospital.phone.replace(/\s/g, '')}"
-                   style="background: #D4A574; color: white; padding: 8px 12px;
-                          border-radius: 5px; text-decoration: none; font-size: 0.85rem;">
-                    <i class="fas fa-phone"></i>
-                </a>
+                <i class="fas fa-chevron-right" style="color: #D4A574; margin-left: 10px; align-self: center;"></i>
             </div>
         </div>
     `).join('');
+}
+
+/**
+ * 通過ID打開醫院側邊欄
+ * @param {number} hospitalId - 醫院ID
+ */
+function openHospitalDrawerById(hospitalId) {
+    const hospital = MACAU_PET_HOSPITALS.find(h => h.id === hospitalId);
+    if (!hospital) return;
+
+    // 同時聚焦地圖
+    if (typeof focusHospital === 'function') {
+        focusHospital(hospitalId);
+    }
 }
 
 /**
@@ -418,10 +398,17 @@ function renderHospitalList(containerId) {
  */
 function focusHospital(hospitalId) {
     const hospital = MACAU_PET_HOSPITALS.find(h => h.id === hospitalId);
-    if (!hospital || !map) return;
+    if (!hospital) return;
 
-    const position = new TMap.LatLng(hospital.location.lat, hospital.location.lng);
-    map.setCenter(position);
-    map.setZoom(16);
-    showHospitalInfo(hospital, position);
+    // 移到地圖中心
+    if (map) {
+        const position = new TMap.LatLng(hospital.location.lat, hospital.location.lng);
+        map.setCenter(position);
+        map.setZoom(16);
+    }
+
+    // 打開側邊欄
+    if (typeof openHospitalDrawer === 'function') {
+        openHospitalDrawer(hospital);
+    }
 }
